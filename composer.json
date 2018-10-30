@@ -1,0 +1,15 @@
+{
+    "name": "Time Tracker",
+    "description": "Time Tracker App",
+    "type": "project",
+    "license": "AGPL",
+    "authors": [
+        {
+            "name": "Valentin Zagura"
+        }
+    ],
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "^5.4"
+    }
+}
