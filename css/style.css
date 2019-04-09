@@ -1,3 +1,359 @@
 #hello {
 	color: red;
 }
+#work-input {
+	width: 100%;
+	/* flex: 1 1 auto; */
+    height: 65px;
+    flex: 1 1 auto;
+    font-size: 22px;
+    padding: 0px 5px 0px 20px;
+}
+#work-input-container {
+	width: 100%;
+	flex: 1 1 auto;
+}
+#top-work-bar {
+	width: 100%;
+	display: flex;
+    flex-direction: row;
+}
+#top-work-bar-right {
+	/* width: 100%; */
+	/* background-color: aqua; */
+	/* min-width:240px; */
+	display: flex;
+}
+
+#app {
+	width: 100%;
+}
+
+#app-content-wrapper {
+	width: 100%;
+	display:block;
+}
+
+
+.play-button {
+
+	background-image: url(../img/play-button.svg);
+	background-position: 0px 0px;
+}
+.stop-button {
+	background-image: url(../img/stop-button.svg);
+	background-position: 0px 0px;
+}
+.clearfix:after { content: "\00A0"; display: block; clear: both; visibility: hidden; line-height: 0; height: 0;}
+.clearfix{ display: inline-block;}
+html[xmlns] .clearfix { display: block;}
+* html .clearfix{ height: 1%;}
+.clearfix {display: block}
+
+#timetracker-content {
+	width: 100%;
+	display:block;
+	background-color: rgb(250, 251, 252);
+}
+#timer {
+	/* min-width: 200px; */
+	height: 40px;
+	font-size: 22px;
+	padding: 25px;
+	text-align:right;
+}
+.day-work-intervals{
+
+    margin-bottom: 30px;
+	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+	background-color: white;
+    /*min-width: 100%;*/
+}
+.day-list-item{
+	
+}
+.day-name {
+	
+    font-size: 18px;
+	font-weight: 400;
+	padding: 10px;
+}
+.wi-child {
+	background-color: rgb(250, 251, 252);
+	padding-left: 25px;
+	padding-right: 25px;
+}
+.wi-child-element {
+	display: flex;
+	border-bottom: #eee solid 1px;
+}
+.wi-child-duration {
+    padding: 10px;
+    min-width: 150px;
+    text-align: right;
+}
+.wi-child-name {
+	padding: 10px;
+	width: 100%;
+}
+.wi-child-hours {
+	/* font-size: 18px;
+	font-weight: 400; */
+	padding: 10px;
+	min-width: 150px;
+	cursor: pointer;
+}
+
+.work-item {
+	
+}
+.work-item-element {
+	display: flex;
+	flex-direction: row;
+    box-shadow: inset 0 -1px 0 0 #e8e8e8;
+	background-color: white;
+	line-height: 60px;
+	padding-right: 25px;
+}
+.wi-len {
+	min-width: 20px;
+    padding-left: 5px;
+    border-color: #aaa;
+    border-width: 1px;
+    border-style: solid;
+    line-height: 28px;
+    margin: 15px;
+    border-radius: 15px;
+}
+.wi-len-empty {
+	min-width: 20px;
+    padding-left: 5px;
+	margin: 15px;
+	line-height: 28px;
+}
+.wi-name {
+	width: 100%;
+	font-size: 16px;
+}
+.wi-duration {
+	font-size: 20px;
+    min-width: 150px;
+    text-align: right;
+}
+.nav-icon-recent {
+    background-image: var(--icon-files-recent-000);
+}
+.controls {
+    display: flex;
+	align-items: center;
+}
+.client-button {
+	display:flex;
+	color: #595959;
+	background-color: #e6e6e6;
+	font-size: 11px;
+	padding: 7px 10px;
+	margin: 0 12px 12px 0;
+}
+
+.client-edit{
+	padding:0px 10px;
+}
+.client-delete{
+	padding:0px 10px;
+}
+.clickable:hover{
+	color: #595959;
+}
+.clickable {
+	cursor: pointer;
+    color: #a6a6a6;
+}
+.ui-dialog { z-index: 1000 !important ;}
+#timetracker-clients {
+	width: 100%;
+	/* display:block; */
+	background-color: rgb(250, 251, 252);
+	display: inline-block;
+    margin: 40px;
+}
+.client-button{
+	width: min-content;
+}
+.clients-list{
+    display: flex;
+    margin: 40px;
+}
+#timetracker-projects{
+	width: 100%;
+	/* display:block; */
+	background-color: rgb(250, 251, 252);
+	display: inline-block;
+    margin: 40px;
+}
+
+.project-button{
+	display:flex;
+}
+
+.project-name{
+	flex:0.3;
+}
+
+.king-table-region .pagination-bar {
+	height: 50px;
+    margin: 20px 0px 20px 0px;
+	padding: 10px;
+	text-align: right;
+    background-color: #eee;
+}
+.projects{
+	margin-top: 50px;
+}
+.king-table-head {
+	color: #aaa;
+}
+td.deleteBtn {
+    width: 10px;
+}
+td.ε_row {
+    width: 40px;
+}
+#client-select{
+	
+}
+.select2-container {
+	margin: 0px 3px 3px 0;
+
+
+}
+.select2-container .select2-choice {
+	min-height: 33px;
+	height: 33px;
+	margin-top:0px;
+}
+.page-title {
+	font-size: 32px;
+}
+#timetracker-tags {
+    width: 100%;
+    /* display: block; */
+    background-color: rgb(250, 251, 252);
+    display: inline-block;
+    margin: 40px;
+}
+.tag-button {
+	display:flex;
+	color: #595959;
+	background-color: #e6e6e6;
+	font-size: 11px;
+	padding: 7px 10px;
+	margin: 0 12px 12px 0;
+}
+
+.tag-edit{
+	padding:0px 10px;
+}
+.tag-delete{
+	padding:0px 10px;
+}
+.tags-list{
+    display: flex;
+    margin: 40px;
+}
+.set-project{
+	line-height: 32px;
+    min-width: 200px;
+    padding-left: 10px;
+}
+/*
+.set-tag{
+	line-height: 32px;
+    font-size: 22px;
+    padding-left: 10px;
+}*/
+
+.select2-container.set-project .select2-default {
+    margin: 0px;
+	border: 0px;
+	font-size: 22px;
+	/*width:40px;*/
+
+	background-color: rgb(250, 251, 252);
+}
+/*
+.select2-container.set-tag .select2-default {
+    margin: 0px;
+	border: 0px;
+	background-color: rgb(250, 251, 252);
+}*/
+.select2-search-choice-close {
+    display: block;
+}
+.wi-trash {
+    line-height: 33px;
+	font-size: 15px;
+	display: none;
+}
+.wi-child-element:hover .wi-trash {
+	display: block;
+}
+.wi-play {
+    line-height: 40px;
+	font-size: 15px;
+	display: none;
+}
+.wi-child-element:hover .wi-play {
+	display: block;
+}
+.wi-play-space {
+	min-width: 15px;
+}
+.set-tag {
+    min-width: 200px;
+}
+#report {
+	margin-top:30px;
+}
+#timetracker-dashboard {
+    width: 100%;
+    /* display: block; */
+    background-color: rgb(250, 251, 252);
+    display: inline-block;
+    margin: 40px;
+}
+#dashboard{
+	max-width: 600px;
+}
+#dashboard h1{
+	margin-top:10px;
+	font-size: 20px;
+}
+.nav-icon-projects {
+  
+	background-image: var(--icon-folder-000);
+  }
+.nav-icon-clients {
+    background-image: var(--icon-contacts-000);
+}
+.nav-icon-tags {
+    background-image: var(--icon-tag-000);
+}
+.nav-icon-reports {
+    background-image: var(--icon-edit-000);
+}
+.nav-icon-dashboard {
+    background-image: var(--icon-desktop-000);
+}
+/* .ui-button.primary {
+    background-color: red;
+}
+.ui-button.greenButton {
+    background-color: green;
+} */
+#projects {
+    margin-top: 30px;
+}
+#projects .tabulator-cell{
+	cursor: pointer;
+}

@@ -2,21 +2,22 @@
 <info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>timetracker</id>
-    <name>Time Tracker</name>
+    <name>Time Tracker New</name>
     <summary>Time Tracker App</summary>
     <description><![CDATA[Time Tracker App]]></description>
-    <version>0.0.1</version>
+    <version>0.0.15</version>
     <licence>agpl</licence>
     <author mail="puthre@gmail.com" >Valentin Zagura</author>
     <namespace>TimeTracker</namespace>
     <category>tools</category>
     <bugs>http://example.com</bugs>
     <dependencies>
-        <nextcloud min-version="14" max-version="14"/>
+        <nextcloud min-version="14" max-version="15"/>
     </dependencies>
     <navigations>
         <navigation>
             <name>Time Tracker</name>
+            <order>10</order>
             <route>timetracker.page.index</route>
         </navigation>
     </navigations>
