@@ -2,15 +2,15 @@
 <info xmlns:xsi= "http://www.w3.org/2001/XMLSchema-instance"
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>timetracker</id>
-    <name>Time Tracker New</name>
+    <name>Time Tracker</name>
     <summary>Time Tracker App</summary>
     <description><![CDATA[Time Tracker App]]></description>
     <version>0.0.15</version>
     <licence>agpl</licence>
-    <author mail="puthre@gmail.com" >Valentin Zagura</author>
+    <author mail="info@mtier.org" >MTier Ltd.</author>
     <namespace>TimeTracker</namespace>
     <category>tools</category>
-    <bugs>http://example.com</bugs>
+    <bugs>https://mtier.org</bugs>
     <dependencies>
         <nextcloud min-version="14" max-version="15"/>
     </dependencies>
