@@ -306,7 +306,7 @@ class AjaxController extends Controller {
 		}
 		if (trim($name) != ''){
 			$old = $this->clientMapper->findByName($name);
-			if ($old == null){
+			if ($old == null || $old->id == $id){
 				$c->setName($name);
 				$this->clientMapper->update($c);
 			} else {
@@ -396,7 +396,7 @@ class AjaxController extends Controller {
 			$name = $this->request->name;
 			if (trim($name) != ''){
 				$old = $this->projectMapper->findByName($name);
-				if ($old != null){
+				if ($old != null && $old->id != $id){
 					return new JSONResponse(["Error" => "A project with this name already exists"]);
 				}
 				$p->setName($name);
@@ -542,7 +542,7 @@ class AjaxController extends Controller {
 			return;
 		}
 		$old = $this->tagMapper->findByNameUser($name, $this->userId);
-		if ($old != null){
+		if ($old != null && $old->id != $id){
 			return new JSONResponse(["Error" => "This tag name already exists"]);
 		}
 		$c->setName($name);
