@@ -6,8 +6,9 @@
     $( function() {
 
         function isAdmin(){
-          return OC.currentUser == 'admin';
+          return oc_isadmin;
         }
+
         $(document).ready(function() {
             $("#dialog-confirm").dialog({
               autoOpen: false,
