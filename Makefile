@@ -56,13 +56,13 @@ all: build
 .PHONY: build
 build:
 ifneq (,$(wildcard $(CURDIR)/composer.json))
-	make composer
+	gmake composer
 endif
 ifneq (,$(wildcard $(CURDIR)/package.json))
-	make npm
+	gmake npm
 endif
 ifneq (,$(wildcard $(CURDIR)/js/package.json))
-	make npm
+	gmake npm
 endif
 
 # Installs and updates the composer dependencies. If composer is not installed
@@ -72,10 +72,10 @@ composer:
 ifeq (, $(composer))
 	@echo "No composer command available, downloading a copy from the web"
 	mkdir -p $(build_tools_directory)
-	curl -sS https://getcomposer.org/installer | php
+	curl -sS https://getcomposer.org/installer | php-7.2
 	mv composer.phar $(build_tools_directory)
-	php $(build_tools_directory)/composer.phar install --prefer-dist
-	php $(build_tools_directory)/composer.phar update --prefer-dist
+	php-7.2 $(build_tools_directory)/composer.phar install --prefer-dist
+	php-7.2 $(build_tools_directory)/composer.phar update --prefer-dist
 else
 	composer install --prefer-dist
 	composer update --prefer-dist
@@ -107,15 +107,15 @@ distclean: clean
 # Builds the source and appstore package
 .PHONY: dist
 dist:
-	make source
-	make appstore
+	gmake source
+	gmake appstore
 
 # Builds the source package
 .PHONY: source
 source:
 	rm -rf $(source_build_directory)
 	mkdir -p $(source_build_directory)
-	tar cvzf $(source_package_name).tar.gz ../$(app_name) \
+	gtar cvzf $(source_package_name).tar.gz ../$(app_name) \
 	--exclude-vcs \
 	--exclude="../$(app_name)/build" \
 	--exclude="../$(app_name)/js/node_modules" \
@@ -130,7 +130,7 @@ appstore:
 	mkdir -p $(appstore_build_directory)
 	echo $(app_name)
 	pwd
-	tar  \
+	gtar  \
 	--exclude-vcs \
 	--exclude="$(app_name)/build" \
 	--exclude="$(app_name)/tests" \
