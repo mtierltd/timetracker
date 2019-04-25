@@ -175,21 +175,24 @@ html[xmlns] .clearfix { display: block;}
 	/* display:block; */
 	background-color: rgb(250, 251, 252);
 	display: inline-block;
-    margin: 40px;
+	margin: 40px;
+	padding: 20px;
 }
 .client-button{
 	width: min-content;
 }
 .clients-list{
     display: flex;
-    margin: 40px;
+	margin: 40px;
+	flex-wrap: wrap;
 }
 #timetracker-projects{
 	width: 100%;
 	/* display:block; */
 	background-color: rgb(250, 251, 252);
 	display: inline-block;
-    margin: 40px;
+	margin: 40px;
+	padding: 20px;
 }
 
 .project-button{
@@ -240,7 +243,8 @@ td.ε_row {
     /* display: block; */
     background-color: rgb(250, 251, 252);
     display: inline-block;
-    margin: 40px;
+	margin: 40px;
+	padding: 20px;
 }
 .tag-button {
 	display:flex;
@@ -259,7 +263,8 @@ td.ε_row {
 }
 .tags-list{
     display: flex;
-    margin: 40px;
+	margin: 40px;
+	flex-wrap: wrap;
 }
 .set-project{
 	line-height: 32px;
@@ -320,7 +325,8 @@ td.ε_row {
     /* display: block; */
     background-color: rgb(250, 251, 252);
     display: inline-block;
-    margin: 40px;
+	margin: 40px;
+	padding: 20px;
 }
 #dashboard{
 	max-width: 600px;
