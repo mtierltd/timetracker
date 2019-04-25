@@ -189,9 +189,11 @@
               });
               $("#download-csv").click(function(){
                 table.download("csv", "data.csv");
+                return false;
             });
             $("#download-json").click(function(){
               table.download("json", "data.json");
+              return false;
             });
           }
       });

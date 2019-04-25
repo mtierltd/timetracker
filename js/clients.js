@@ -12,6 +12,8 @@
             });
           });
         $("#new-client-submit").click(function () {
+            if ($("#new-client-input").val().trim() == '')
+              return false;
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-client/'+$("#new-client-input").val());
             var jqxhr = $.post( baseUrl, function() {
                 getClients();
@@ -26,6 +28,7 @@
                 .fail(function() {
                   alert( "error" );
                 })
+            return false;
         });
         dialogClientEditForm = $( "#dialog-client-edit-form" ).dialog({
             autoOpen: false,
@@ -35,12 +38,14 @@
             buttons: {
               "Edit client": {click:function(){
                   editClient(dialogClientEditForm);
+                  return false;
               },
               text: 'Edit client',
               class: 'primary'
             },
               Cancel: function() {
                 dialogClientEditForm.dialog( "close" );
+                return false;
               }
             },
             close: function() {
@@ -104,7 +109,7 @@
                     form = dialogClientEditForm.find( "form" )
                     form.find("#name").val($(e.target).data("name"));
                     dialogClientEditForm.dialog("open");
-                    
+                    return false;
                     
 
                 })
@@ -129,16 +134,19 @@
                                     .always(function() {
                                     
                                     });
+                            return false;
                           },
                         text: 'Confirm',
                         class: 'primary'
                         },
                           "Cancel" : function() {
                             $(this).dialog("close");
+                            return false;
                           }
                         }
                       });
                     $("#dialog-confirm").dialog("open");
+                  return false;
                 })
               });
         }

@@ -47,6 +47,8 @@
             if (selectedClient !== null){
               clientId = selectedClient.id;
             }
+            if ($("#new-project-input").val().trim() == '')
+              return false;
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-project/'+$("#new-project-input").val());
             var jqxhr = $.post( baseUrl, {clientId:clientId} ,function() {
                 getProjects();
@@ -61,6 +63,7 @@
                 .fail(function() {
                   alert( "error" );
                 });
+          return false;
         });
         dialogProjectEditForm = $( "#dialog-project-edit-form" ).dialog({
             autoOpen: false,
@@ -77,6 +80,7 @@
                    } else {
                     $("#locked-options").addClass('hidden');
                    }
+                  
                 });
               }
 
@@ -335,7 +339,7 @@
               rowClick:function(e, row){
                 
                 if (!isAdmin() && row.getData().locked){
-                  return;
+                  return false;
                 }
                 e.preventDefault();
                 dialogProjectEditForm.target = row;
@@ -368,7 +372,7 @@
                   }
                 }
                 dialogProjectEditForm.dialog("open");
-
+                return false;
               },
               ajaxResponse:function(url, params, response){
         

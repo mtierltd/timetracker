@@ -11,6 +11,8 @@
             });
           });
         $("#new-tag-submit").click(function () {
+          if ($("#new-tag-input").val().trim() == '')
+              return false;
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-tag/'+$("#new-tag-input").val());
             var jqxhr = $.post( baseUrl, function() {
 
@@ -26,6 +28,7 @@
                 .fail(function() {
                   alert( "error" );
                 })
+          return false;
         });
         dialogTagEditForm = $( "#dialog-tag-edit-form" ).dialog({
             autoOpen: false,
@@ -35,6 +38,7 @@
             buttons: {
               "Edit tag": {click: function(){
                   editTag(dialogTagEditForm);
+                  return false;
               },
               text: 'Edit tag',
               class:'primary'
@@ -104,7 +108,7 @@
                     dialogTagEditForm.dialog("open");
                     
                     
-
+                    return false;
                 })
                 $('.tag-delete').click(function(e) {
                     $("#dialog-confirm").dialog({
@@ -124,6 +128,7 @@
                                     .fail(function() {
                                     alert( "error" );
                                     })
+                                    return false;
                           },
                           text: 'Confirm',
                           class:'primary'
@@ -134,6 +139,7 @@
                         }
                       });
                     $("#dialog-confirm").dialog("open");
+                    return false;
                 })
               });
         }

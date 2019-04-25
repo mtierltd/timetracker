@@ -187,12 +187,14 @@
                     form = dialogWorkItemEditForm.find( "form" )
                     form.find("#name").val($(e.target).data("name"));
                     dialogWorkItemEditForm.dialog("open");
+                    return false;
 
                 })
                 $('.wi-play').click(function(e) {
                     e.preventDefault();
                     $('#work-input').val($(this).data('work-name'));
                     startTimer();
+                    return false;
                 })
                 $('.wi-trash').click(function(e) {
                     $("#dialog-confirm").dialog({
@@ -216,6 +218,7 @@
                         }
                       });
                     $("#dialog-confirm").dialog("open");
+                    return false;
                 });
 
                 $(".set-project").each(function(){
@@ -404,6 +407,7 @@
             } else {
                 startTimer();
             }
+            return false;
           });
       } );
       
