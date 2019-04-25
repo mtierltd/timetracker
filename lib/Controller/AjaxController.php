@@ -111,6 +111,10 @@ class AjaxController extends Controller {
 	}
 
 	
+	public function isAdminUser(){
+		return \OC_User::isAdminUser(\OC_User::getUser());
+	}
+
 	/**
 	 *
 	 * @NoAdminRequired
@@ -366,7 +370,7 @@ class AjaxController extends Controller {
 			$p->setClientId($clientId);
 			$this->projectMapper->insert($p);
 		} else {
-			if($p->locked && $this->userId != 'admin'){
+			if($p->locked && !$this->isAdminUser()){
 				return new JSONResponse(["Error" => "This project is locked"]);
 			}
 		}
@@ -474,7 +478,7 @@ class AjaxController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function getProjectsTable(){
-		if ($this->userId == 'admin'){
+		if ($this->isAdminUser()){
 			$projects = $this->projectMapper->findAllAdmin();
 		} else {
 			$projects = $this->projectMapper->findAll($this->userId);
@@ -519,8 +523,7 @@ class AjaxController extends Controller {
 			$c->setUserUid($this->userId);
 			$c->setCreatedAt(time());
 			$this->tagMapper->insert($c);
-		}
-		if ($c != null){
+		} else 	if ($c != null){
 			return new JSONResponse(["Error" => "This tag name already exists"]);
 		}
 
@@ -612,7 +615,8 @@ class AjaxController extends Controller {
 			$name = $this->userId;
 		}
 
-		if($this->userId != 'admin'){
+		
+		if($this->isAdminUser()){
 			$allowedClients =  $this->clientMapper->findAll($this->userId);
 			$allowedClientsId = array_map(function($client){ return $client->id;}, $allowedClients );
 			if(empty($filterClientId)){
