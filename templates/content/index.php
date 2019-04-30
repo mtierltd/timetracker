@@ -10,7 +10,7 @@
     <input type="text" id="datepicker-to"> -->
     <div id="timer"></div>
     <button id="start-tracking" class="ui-button ui-widget ui-corner-all ui-button-icon-only" title="Start">
-        <span class="ui-icon play-button"></span>
+        <span class="my-icon play-button"></span>
     </button>
     </div>
 
