@@ -111,8 +111,12 @@ class AjaxController extends Controller {
 	}
 
 	
-	public function isAdminUser(){
+	public function isThisAdminUser(){
 		return \OC_User::isAdminUser(\OC_User::getUser());
+	}
+
+	public function isUserAdmin($user){
+		return \OC_User::isAdminUser($user);
 	}
 
 	/**
@@ -370,7 +374,7 @@ class AjaxController extends Controller {
 			$p->setClientId($clientId);
 			$this->projectMapper->insert($p);
 		} else {
-			if($p->locked && !$this->isAdminUser()){
+			if($p->locked && !$this->isThisAdminUser()){
 				return new JSONResponse(["Error" => "This project is locked"]);
 			}
 		}
@@ -478,7 +482,7 @@ class AjaxController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function getProjectsTable(){
-		if ($this->isAdminUser()){
+		if ($this->isThisAdminUser()){
 			$projects = $this->projectMapper->findAllAdmin();
 		} else {
 			$projects = $this->projectMapper->findAll($this->userId);
@@ -616,11 +620,12 @@ class AjaxController extends Controller {
 		}
 
 		
-		if($this->isAdminUser()){
+		if(!$this->isThisAdminUser()){
 			$allowedClients =  $this->clientMapper->findAll($this->userId);
 			$allowedClientsId = array_map(function($client){ return $client->id;}, $allowedClients );
 			if(empty($filterClientId)){
 				$filterClientId = $allowedClientsId;
+				$filterClientId[] = null; // allow null clientid
 			} else {
 				$filterClientId = array_intersect($filterClientId, $allowedClientsId);
 			}
@@ -628,6 +633,7 @@ class AjaxController extends Controller {
 			$allowedProjectsId = array_map(function($project){ return $project->id;}, $allowedProjects );
 			if(empty($filterProjectId)){
 				$filterProjectId = $allowedProjectsId;
+				$filterProjectId[] = null; // allow null projectId
 			} else {
 				$filterProjectId = array_intersect($filterProjectId, $allowedProjectsId);
 			}
@@ -637,7 +643,7 @@ class AjaxController extends Controller {
 		$filterTagId = [];
 		$groupOn1 = $this->request->group1;
 		$groupOn2 = $this->request->group2;
-		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, 0, 1000);
+		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, 1000);
 		return new JSONResponse(["items" => json_decode(json_encode($items), true), 'total' => count($items)]);
 	}
 

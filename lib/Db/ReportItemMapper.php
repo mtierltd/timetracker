@@ -23,7 +23,8 @@ class ReportItemMapper extends Mapper {
     public $clientId;
     public $client;
 */
-    public function report($user, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $start, $limit ){
+
+    public function report($user, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $admin, $start, $limit ){
         
         $selectFields = ['min(wi.id) as id', 'sum(duration) as totalDuration'];
         if(empty($timegroup)){
@@ -72,33 +73,42 @@ class ReportItemMapper extends Mapper {
         $filters = [];
         $params = [];
         if (!empty($from)){
-            $filters[] = "start > ?";
+            $filters[] = "(start > ?)";
             $params[] = $from;
 
         }
         if (!empty($to)){
-            $filters[] = "start < ?";
+            $filters[] = "(start < ?)";
             $params[] = $to;
 
         }
         if (!empty($filterProjectId)){
             $qm = [];
+            $append = '';
             foreach($filterProjectId as $f){
                 $qm[] = '?';
                 $params[] = $f;
+                
+                if($f == null) {
+                    $append = ' or wi.project_id is null ';
+                }
             }
-            $filters[] = 'wi.project_id in ('.implode(",",$qm).')';
+            $filters[] = '(wi.project_id in ('.implode(",",$qm).')'.$append.')';
         }
         if (!empty($filterClientId)){
             $qm = [];
+            $append = '';
             foreach($filterClientId as $f){
                 $qm[] = '?';
                 $params[] = $f;
+                if ($f == null) {
+                    $append = ' or p.client_id is null ';
+                }
             }
-            $filters[] = 'p.client_id in ('.implode(",",$qm).')';
+            $filters[] = '(p.client_id in ('.implode(",",$qm).')'.$append.')';
         }
-        if ( (!empty($user)) && ($user !='admin') ){
-            $filters[] = "user_uid = ?";
+        if ( (!empty($user)) && (!$admin) ){
+            $filters[] = "(user_uid = ?)";
             $params[] = $user;
 
         }
