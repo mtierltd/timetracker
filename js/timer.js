@@ -168,7 +168,7 @@
 
                     $(this).on('apply.daterangepicker', function(ev, picker) {
                         var id = $(this).data('myid');
-                        var jqxhr = $.post( "ajax/update-work-interval/"+id,{start:picker.startDate.format('DD/MM/YY HH:mm'), end:picker.endDate.format('DD/MM/YY HH:mm'), }, function() {
+                        var jqxhr = $.post( "ajax/update-work-interval/"+id,{start:picker.startDate.format('DD/MM/YY HH:mm'), end:picker.endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset()}, function() {
                         })
                          .done(function() {
                              getWorkItems();

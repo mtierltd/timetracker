@@ -205,6 +205,7 @@ class AjaxController extends Controller {
 	 */
 
 	public function updateWorkInterval($id) {
+		
 		$wi = $this->workIntervalMapper->find($id);
 		
 		if (isset($this->request->name)) {
@@ -258,9 +259,17 @@ class AjaxController extends Controller {
 			}
 		 }
 		 if (isset($this->request->start)) {
+			$tzoffset = 0;
+			if (isset($this->request->tzoffset)) {
+				$tzoffset = $this->request->tzoffset;
+			}
+
+			 date_default_timezone_set('UTC');
 			 $dt = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->start);
-			 $wi->setStart($dt->getTimestamp());
+			 $dt->setTimeZone(new \DateTimeZone('UTC'));
+			 $wi->setStart($dt->getTimestamp()+$tzoffset*60);
 			 $de = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->end);
+			 $de->setTimeZone(new \DateTimeZone('UTC'));
 			 $wi->setDuration($de->getTimestamp() - $dt->getTimestamp());
 		 }
 
