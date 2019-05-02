@@ -350,6 +350,8 @@
                             .always(function() {
                             });
                     });
+              }).fail(function() {
+                alert( "error getting work items" );
               });
         }
 
