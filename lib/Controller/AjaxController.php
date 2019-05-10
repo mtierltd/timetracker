@@ -423,17 +423,17 @@ class AjaxController extends Controller {
 			$clientId = $this->request->clientId;
 			$p->setClientId($clientId);
 		}
-		if (isset($this->request->locked)){
+		if (isset($this->request->locked) && $this->isThisAdminUser()){
 			$locked = $this->request->locked;
 			$p->setLocked($locked);
 		}
 
-		if (isset($this->request->allowedTags)){
+		if (isset($this->request->allowedTags) && $this->isThisAdminUser()){
 			$allowedTags = $this->request->allowedTags;
 			$a = explode(',',$allowedTags);
 			$this->tagMapper->allowedTags($id, $a);
 		}
-		if (isset($this->request->allowedUsers)){
+		if (isset($this->request->allowedUsers) && $this->isThisAdminUser()){
 			$allowedUsers = $this->request->allowedUsers;
 			$a = explode(',',$allowedUsers);
 			$this->userToProjectMapper->deleteAllForProject($id);
