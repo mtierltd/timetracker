@@ -10,6 +10,7 @@
               modal: true
             });
           });
+          
         $("#new-tag-submit").click(function () {
           if ($("#new-tag-input").val().trim() == '')
               return false;
@@ -61,7 +62,7 @@
         function editTag(dialogTagEditForm){
             target = dialogTagEditForm.target;
             form =  dialogTagEditForm.find( "form" );
-            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/edit-tag/'+target.id);
+            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/edit-tag/'+target);
             var jqxhr = $.post( baseUrl, {name:form.find("#name").val()},function() {
                 getTags();
                 $(dialogTagEditForm).dialog("close");
@@ -78,72 +79,71 @@
 
         }
         function getTags(){
-            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/tags');
-            $.getJSON( baseUrl, function( data ) {
-                
-                var tags = [];
-                $.each( data.Tags, function( id, tagMap ) {
-                   
-                  tags.push( "<div class='tag-button'>" +
-                                        "<div class='tag-name' id='tag-name-"+tagMap['id']+"'>" + 
-                                        tagMap['name'] +
-                                        "</div>"+
-                                        "<div class='controls'>"+
-                                            "<span class='fas fa-edit clickable tag-edit' id='"+tagMap['id']+"' data-name='"+tagMap['name']+"'></span>"+
-                                            "<span class='fas fa-times clickable tag-delete' id='"+tagMap['id']+"'></span>"+
-                                        "</div>" + 
-                                    "</div>" );
-                  });
+          var baseUrl = OC.generateUrl('/apps/timetracker/ajax/tags');
 
-                $("#tags").html($( "<div/>", {
-                      "class": "tags-list",
-                      html: tags.join( "" )
-                    }))
-                $('.tag-edit').click(function(e) {
-                    e.preventDefault();
-                    dialogTagEditForm.target = e.target;
-                    
-                    form = dialogTagEditForm.find( "form" )
-                    form.find("#name").val($(e.target).data("name"));
-                    dialogTagEditForm.dialog("open");
-                    
-                    
-                    return false;
-                })
-                $('.tag-delete').click(function(e) {
-                    $("#dialog-confirm").dialog({
-                        buttons : {
-                          "Confirm" : {click: function() {
-                            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/delete-tag/'+e.target.id);
-                                var jqxhr = $.post( baseUrl, function() {
-                                    getTags();
-                                    $("#dialog-confirm").dialog("close");
-                                })
-                                    .done(function(data, status, jqXHR) {
-                                      var response = data;
-                                      if ('Error' in response){
-                                        alert(response.Error);
-                                      }
-                                    })
-                                    .fail(function() {
-                                    alert( "error" );
-                                    })
-                                    return false;
-                          },
-                          text: 'Confirm',
-                          class:'primary'
-                        },
-                          "Cancel" : function() {
-                            $(this).dialog("close");
-                          }
-                        }
-                      });
-                    $("#dialog-confirm").dialog("open");
-                    return false;
-                })
+          var editIcon = function(cell, formatterParams){ //plain text value
+            return "<i class='fa fa-edit'></i>";
+        };
+        
+        
+          var columns = [
+            {title:"#", field:"", formatter:"rownum", width: 40, align: "center"},
+            {title:"Name", field:"name", widthGrow:1}, //column will be allocated 1/5 of the remaining space
+            {formatter:"buttonCross", width:40, align:"center", cellClick:function(e, cell){
+               $("#dialog-confirm").dialog({
+                buttons : {
+                  "Confirm" : {click: function() {
+                    var baseUrl = OC.generateUrl('/apps/timetracker/ajax/delete-tag/'+cell.getRow().getData().id);
+                        var jqxhr = $.post( baseUrl, function() {
+                            getTags();
+                            $("#dialog-confirm").dialog("close");
+                        })
+                            .done(function(data, status, jqXHR) {
+                              var response = data;
+                              if ('Error' in response){
+                                alert(response.Error);
+                              }
+                            })
+                            .fail(function() {
+                            alert( "error" );
+                            })
+                            return false;
+                  },
+                  text: 'Confirm',
+                  class:'primary'
+                },
+                  "Cancel" : function() {
+                    $(this).dialog("close");
+                  }
+                }
               });
+              $("#dialog-confirm").dialog('open');
+
+              //cell.getRow().delete();
+          }},
+          {formatter:editIcon, width:40, align:"center", cellClick:function(e, cell){
+
+            dialogTagEditForm.target = cell.getRow().getData().id;
+            
+            form = dialogTagEditForm.find( "form" )
+            form.find("#name").val(cell.getRow().getData().name);
+            dialogTagEditForm.dialog("open");
+
+       }},
+          ];
+
+          var table = new Tabulator("#tags", {
+            ajaxURL:baseUrl,
+            layout:"fitColumns",
+            columns:columns,
+            rowClick:function(e, row){
+              return false;
+            },
+            ajaxResponse:function(url, params, response){
+      
+              return response.Tags; //return the tableData property of a response json object
+          },
+          });
         }
-
-
       } );
 }());

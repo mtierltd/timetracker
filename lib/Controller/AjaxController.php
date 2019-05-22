@@ -353,6 +353,7 @@ class AjaxController extends Controller {
 	/**
 	 *
 	 * @NoAdminRequired
+	 * @NoCSRFRequired
 	 */
 	public function getClients(){
 		$clients = $this->clientMapper->findAll($this->userId);
@@ -583,6 +584,7 @@ class AjaxController extends Controller {
 	/**
 	 *
 	 * @NoAdminRequired
+	 * @NoCSRFRequired
 	 */
 	public function getTags(){
 		$workItem = $this->request->workItem;

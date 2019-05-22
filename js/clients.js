@@ -62,7 +62,7 @@
         function editClient(dialogClientEditForm){
             target = dialogClientEditForm.target;
             form =  dialogClientEditForm.find( "form" );
-            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/edit-client/'+target.id);
+            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/edit-client/'+target);
             var jqxhr = $.post( baseUrl, {name:form.find("#name").val()},function() {
                 getClients();
                 $(dialogClientEditForm).dialog("close");
@@ -81,76 +81,73 @@
                 });
 
         }
+
         function getClients(){
-            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/clients');
-            $.getJSON( baseUrl, function( data ) {
-                
-                var clients = [];
-                $.each( data.Clients, function( id, clientMap ) {
-                   
-                    clients.push( "<div class='client-button'>" +
-                                        "<div class='client-name' id='client-name-"+clientMap['id']+"'>" + 
-                                            clientMap['name'] +
-                                        "</div>"+
-                                        "<div class='controls'>"+
-                                            "<span class='fas fa-edit clickable client-edit' id='"+clientMap['id']+"' data-name='"+clientMap['name']+"'></span>"+
-                                            "<span class='fas fa-times clickable client-delete' id='"+clientMap['id']+"'></span>"+
-                                        "</div>" + 
-                                    "</div>" );
-                  });
-                $("#clients").html($( "<div/>", {
-                      "class": "clients-list",
-                      html: clients.join( "" )
-                    }))
-                $('.client-edit').click(function(e) {
-                    e.preventDefault();
-                    dialogClientEditForm.target = e.target;
-                    
-                    form = dialogClientEditForm.find( "form" )
-                    form.find("#name").val($(e.target).data("name"));
-                    dialogClientEditForm.dialog("open");
-                    return false;
-                    
+          var baseUrl = OC.generateUrl('/apps/timetracker/ajax/clients');
 
-                })
-                $('.client-delete').click(function(e) {
-                    $("#dialog-confirm").dialog({
-                        buttons : {
-                          "Confirm" : { click:function() {
-                            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/delete-client/'+e.target.id);
-                                var jqxhr = $.post( baseUrl, function() {
-                                    getClients();
-                                    $("#dialog-confirm").dialog("close");
-                                })
-                                    .done(function(data, status, jqXHR) {
-                                      var response = data;
-                                      if ('Error' in response){
-                                        alert(response.Error);
-                                      }
-                                    })
-                                    .fail(function() {
-                                    alert( "error" );
-                                    })
-                                    .always(function() {
-                                    
-                                    });
+          var editIcon = function(cell, formatterParams){ //plain text value
+            return "<i class='fa fa-edit'></i>";
+        };
+        
+        
+          var columns = [
+            {title:"#", field:"", formatter:"rownum", width: 40, align: "center"},
+            {title:"Name", field:"name", widthGrow:1}, //column will be allocated 1/5 of the remaining space
+            {formatter:"buttonCross", width:40, align:"center", cellClick:function(e, cell){
+               $("#dialog-confirm").dialog({
+                buttons : {
+                  "Confirm" : {click: function() {
+                    var baseUrl = OC.generateUrl('/apps/timetracker/ajax/delete-client/'+cell.getRow().getData().id);
+                        var jqxhr = $.post( baseUrl, function() {
+                            getClients();
+                            $("#dialog-confirm").dialog("close");
+                        })
+                            .done(function(data, status, jqXHR) {
+                              var response = data;
+                              if ('Error' in response){
+                                alert(response.Error);
+                              }
+                            })
+                            .fail(function() {
+                            alert( "error" );
+                            })
                             return false;
-                          },
-                        text: 'Confirm',
-                        class: 'primary'
-                        },
-                          "Cancel" : function() {
-                            $(this).dialog("close");
-                            return false;
-                          }
-                        }
-                      });
-                    $("#dialog-confirm").dialog("open");
-                  return false;
-                })
+                  },
+                  text: 'Confirm',
+                  class:'primary'
+                },
+                  "Cancel" : function() {
+                    $(this).dialog("close");
+                  }
+                }
               });
+              $("#dialog-confirm").dialog('open');
+
+              //cell.getRow().delete();
+          }},
+          {formatter:editIcon, width:40, align:"center", cellClick:function(e, cell){
+
+            dialogClientEditForm.target = cell.getRow().getData().id;
+            
+            form = dialogClientEditForm.find( "form" )
+            form.find("#name").val(cell.getRow().getData().name);
+            dialogClientEditForm.dialog("open");
+
+       }},
+          ];
+
+          var table = new Tabulator("#clients", {
+            ajaxURL:baseUrl,
+            layout:"fitColumns",
+            columns:columns,
+            rowClick:function(e, row){
+              return false;
+            },
+            ajaxResponse:function(url, params, response){
+      
+              return response.Clients; //return the tableData property of a response json object
+          },
+          });
         }
-
-
       } );
 }());
