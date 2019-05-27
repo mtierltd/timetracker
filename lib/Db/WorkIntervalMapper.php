@@ -57,7 +57,7 @@ class WorkIntervalMapper extends Mapper {
     }
 
     public function findLatestDays($user, $limitDays = 10, $startDay = 0, $limit = 100, $offset = 0){
-        $sql = 'SELECT * FROM `oc_timetracker_work_interval` where user_uid = ? and 
+        $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and 
                 start > unix_timestamp(curdate() + interval 1 day - interval ? day) and 
                 start < unix_timestamp(curdate() + interval 1 day - interval ? day) 
                 order by id desc';

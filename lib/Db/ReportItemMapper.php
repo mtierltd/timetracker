@@ -67,9 +67,9 @@ class ReportItemMapper extends Mapper {
         }
 
         $selectItems = implode(", ",$selectFields).
-                ' FROM `oc_timetracker_work_interval` wi 
-                    left join `oc_timetracker_project` p on wi.project_id = p.id 
-                    left join `oc_timetracker_client` c on p.client_id = c.id';
+                ' FROM `*PREFIX*timetracker_work_interval` wi 
+                    left join `*PREFIX*timetracker_project` p on wi.project_id = p.id 
+                    left join `*PREFIX*timetracker_client` c on p.client_id = c.id';
         $filters = [];
         $params = [];
         if (!empty($from)){
