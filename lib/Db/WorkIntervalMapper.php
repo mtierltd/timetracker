@@ -64,12 +64,12 @@ class WorkIntervalMapper extends Mapper {
         return $this->findEntities($sql, [$user,$limitDays,$startDay],$limit, $offset);
     }
 
-    public function findAllRunning($user){
+    public function findAllRunning($user, $limit = 100, $offset = 0){
         $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and running = 1 order by id desc';
         return $this->findEntities($sql, [$user],$limit, $offset);
     }
 
-    public function stopAllRunning($user){
+    public function stopAllRunning($user, $limit = 100, $offset = 0){
         $sql = 'update wi FROM `*PREFIX*timetracker_work_interval` wi set wi.running = 0 where user_uid = ? and running = 1';
         return $this->findEntities($sql, [$user],$limit, $offset);
     }
