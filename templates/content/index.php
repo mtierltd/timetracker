@@ -15,6 +15,7 @@
     </div>
 
 </div>
+<div class="ui-button ui-widget ui-corner-all" id="manual-entry-button">Manual entry</div>
 <div id="dialog-confirm" title="Confirmation Required" class='hidden'>
   Are you sure you want to delete this work item?
 </div>
@@ -31,6 +32,23 @@
     </fieldset>
   </form>
 </div>
+
+<div id="dialog-manual-entry" title="Edit work item" class='hidden'>
+  <p class="validateTips">All form fields are required.</p>
+ 
+  <form id='form-manual-entry'>
+    <fieldset>
+      <label for="name">Name</label>
+      <input type="text" name="name" id="name-manual-entry" value="" class="text ui-widget-content ui-corner-all">
+      <!-- <div id='hours-manual-entry'>&nbsp;</div> -->
+      <label for="hours">Interval</label>
+      <input type="text" name="hours" id="hours-manual-entry" value="" class="text ui-widget-content ui-corner-all">
+      <!-- Allow form submission with keyboard without duplicating the dialog button -->
+      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+  </form>
+</div>
+
 <div class="clearfix"> </div>
 <div class="clearfix"> </div>
 <div id="work-intervals">

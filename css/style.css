@@ -383,3 +383,12 @@ td.ε_row {
 #clients {
     margin-top: 30px;
 }
+#manual-entry-button {
+	float:right;
+}
+
+
+#form-manual-entry label {display: block;}
+#hours-manual-entry{
+	width: 240px;
+}

@@ -24,6 +24,7 @@ return [
        ['name' => 'ajax#index', 'url' => '/ajax/', 'verb' => 'GET'],
        ['name' => 'ajax#work_intervals', 'url' => '/ajax/work-intervals', 'verb' => 'GET'],
        ['name' => 'ajax#update_work_interval', 'url' => '/ajax/update-work-interval/{id}', 'verb' => 'POST'],
+       ['name' => 'ajax#add_work_interval', 'url' => '/ajax/add-work-interval/{name}', 'verb' => 'POST'],
        ['name' => 'ajax#delete_work_interval', 'url' => '/ajax/delete-work-interval/{id}', 'verb' => 'POST'],
 
        ['name' => 'ajax#get_clients', 'url' => '/ajax/clients', 'verb' => 'GET'],

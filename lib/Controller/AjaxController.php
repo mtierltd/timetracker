@@ -65,7 +65,7 @@ class AjaxController extends Controller {
 	 */
 	public function workIntervals() {
 		$i = 0;
-		$tryIntervals=[7,14,31,365,365*5];
+		$tryIntervals=[90,180,365,365*5];
 		do {
 			$l = $this->workIntervalMapper->findLatestDays($this->userId,$tryIntervals[$i],0);
 			$i++;
@@ -278,6 +278,87 @@ class AjaxController extends Controller {
 		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
 	}
 
+
+	/**
+	 *
+	 * @NoAdminRequired
+	 */
+
+	public function addWorkInterval() {
+		
+		$wi = new WorkInterval();
+		$wi->setUserUid($this->userId);
+		$wi->setRunning(0);
+		
+		if (isset($this->request->name)) {
+			$wi->setName($this->request->name);
+		}
+		if (isset($this->request->projectId)) {
+			$wi->setProjectId($this->request->projectId);
+			if ($wi->projectId != null){
+				$project = $this->projectMapper->find($wi->projectId);
+				$locked = $project->locked;
+				if($locked){
+					$allowedTags = $this->tagMapper->findAllAlowedForProject($project->id);
+					$allowedTagsIds = array_map(function($tag) { return $tag->id;}, $allowedTags);
+					$currentTags = $this->workIntervalToTagMapper->findAllForWorkInterval($id);
+					$currentTagsIds = array_map(function($witag) { return $witag->tagId;}, $currentTags);
+					$newTags = array_intersect($allowedTagsIds,$currentTagsIds);
+
+					$this->workIntervalToTagMapper->deleteAllForWorkInterval($id);
+					foreach($newTags as $tag){
+						if (empty($tag))
+							continue;
+						$newWiToTag = new WorkIntervalToTag();
+						$newWiToTag->setWorkIntervalId($id);
+						$newWiToTag->setTagId($tag);
+						$newWiToTag->setCreatedAt(time());
+						$this->workIntervalToTagMapper->insert($newWiToTag);
+		
+					}
+		
+				}
+
+			}
+		}
+		 if (isset($this->request->tagId)) {
+			$tags = \explode(",", $this->request->tagId);
+			$this->workIntervalToTagMapper->deleteAllForWorkInterval($id);
+			$project = null;
+			$locked = 0;
+			
+
+			foreach($tags as $tag){
+				if (empty($tag))
+					continue;
+				$newWiToTag = new WorkIntervalToTag();
+				$newWiToTag->setWorkIntervalId($id);
+				$newWiToTag->setTagId($tag);
+				$newWiToTag->setCreatedAt(time());
+				//var_dump($newWiToTag);
+				$this->workIntervalToTagMapper->insert($newWiToTag);
+
+			}
+		 }
+		 if (isset($this->request->start)) {
+			$tzoffset = 0;
+			if (isset($this->request->tzoffset)) {
+				$tzoffset = $this->request->tzoffset;
+			}
+
+			 date_default_timezone_set('UTC');
+			 $dt = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->start);
+			 $dt->setTimeZone(new \DateTimeZone('UTC'));
+			 $wi->setStart($dt->getTimestamp()+$tzoffset*60);
+			 $de = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->end);
+			 $de->setTimeZone(new \DateTimeZone('UTC'));
+			 $wi->setDuration($de->getTimestamp() - $dt->getTimestamp());
+		 }
+
+		$this->workIntervalMapper->insert($wi);
+		
+		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
+	}
 
 
 	/**

@@ -24,6 +24,63 @@
               form[ 0 ].reset();
             }
           });
+          var picker = $("#hours-manual-entry").daterangepicker({
+            timePicker: true,
+            //startDate:tsToDate($(this).data('start-date')),
+            //endDate:tsToDate($(this).data('end-date')),
+            timePicker24Hour: true,
+            locale: {
+                format: 'DD/MM/YY hh:mm:ss'
+              }
+        });
+        function validateManualEntryFields(){
+            if($('#name-manual-entry').val() == ''){
+                $("#confirm-button").button("option", "disabled", true);
+            } else {
+                $("#confirm-button").button("option", "disabled", false);
+            }
+        }
+        $('#name-manual-entry').on('input',function() {
+
+            validateManualEntryFields();
+        });
+        
+        $("#dialog-manual-entry").dialog({
+            autoOpen: false,
+            buttons : 
+              [ {
+                  id: 'confirm-button',
+                text: "Confirm",
+                click: function() {
+                    var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-work-interval/'+$('#name-manual-entry').val());
+
+                    var jqxhr = $.post( baseUrl,{start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'), end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset()} ,function() {
+                        getWorkItems();
+                        $("#dialog-manual-entry").dialog("close");
+                    })
+                    .done(function() {
+                    
+                    })
+                    .fail(function() {
+                        alert( "error" );
+                    })
+                },
+                },
+              {
+                id: 'cancel-button',
+              text: "Cancel",
+              click: function() {
+                $(this).dialog("close");
+                },
+              },]
+          });
+
+          $('#manual-entry-button').click(function(e) {
+            $("#dialog-manual-entry").dialog("open");
+            return false;
+        });
+        validateManualEntryFields();
+
           function editWorkIntem(dialogWorkItemEditForm){
             target = dialogWorkItemEditForm.target;
             form =  dialogWorkItemEditForm.find( "form" );
