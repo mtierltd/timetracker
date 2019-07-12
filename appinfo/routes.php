@@ -17,6 +17,9 @@ return [
        ['name' => 'projects#index', 'url' => '/projects', 'verb' => 'GET'],
        ['name' => 'dashboard#index', 'url' => '/dashboard', 'verb' => 'GET'],
        ['name' => 'reports#index', 'url' => '/reports', 'verb' => 'GET'],
+       ['name' => 'timelines#index', 'url' => '/timelines', 'verb' => 'GET'],
+       ['name' => 'timelinesAdmin#index', 'url' => '/timelines-admin', 'verb' => 'GET'],
+       
        ['name' => 'tags#index', 'url' => '/tags', 'verb' => 'GET'],
 
        ['name' => 'ajax#start_timer', 'url' => '/ajax/start-timer/{name}', 'verb' => 'POST'],
@@ -45,5 +48,10 @@ return [
        ['name' => 'ajax#delete_tag', 'url' => '/ajax/delete-tag/{id}', 'verb' => 'POST'],
 
        ['name' => 'ajax#get_report', 'url' => '/ajax/report', 'verb' => 'GET'],
+       ['name' => 'ajax#post_timeline', 'url' => '/ajax/timeline', 'verb' => 'POST'],
+       ['name' => 'ajax#get_timelines', 'url' => '/ajax/timelines', 'verb' => 'GET'],
+       ['name' => 'ajax#get_timelines_admin', 'url' => '/ajax/timelines-admin', 'verb' => 'GET'],
+       ['name' => 'ajax#download_timeline', 'url' => '/ajax/download-timeline/{id}', 'verb' => 'GET'],
+       ['name' => 'ajax#edit_timeline', 'url' => '/ajax/edit-timeline/{id}', 'verb' => 'POST'],
     ]
 ];

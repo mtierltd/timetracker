@@ -8,10 +8,14 @@ use OCP\AppFramework\Db\Mapper;
 
 class WorkIntervalMapper extends Mapper {
 
+    private $dbengine;
     public function __construct(IDBConnection $db) {
+        $this->dbengine = 'MYSQL';
+        if (strpos(get_class($db->getDatabasePlatform()),'PostgreSQL') !== FALSE){
+            $this->dbengine = 'POSTGRES';
+        }
         parent::__construct($db, 'timetracker_work_interval');
     }
-
 
     public function findByName($name) {
         $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` ' .
@@ -57,11 +61,20 @@ class WorkIntervalMapper extends Mapper {
     }
 
     public function findLatestDays($user, $limitDays = 10, $startDay = 0, $limit = 100, $offset = 0){
+        if ($this->dbengine == 'MYSQL'){
         $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and 
                 start > unix_timestamp(curdate() + interval 1 day - interval ? day) and 
                 start < unix_timestamp(curdate() + interval 1 day - interval ? day) 
                 order by id desc';
-        return $this->findEntities($sql, [$user,$limitDays,$startDay],$limit, $offset);
+                return $this->findEntities($sql, [$user,$limitDays,$startDay],$limit, $offset);
+        } else {
+            $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and 
+            start > extract(epoch from current_date + interval \'1\' day - interval \''.(int)$limitDays.'\' day) and 
+            start < extract(epoch from current_date + interval \'1\' day - interval \''.(int)$startDay.'\' day)
+            order by id desc';
+            return $this->findEntities($sql, [$user],$limit, $offset);
+        }
+        
     }
 
     public function findAllRunning($user, $limit = 100, $offset = 0){

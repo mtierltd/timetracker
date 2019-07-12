@@ -4,6 +4,8 @@ script('timetracker', "moment.min");
 script('timetracker', "daterangepicker.min");
 script('timetracker', "tabulator");
 script('timetracker', "Chart.min");
+script('timetracker', "jspdf.min");
+script('timetracker', "jspdf.plugin.autotable.min");
 //script('timetracker', "select2");
 style('timetracker', "kingtable");
 style('timetracker', "daterangepicker");
@@ -15,6 +17,7 @@ style('timetracker', "tabulator");
 style('timetracker', 'all');
 style('timetracker', 'style');
 script('timetracker', $script);
+
 ?>
 
 <div id="app">

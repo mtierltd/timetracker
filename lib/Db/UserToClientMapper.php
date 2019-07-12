@@ -38,6 +38,7 @@ class UserToClientMapper extends Mapper {
             }
         
     }
+    
     public function findForUserAndClient($uid, $client) {
         $sql = 'SELECT * FROM `*PREFIX*timetracker_user_to_client` ' .
             'WHERE `user_uid` = ? and client_id = ?';
