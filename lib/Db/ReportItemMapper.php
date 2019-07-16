@@ -61,28 +61,46 @@ class ReportItemMapper extends Mapper {
 
         }
         if(($groupOn1 != 'name') && ($groupOn2 != 'name')){
-            $selectFields[] = 'MIN(wi.name) as name';
+            if ($this->dbengine != 'MYSQL') {
+                $selectFields[] = '\'*\' as name';
+            } else {
+                $selectFields[] = 'CASE WHEN CHAR_LENGTH(group_concat(distinct wi.name)) > 40 THEN CONCAT(SUBSTRING(group_concat(distinct wi.name), 1, 40), "...") ELSE group_concat(distinct wi.name) END as name';
+            }
+            //$selectFields[] = 'group_concat(distinct wi.name) as name';
         } else {
             $selectFields[] = 'wi.name as name';
         }
         if(($groupOn1 != 'project') && ($groupOn2 != 'project')){
-            $selectFields[] = 'MIN(wi.project_id) as "projectId"';
-            $selectFields[] = 'MIN(p.name) as project';
+            $selectFields[] = '\'*\' as "projectId"';
+            if ($this->dbengine != 'MYSQL') {
+                $selectFields[] = 'string_agg(distinct p.name, \',\') as project';
+            } else {
+                $selectFields[] = 'group_concat(distinct p.name) as project';
+            }
         } else {
-            $selectFields[] = 'MIN(wi.project_id) as "projectId"';
+            $selectFields[] = '\'*\' as "projectId"';
             $selectFields[] = 'p.name as project';
         }
 
         if(($groupOn1 != 'client') && ($groupOn2 != 'client')){
-            $selectFields[] = 'MIN(c.id) as "clientId"';
-            $selectFields[] = 'MIN(c.name) as client';
+            $selectFields[] = '\'*\' as "clientId"';
+            if ($this->dbengine != 'MYSQL') {
+                $selectFields[] = 'string_agg(distinct c.name, \',\') as client';
+            } else {
+                $selectFields[] = 'group_concat(distinct c.name) as client';
+            }
+
         } else {
-            $selectFields[] = 'MIN(c.id) as "clientId"';
+            $selectFields[] = '\'*\' as "clientId"';
             $selectFields[] = 'c.name as client';
         }
 
         if(($groupOn1 != 'userUid') && ($groupOn2 != 'userUid')){
-            $selectFields[] = 'MIN(user_uid) as "userUid"';
+            if ($this->dbengine != 'MYSQL') {
+                $selectFields[] = 'string_agg(distinct user_uid, \',\') as "userUid"';
+            } else {
+                $selectFields[] = 'group_concat(distinct user_uid) as "userUid"';
+            }
             
         } else {
             $selectFields[] = 'user_uid as "userUid"';
@@ -124,10 +142,10 @@ class ReportItemMapper extends Mapper {
                 $qm[] = '?';
                 $params[] = $f;
                 if ($f == null) {
-                    $append = ' or p.client_id is null ';
+                    $append = ' or c.id is null ';
                 }
             }
-            $filters[] = '(p.client_id in ('.implode(",",$qm).')'.$append.')';
+            $filters[] = '(c.id in ('.implode(",",$qm).')'.$append.')';
         }
         if ( (!empty($user)) && (!$admin) ){
             $filters[] = "(user_uid = ?)";
@@ -177,6 +195,8 @@ class ReportItemMapper extends Mapper {
             $limit = 10000;
         }
         $sql = 'SELECT '.$selectItems.' where '.implode(" and ",$filters).' '.$group. ' order by time desc';
+        //var_dump($sql);
+        //var_dump($params);
         return $this->findEntities($sql, $params, $limit, $start);
     }
 
