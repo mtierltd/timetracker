@@ -34,7 +34,10 @@ class ReportItemMapper extends Mapper {
     public function report($user, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $admin, $start, $limit ){
         
         $selectFields = ['min(wi.id) as id', 'sum(duration) as "totalDuration"'];
+        
+        $pg = 0;
         if ($this->dbengine != 'MYSQL') {
+            $pg = 1;
             if(empty($timegroup)){
                 $selectFields[]= "to_timestamp(min(start))::date as time";
             } elseif ($timegroup == 'week') {
@@ -173,14 +176,22 @@ class ReportItemMapper extends Mapper {
                if ($groupOn1 == 'name'){
                 $groups[] = 'wi.name';
                } else {
-                $groups[] = '"'.$groupOn1.'"';
+                if($pg) { // postgres needs quotes on names
+                    $groups[] = '"'.$groupOn1.'"';
+                } else {
+                    $groups[] = $groupOn1;
+                }
                }
                 if (!empty($groupOn2)){
                     if ($groupOn2 == "project" || $groupOn2 == "client" || $groupOn2 == "name" || $groupOn2 == "userUid"){
                         if ($groupOn2 == 'name'){
                             $groups[] = 'wi.name';
                            } else {
-                            $groups[] = '"'.$groupOn2.'"';
+                            if($pg) {
+                            $groups[] = '"'.$groupOn2.'"';// postgres needs quotes on names
+                            } else {
+                                $groups[] = $groupOn2;
+                            }
                            }
                     }
                 }
@@ -195,8 +206,8 @@ class ReportItemMapper extends Mapper {
             $limit = 10000;
         }
         $sql = 'SELECT '.$selectItems.' where '.implode(" and ",$filters).' '.$group. ' order by time desc';
-        //var_dump($sql);
-        //var_dump($params);
+        // var_dump($sql);
+        // var_dump($params);
         return $this->findEntities($sql, $params, $limit, $start);
     }
 
