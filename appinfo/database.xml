@@ -70,6 +70,13 @@
       <length>4</length>
     </field>
     <field>
+      <name>archived</name>
+      <type>integer</type>
+      <notnull>false</notnull>
+      <default>0</default>
+      <length>4</length>
+    </field>
+    <field>
       <name>created_at</name>
       <type>integer</type>
       <notnull>true</notnull>

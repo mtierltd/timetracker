@@ -12,6 +12,7 @@ class Project extends Entity {
     public $createdByUserUid;
     public $createdAt;
     public $locked;
+    public $archived;
 
 
     public function __construct() {
@@ -23,5 +24,6 @@ class Project extends Entity {
         $this->addType('createdByUserUid', 'string');
         $this->addType('createdAt', 'integer');
         $this->addType('locked', 'integer');
+        $this->addType('archived', 'integer');
     }
 }

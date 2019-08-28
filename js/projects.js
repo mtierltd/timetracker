@@ -40,6 +40,9 @@
             
             getProjects();
           });
+          $('#show-archived-projects').change(function (e){
+            getProjects();
+          });
         $("#new-project-submit").click(function (e) {
             e.preventDefault();
             var selectedClient = $('#client-select').select2('data');
@@ -257,7 +260,7 @@
             target = dialogProjectEditForm.target;
             form =  dialogProjectEditForm.find( "form" );
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/edit-project/'+target.getData().id);
-            var jqxhr = $.post( baseUrl, {name:form.find("#name").val(), clientId:form.find("#client-select-popup").val(), locked:form.find("#locked").is(':checked')?'1':'0',  allowedTags:form.find("#locked-select-tags").val(), allowedUsers:form.find("#locked-select-users").val() },function() {
+            var jqxhr = $.post( baseUrl, {name:form.find("#name").val(), clientId:form.find("#client-select-popup").val(), locked:form.find("#locked").is(':checked')?'1':'0',archived:form.find("#archived").is(':checked')?'1':'0',  allowedTags:form.find("#locked-select-tags").val(), allowedUsers:form.find("#locked-select-users").val() },function() {
                 getProjects();
                 $(dialogProjectEditForm).dialog("close");
               })
@@ -331,9 +334,12 @@
           if (isAdmin()){
             columns = columns.concat(adminColumns);
           }
+          if ($("#show-archived-projects").is(':checked')){
+            columns = columns.concat([{title:"Archived", field:"archived", widthGrow:1, formatter:"tickCross"}]);
+          }
 
             var table = new Tabulator("#projects", {
-              ajaxURL:baseUrl,
+              ajaxURL:baseUrl+"?archived="+($("#show-archived-projects").is(':checked')?'1':'0'),
               layout:"fitColumns",
               columns:columns,
               rowClick:function(e, row){
@@ -359,6 +365,7 @@
                 // }];
 
                 form.find("#client-select-popup").select2("val",JSON.stringify(clientSelectData));
+                form.find("#archived").prop('checked', row.getData().archived);
                 if (isAdmin()){
                   var tags = row.getData().origAllowedTags.map(function(e){ return e.id;});
                   var users = row.getData().allowedUsers;

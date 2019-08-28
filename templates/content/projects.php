@@ -8,6 +8,17 @@
             <input type="submit" value="Add project" id="new-project-submit" class='ui-button primary'>
         </form>
 </div>
+<div id="project-filter-container" class='left'>
+        
+        <div class="checkbox">
+          <label>
+            <input id='show-archived-projects' type="checkbox" value="">
+            Show archived projects
+          </label>
+        </div>
+        
+</div>
+
 <div id="dialog-confirm" title="Confirmation Required" class='hidden'>
   Are you sure you want to delete this project?
 </div>
@@ -23,6 +34,10 @@
       <div class='hidden admin-only' id='locked-div'>
         <label for="locked">Locked</label>
         <input type="checkbox" name="locked" id="locked" value="" class="text ui-widget-content ui-corner-all">
+      </div>
+      <div class='' id='archived-div'>
+        <label for="archived">Archived</label>
+        <input type="checkbox" name="archived" id="archived" value="" class="text ui-widget-content ui-corner-all">
       </div>
       <div class='hidden' id='locked-options'>
       <label for="locked-select-tags">Allowed Tags</label>
@@ -40,6 +55,7 @@
   </form>
 </div>
 <div class="clearfix"> </div>
+
 <div id="projects">
 </div>
 </div>

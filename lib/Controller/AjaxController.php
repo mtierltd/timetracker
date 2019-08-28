@@ -540,6 +540,15 @@ class AjaxController extends Controller {
 				$this->userToProjectMapper->insert($up);
 			}
 		}
+		if (isset($this->request->archived) && $p->getArchived() != $this->request->archived){
+			if (($this->isThisAdminUser() || $p->createdByUserUid == $this->userId) ){
+				
+				$archived = $this->request->archived;
+				$p->setArchived($archived);
+			} else {
+				return new JSONResponse(["Error" => "You cannot archive/unarchive projects created by somebody else"]);
+			}
+		}
 
 		$this->projectMapper->update($p);
 		
@@ -561,7 +570,8 @@ class AjaxController extends Controller {
 		}
 		return $this->getProjects();
 	}
-	
+
+		
 	/**
 	 *
 	 * @NoAdminRequired
@@ -583,10 +593,15 @@ class AjaxController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function getProjectsTable(){
+		$getArchived = 0;
+		if (isset($this->request->archived)){
+			$getArchived = $this->request->archived;
+		}
+
 		if ($this->isThisAdminUser()){
-			$projects = $this->projectMapper->findAllAdmin();
+			$projects = $this->projectMapper->findAllAdmin($getArchived);
 		} else {
-			$projects = $this->projectMapper->findAll($this->userId);
+			$projects = $this->projectMapper->findAll($this->userId,$getArchived);
 		}
 		$outProjects = [];
 		foreach($projects as $p){
@@ -594,6 +609,7 @@ class AjaxController extends Controller {
 			$out['id'] = $p->id;
 			$out['name'] = $p->name;
 			$out['locked'] = $p->locked;
+			$out['archived'] = $p->archived;
 			$out['client'] = null;
 			$tags = $this->tagMapper->findAllAlowedForProject($p->id);
 			$users = array_map(function ($utop) { return $utop->userUid;},$this->userToProjectMapper->findAllForProject($p->id));
