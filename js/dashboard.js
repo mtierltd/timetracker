@@ -31,7 +31,7 @@
                           // extract clients in clientMap
                           var totalMinutes = 0;
                           for (var x = 0; x < d.items.length; x++){
-                            cid = d.items[x].clientId;
+                            cid = d.items[x].client;
                             if (cid == null){
                               cid = -1;
                             }
@@ -74,7 +74,7 @@
                             
                             for (var x = 0; x < d.items.length; x++){
                               
-                              if (d.items[x].clientId === key || (d.items[x].clientId == null && key == -1)){
+                              if (d.items[x].client === key || (d.items[x].client == null && key == -1)){
                                 chartData.datasets[0].data[nindex] = 0;
                                 chartData.datasets[1].data[nindex] = d.items[x].totalDuration/60.0;
                                
