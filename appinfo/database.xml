@@ -194,7 +194,7 @@
       <name>name</name>
       <type>text</type>
       <notnull>true</notnull>
-      <length>64</length>
+      <length>256</length>
     </field>
     <field>
       <name>project_id</name>

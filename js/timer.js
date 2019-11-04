@@ -49,7 +49,7 @@
             autoOpen: false,
             buttons : 
               [ {
-                  id: 'confirm-button',
+                id: 'confirm-button',
                 text: "Confirm",
                 click: function() {
                     var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-work-interval/'+$('#name-manual-entry').val());
@@ -58,9 +58,12 @@
                         getWorkItems();
                         $("#dialog-manual-entry").dialog("close");
                     })
-                    .done(function() {
-                    
-                    })
+                    .done(function(data, status, jqXHR) {
+                        var response = data;
+                        if ('Error' in response){
+                          alert(response.Error);
+                        }
+                      })
                     .fail(function() {
                         alert( "error" );
                     })
@@ -90,9 +93,12 @@
                 getWorkItems();
                 $(dialogWorkItemEditForm).dialog("close");
               })
-                .done(function() {
-                  
-                })
+              .done(function(data, status, jqXHR) {
+                var response = data;
+                if ('Error' in response){
+                  alert(response.Error);
+                }
+              })
                 .fail(function() {
                   alert( "error" );
                 })
@@ -101,7 +107,12 @@
                 });
 
         }
-       
+        function cutString(s, n){
+            if (s.length < n) {
+                return s;
+            }
+            return s.substring(0, n - 4) + ' ...';
+        }
         function secondsToTimer(s){
             function pad(num, size) {
                 var s = num+"";
@@ -184,7 +195,7 @@
                         
                         $.each(workItem.children, function (ckey, child){
                             //debugger;
-                            children.push("<div class='wi-child'><li><div class='wi-child-element'><div class='wi-child-name clickable'  data-myid="+child.id+" data-name='"+child.name+"'>"+child.name+"</div>"+
+                            children.push("<div class='wi-child'><li><div class='wi-child-element'><div class='wi-child-name clickable'  data-myid="+child.id+" data-name='"+child.name+"'>"+cutString(child.name,64)+"</div>"+
                             "<span class='fas clickable fa-trash wi-trash' id="+child.id+"></span><span class='set-project' data-myid="+child.id+" data-projectid="+child.projectId+" data-projectname='"+child.projectName+"'></span>"+
                             "<span class='set-tag' data-myid="+child.id+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' data-tagnames='"+child.tags.map(function(tag) {return tag.name}).join(',')+"'></span>"+
                             "<div class='wi-child-hours' data-myid="+child.id+" data-start-date='"+child.start+"' data-end-date='"+(child.start+child.duration)+"'>"+tsToHour(child.start)+"&nbsp;-&nbsp;"+
@@ -198,7 +209,7 @@
                         dayItems.push("<div class='work-item'>"+"<ul><li class=''><div class='work-item-element'>"+
                                     ((children.length == 1)?"<div class='wi-len-empty'>&nbsp;</div>":"<div class='wi-len'>"+children.length+"</div>")+
                                     "<div class='wi-name'>"+
-                                    dayItemName+"</div><div class='wi-duration'>"+secondsToTimer(workItem.totalTime)+
+                                    cutString(dayItemName,128)+"</div><div class='wi-duration'>"+secondsToTimer(workItem.totalTime)+
                                     "</div>"+
                                     "</div></li>"+children.join("")+"</ul>"+"</div>");
                     });
@@ -227,9 +238,13 @@
                         var id = $(this).data('myid');
                         var jqxhr = $.post( "ajax/update-work-interval/"+id,{start:picker.startDate.format('DD/MM/YY HH:mm'), end:picker.endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset()}, function() {
                         })
-                         .done(function() {
-                             getWorkItems();
-                         })
+                         .done(function(data, status, jqXHR) {
+                            var response = data;
+                            if ('Error' in response){
+                              alert(response.Error);
+                            }
+                            getWorkItems();
+                          })
                          .fail(function() {
                            alert( "error" );
                          })
@@ -262,8 +277,11 @@
                                     getWorkItems();
                                     $("#dialog-confirm").dialog("close");
                                 })
-                                    .done(function() {
-                                    
+                                    .done(function(data, status, jqXHR) {
+                                        var response = data;
+                                        if ('Error' in response){
+                                        alert(response.Error);
+                                        }
                                     })
                                     .fail(function() {
                                         alert( "error" );
@@ -383,9 +401,13 @@
                             
                             
                            })
-                            .done(function() {
+                           .done(function(data, status, jqXHR) {
+                                var response = data;
+                                if ('Error' in response){
+                                alert(response.Error);
+                                }
                                 getWorkItems();
-                            })
+                             })
                             .fail(function() {
                               alert( "error" );
                             })
@@ -398,7 +420,11 @@
                         var selectedTag = $(e.target).val();
                         var jqxhr = $.post( "ajax/update-work-interval/"+myid,{tagId:selectedTag}, function() {
                            })
-                            .done(function() {
+                           .done(function(data, status, jqXHR) {
+                                var response = data;
+                                if ('Error' in response){
+                                alert(response.Error);
+                                }
                                 getWorkItems();
                             })
                             .fail(function() {
@@ -426,11 +452,15 @@
                 $('#start-tracking > span').addClass("stop-button").removeClass("play-button");
                 getWorkItems();
                })
-                .done(function() {
-                })
-                .fail(function() {
+               .done(function(data, status, jqXHR) {
+                var response = data;
+                if ('Error' in response){
+                  alert(response.Error);
+                }
+              })
+               .fail(function() {
                   alert( "error" );
-                })
+               });
             
         }
         function stopTimer(){
@@ -444,8 +474,12 @@
                 $('#start-tracking > span').addClass("play-button").removeClass("stop-button");
                 getWorkItems();
                })
-                .done(function() {
-                })
+               .done(function(data, status, jqXHR) {
+                var response = data;
+                if ('Error' in response){
+                  alert(response.Error);
+                }
+              })
                 .fail(function() {
                   alert( "error" );
                 })

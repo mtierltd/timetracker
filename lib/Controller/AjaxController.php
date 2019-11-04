@@ -145,6 +145,9 @@ class AjaxController extends Controller {
 
 	public function startTimer($name) {
 		//$this->endTimer();
+		if (strlen($name) > 255){
+			return new JSONResponse(["Error" => "Name too long"]);
+		}
 		$winterval = new WorkInterval();
 		$winterval->setStart(time());
 		$winterval->setRunning(1);
@@ -184,6 +187,10 @@ class AjaxController extends Controller {
 	 */
 
 	public function stopTimer($name) {
+		if (strlen($name) > 255){
+			return new JSONResponse(["Error" => "Name too long"]);
+		}
+
 		$running = $this->workIntervalMapper->findAllRunning($this->userId);
 		
 		$now = time();
@@ -219,6 +226,9 @@ class AjaxController extends Controller {
 		$wi = $this->workIntervalMapper->find($id);
 		
 		if (isset($this->request->name)) {
+			if (strlen($this->request->name) > 255){
+				return new JSONResponse(["Error" => "Name too long"]);
+			}
 			$wi->setName($this->request->name);
 		}
 		if (isset($this->request->projectId)) {
