@@ -53,8 +53,8 @@
                 text: "Confirm",
                 click: function() {
                     var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-work-interval/'+$('#name-manual-entry').val());
-
-                    var jqxhr = $.post( baseUrl,{start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'), end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset()} ,function() {
+                   
+                    var jqxhr = $.post( baseUrl,{start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'), end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset(), details:$('#details-manual-entry').val()} ,function() {
                         getWorkItems();
                         $("#dialog-manual-entry").dialog("close");
                     })
@@ -89,7 +89,7 @@
             form =  dialogWorkItemEditForm.find( "form" );
             var id = $(target).data('myid');
             var baseUrl = OC.generateUrl("/apps/timetracker/ajax/update-work-interval/"+id);
-            var jqxhr = $.post( baseUrl, {name:form.find("#name").val()},function() {
+            var jqxhr = $.post( baseUrl, {name:form.find("#name").val(),details:form.find("#details").val()},function() {
                 getWorkItems();
                 $(dialogWorkItemEditForm).dialog("close");
               })
@@ -195,7 +195,8 @@
                         
                         $.each(workItem.children, function (ckey, child){
                             //debugger;
-                            children.push("<div class='wi-child'><li><div class='wi-child-element'><div class='wi-child-name clickable'  data-myid="+child.id+" data-name='"+child.name+"'>"+cutString(child.name,64)+"</div>"+
+                            children.push("<div class='wi-child'><li><div class='wi-child-element'><div class='wi-child-name clickable'  data-details='"+child.details+"' data-myid="+child.id+" data-name='"+child.name+"'>"+cutString(child.name,64)+
+                            "<div class='wi-child-details clickable' data-details='"+child.details+"' data-myid="+child.id+" data-name='"+child.name+"'>"+cutString(child.details,64)+"</div>"+"</div>"+
                             "<span class='fas clickable fa-trash wi-trash' id="+child.id+"></span><span class='set-project' data-myid="+child.id+" data-projectid="+child.projectId+" data-projectname='"+child.projectName+"'></span>"+
                             "<span class='set-tag' data-myid="+child.id+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' data-tagnames='"+child.tags.map(function(tag) {return tag.name}).join(',')+"'></span>"+
                             "<div class='wi-child-hours' data-myid="+child.id+" data-start-date='"+child.start+"' data-end-date='"+(child.start+child.duration)+"'>"+tsToHour(child.start)+"&nbsp;-&nbsp;"+
@@ -258,6 +259,7 @@
                     
                     form = dialogWorkItemEditForm.find( "form" )
                     form.find("#name").val($(e.target).data("name"));
+                    form.find("#details").val($(e.target).data("details"));
                     dialogWorkItemEditForm.dialog("open");
                     return false;
 

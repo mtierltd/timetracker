@@ -23,9 +23,12 @@
   <p class="validateTips">All form fields are required.</p>
  
   <form>
-    <fieldset>
+    <fieldset >
       <label for="name">Name</label>
       <input type="text" name="name" id="name" value="" class="text ui-widget-content ui-corner-all">
+      <div class="clear"></div>
+      <label for="details">Details</label>
+      <textarea  style='vertical-align: middle;width:300px;' name="details" id="details" cols="40" rows="5" value="" id="details" class="text ui-widget-content ui-corner-all"></textarea>
  
       <!-- Allow form submission with keyboard without duplicating the dialog button -->
       <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
@@ -40,6 +43,9 @@
     <fieldset>
       <label for="name">Name</label>
       <input type="text" name="name" id="name-manual-entry" value="" class="text ui-widget-content ui-corner-all">
+      <div class="clear"></div>
+      <label for="details">Details</label>
+      <textarea  style='vertical-align: middle;width:250px;' name="details" cols="40" rows="5" value="" id="details-manual-entry" class="text ui-widget-content ui-corner-all"></textarea>
       <!-- <div id='hours-manual-entry'>&nbsp;</div> -->
       <label for="hours">Interval</label>
       <input type="text" name="hours" id="hours-manual-entry" value="" class="text ui-widget-content ui-corner-all">

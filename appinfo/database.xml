@@ -197,6 +197,12 @@
       <length>256</length>
     </field>
     <field>
+      <name>details</name>
+      <type>text</type>
+      <notnull>true</notnull>
+      <length>1024</length>
+    </field>
+    <field>
       <name>project_id</name>
       <type>integer</type>
       <notnull>false</notnull>

@@ -104,6 +104,7 @@ class AjaxController extends Controller {
 			$wa = ['duration' => $wi->duration,
 					'id' => $wi->id,
 					'name' =>  $wi->name,
+					'details' =>  $wi->details,
 					'projectId' =>  $wi->projectId,
 					'running' =>  $wi->running,
 					'start' => $wi->start,
@@ -231,6 +232,12 @@ class AjaxController extends Controller {
 			}
 			$wi->setName($this->request->name);
 		}
+		if (isset($this->request->details)) {
+			if (strlen($this->request->details) > 1024){
+				return new JSONResponse(["Error" => "Details too long"]);
+			}
+			$wi->setDetails($this->request->details);
+		}
 		if (isset($this->request->projectId)) {
 			$wi->setProjectId($this->request->projectId);
 			if ($wi->projectId != null){
@@ -312,6 +319,12 @@ class AjaxController extends Controller {
 		
 		if (isset($this->request->name)) {
 			$wi->setName($this->request->name);
+		}
+		if (isset($this->request->details)) {
+			if (strlen($this->request->details) > 1024){
+				return new JSONResponse(["Error" => "Details too long"]);
+			}
+			$wi->setDetails($this->request->details);
 		}
 		if (isset($this->request->projectId)) {
 			$wi->setProjectId($this->request->projectId);
