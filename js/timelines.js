@@ -202,7 +202,7 @@
                   return response.items; //return the tableData property of a response json object
               },
               });
-              $("#timeline-csv").click(function(){
+              $("#timeline-csv").off().click(function(){
                 var baseUrl = OC.generateUrl('/apps/timetracker/ajax/timeline');
                 $.post(baseUrl,   // url
                   { 
