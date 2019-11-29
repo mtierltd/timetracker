@@ -30,8 +30,9 @@
 <div class="group-controls">
   <label for="group1">
     Group by
-      <select id="group1" style="width: 200px;">>
-          <option value="project">Project</option>
+      <select id="group1" style="width: 200px;">
+          <option value="">None</option>
+          <option value="project" selected>Project</option>
           <option value="userUid">User</option>
           <option value="client">Client</option>
       </select>
@@ -41,12 +42,13 @@
       <select id="group2" style="width: 200px;">
           <option value="">None</option>  
           <option value="name">Time Entry</option>
-          <option value="userUid">User</option>
+          <option value="userUid" selected >User</option>
           <option value="project">Project</option>
       </select>
   </label>
       <select id="group3" style="width: 200px;">
-          <option value="day">Daily</option>
+        <option value="">None</option>
+          <option value="day" selected>Daily</option>
           <option value="week">Weekly</option>
           <option value="month">Monthly</option>
           <option value="year">Yearly</option>

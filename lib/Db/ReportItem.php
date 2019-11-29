@@ -8,6 +8,7 @@ class ReportItem extends Entity {
 
     public $id;
     public $name;
+    public $details;
     public $projectId;
     public $userUid;
     public $time;
@@ -23,6 +24,7 @@ class ReportItem extends Entity {
         
         $this->addType('id', 'integer');
         $this->addType('name', 'string');
+        $this->addType('name', 'details');
         $this->addType('projectId', 'integer');
         $this->addType('userUid', 'string');
         $this->addType('time', 'string');

@@ -51,7 +51,11 @@ class ReportItemMapper extends Mapper {
             }
         } else {
             if(empty($timegroup)){
-                $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(min(start)),'%Y-%m-%d') as time";
+                if (empty($groupOn1) && empty($groupOn2)) {
+                    $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(start),'%Y-%m-%d %H:%i') as time";
+                } else {
+                    $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(min(start)),'%Y-%m-%d') as time";
+                }
             } elseif ($timegroup == 'week') {
                 $selectFields[]= "STR_TO_DATE(CONCAT(YEARWEEK(FROM_UNIXTIME(start)),' Monday'), '%x%v %W') as time";
             }elseif ($timegroup == 'day') {
@@ -63,7 +67,7 @@ class ReportItemMapper extends Mapper {
             }
 
         }
-        if(($groupOn1 != 'name') && ($groupOn2 != 'name')){
+        if(($groupOn1 != 'name') && ($groupOn2 != 'name') && !empty($groupOn1) && !empty($groupOn2)){
             if ($this->dbengine != 'MYSQL') {
                 $selectFields[] = '\'*\' as name';
             } else {
@@ -73,7 +77,14 @@ class ReportItemMapper extends Mapper {
         } else {
             $selectFields[] = 'wi.name as name';
         }
-        if(($groupOn1 != 'project') && ($groupOn2 != 'project')){
+
+        if(($groupOn1 != 'name') && ($groupOn2 != 'name') && !empty($groupOn1) && !empty($groupOn2)){
+                $selectFields[] = '\'*\' as details';
+        } else {
+            $selectFields[] = 'wi.details as details';
+        }
+
+        if(($groupOn1 != 'project') && ($groupOn2 != 'project'  && !empty($groupOn1) && !empty($groupOn2))){
             $selectFields[] = '\'*\' as "projectId"';
             if ($this->dbengine != 'MYSQL') {
                 $selectFields[] = 'string_agg(distinct p.name, \',\') as project';
@@ -198,6 +209,8 @@ class ReportItemMapper extends Mapper {
         }
         if (!empty($groups)){
             $group = "group by ".implode(",",$groups);
+        } else {
+            $group = "group by wi.id";
         }
         if (empty($start)){
             $start = 0;
@@ -206,7 +219,7 @@ class ReportItemMapper extends Mapper {
             $limit = 10000;
         }
         $sql = 'SELECT '.$selectItems.' where '.implode(" and ",$filters).' '.$group. ' order by time desc';
-        // var_dump($sql);
+        //var_dump($sql);
         // var_dump($params);
         return $this->findEntities($sql, $params, $limit, $start);
     }

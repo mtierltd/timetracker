@@ -165,6 +165,7 @@
                   //{title:"Id", field:"id", width:100}, //column has a fixed width of 100px;
                   {title:"#", field:"", formatter:"rownum"},
                   {title:"Name", field:"name", widthGrow:1}, //column will be allocated 1/5 of the remaining space
+                  {title:"Details", field:"details", widthGrow:1}, //column will be allocated 1/5 of the remaining space
                   {title:"User", field:"userUid", widthGrow:1}, //column will be allocated 1/5 of the remaining space
                   {title:"Project", field:"project", widthGrow:1}, //column will be allocated 1/5 of the remaining space
                   {title:"Client", field:"client", widthGrow:1}, //column will be allocated 1/5 of the remaining space
@@ -187,11 +188,11 @@
                   return response.items; //return the tableData property of a response json object
               },
               });
-              $("#download-csv").click(function(){
+              $("#download-csv").off().click(function(){
                 table.download("csv", "data.csv");
                 return false;
             });
-            $("#download-json").click(function(){
+            $("#download-json").off().click(function(){
               table.download("json", "data.json");
               return false;
             });
