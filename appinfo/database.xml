@@ -200,6 +200,7 @@
       <name>details</name>
       <type>text</type>
       <notnull>true</notnull>
+      <default></default>
       <length>1024</length>
     </field>
     <field>
