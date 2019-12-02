@@ -36,10 +36,30 @@ class ReportItemMapper extends Mapper {
         $selectFields = ['min(wi.id) as id', 'sum(duration) as "totalDuration"'];
         
         $pg = 0;
+        $aggregation = true;
+        if(empty($groupOn1) && empty($groupOn2) && empty($timegroup)) {
+            $selectFields[] = 'min(wi.details) as "details"';
+            $selectFields[] = 'min(wi.name) as "name"';
+            $selectFields[] = '\'*\' as "projectId"';
+            $selectFields[] = 'min(p.name) as "project"';
+
+            $selectFields[] = '\'*\' as "clientId"';
+            $selectFields[] = 'min(c.name) as "client"';
+            $selectFields[] = 'min(user_uid) as "userUid"';
+            $aggregation = false;
+        } else {
+            $selectFields[] = '\'*\' as "details"';
+        }
+
+
         if ($this->dbengine != 'MYSQL') {
             $pg = 1;
             if(empty($timegroup)){
-                $selectFields[]= "to_timestamp(min(start))::date as time";
+                if (!$aggregation) {
+                    $selectFields[]= "to_char(to_timestamp(min(start))::date,'YYYY-MM-DD HH24:MI') as time";
+                } else {
+                    $selectFields[]= "to_timestamp(min(start))::date as time";
+                }
             } elseif ($timegroup == 'week') {
                 $selectFields[]= "to_char(to_timestamp(start)::date, 'YYYY-WW') as time";
             }elseif ($timegroup == 'day') {
@@ -51,7 +71,7 @@ class ReportItemMapper extends Mapper {
             }
         } else {
             if(empty($timegroup)){
-                if (empty($groupOn1) && empty($groupOn2)) {
+                if (!$aggregation) {
                     $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(start),'%Y-%m-%d %H:%i') as time";
                 } else {
                     $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(min(start)),'%Y-%m-%d') as time";
@@ -67,57 +87,59 @@ class ReportItemMapper extends Mapper {
             }
 
         }
-        if(($groupOn1 != 'name') && ($groupOn2 != 'name') && !empty($groupOn1) && !empty($groupOn2)){
-            if ($this->dbengine != 'MYSQL') {
-                $selectFields[] = '\'*\' as name';
+        if ($aggregation){
+            if($groupOn1 != 'name'){
+                if ($this->dbengine != 'MYSQL') {
+                    $selectFields[] = '\'*\' as name';
+                } else {
+                    $selectFields[] = 'CASE WHEN CHAR_LENGTH(group_concat(distinct wi.name)) > 40 THEN CONCAT(SUBSTRING(group_concat(distinct wi.name), 1, 40), "...") ELSE group_concat(distinct wi.name) END as name';
+                }
+                //$selectFields[] = 'group_concat(distinct wi.name) as name';
             } else {
-                $selectFields[] = 'CASE WHEN CHAR_LENGTH(group_concat(distinct wi.name)) > 40 THEN CONCAT(SUBSTRING(group_concat(distinct wi.name), 1, 40), "...") ELSE group_concat(distinct wi.name) END as name';
+                $selectFields[] = 'wi.name as name';
             }
-            //$selectFields[] = 'group_concat(distinct wi.name) as name';
-        } else {
-            $selectFields[] = 'wi.name as name';
         }
 
-        if(($groupOn1 != 'name') && ($groupOn2 != 'name') && !empty($groupOn1) && !empty($groupOn2)){
-                $selectFields[] = '\'*\' as details';
-        } else {
-            $selectFields[] = 'wi.details as details';
-        }
-
-        if(($groupOn1 != 'project') && ($groupOn2 != 'project'  && !empty($groupOn1) && !empty($groupOn2))){
-            $selectFields[] = '\'*\' as "projectId"';
-            if ($this->dbengine != 'MYSQL') {
-                $selectFields[] = 'string_agg(distinct p.name, \',\') as project';
+        
+        if ($aggregation){
+            if(($groupOn1 != 'project') && ($groupOn2 != 'project')){
+                $selectFields[] = '\'*\' as "projectId"';
+                if ($this->dbengine != 'MYSQL') {
+                    $selectFields[] = 'string_agg(distinct p.name, \',\') as project';
+                } else {
+                    $selectFields[] = 'group_concat(distinct p.name) as project';
+                }
             } else {
-                $selectFields[] = 'group_concat(distinct p.name) as project';
-            }
-        } else {
-            $selectFields[] = '\'*\' as "projectId"';
-            $selectFields[] = 'p.name as project';
-        }
-
-        if(($groupOn1 != 'client') && ($groupOn2 != 'client')){
-            $selectFields[] = '\'*\' as "clientId"';
-            if ($this->dbengine != 'MYSQL') {
-                $selectFields[] = 'string_agg(distinct c.name, \',\') as client';
-            } else {
-                $selectFields[] = 'group_concat(distinct c.name) as client';
-            }
-
-        } else {
-            $selectFields[] = '\'*\' as "clientId"';
-            $selectFields[] = 'c.name as client';
-        }
-
-        if(($groupOn1 != 'userUid') && ($groupOn2 != 'userUid')){
-            if ($this->dbengine != 'MYSQL') {
-                $selectFields[] = 'string_agg(distinct user_uid, \',\') as "userUid"';
-            } else {
-                $selectFields[] = 'group_concat(distinct user_uid) as "userUid"';
+                
+                $selectFields[] = '\'*\' as "projectId"';
+                $selectFields[] = 'p.name as project';
             }
             
-        } else {
-            $selectFields[] = 'user_uid as "userUid"';
+            
+            if(($groupOn1 != 'client') && ($groupOn2 != 'client')){
+                $selectFields[] = '\'*\' as "clientId"';
+                if ($this->dbengine != 'MYSQL') {
+                    $selectFields[] = 'string_agg(distinct c.name, \',\') as client';
+                } else {
+                    $selectFields[] = 'group_concat(distinct c.name) as client';
+                }
+                
+            } else {
+                $selectFields[] = '\'*\' as "clientId"';
+                $selectFields[] = 'c.name as client';
+            }
+            
+            if(($groupOn1 != 'userUid') && ($groupOn2 != 'userUid') && $aggregation){
+                if ($this->dbengine != 'MYSQL') {
+                    $selectFields[] = 'string_agg(distinct user_uid, \',\') as "userUid"';
+                } else {
+                    $selectFields[] = 'group_concat(distinct user_uid) as "userUid"';
+                }
+                
+            } else {
+                $selectFields[] = 'user_uid as "userUid"';
+            }
+            
         }
 
         $selectItems = implode(", ",$selectFields).
@@ -193,20 +215,21 @@ class ReportItemMapper extends Mapper {
                     $groups[] = $groupOn1;
                 }
                }
-                if (!empty($groupOn2)){
-                    if ($groupOn2 == "project" || $groupOn2 == "client" || $groupOn2 == "name" || $groupOn2 == "userUid"){
-                        if ($groupOn2 == 'name'){
-                            $groups[] = 'wi.name';
-                           } else {
-                            if($pg) {
-                            $groups[] = '"'.$groupOn2.'"';// postgres needs quotes on names
-                            } else {
-                                $groups[] = $groupOn2;
-                            }
-                           }
-                    }
-                }
         }
+        if (!empty($groupOn2)){
+            if ($groupOn2 == "project" || $groupOn2 == "client" || $groupOn2 == "name" || $groupOn2 == "userUid"){
+                if ($groupOn2 == 'name'){
+                    $groups[] = 'wi.name';
+                    } else {
+                    if($pg) {
+                        $groups[] = '"'.$groupOn2.'"';// postgres needs quotes on names
+                    } else {
+                        $groups[] = $groupOn2;
+                    }
+                    }
+            }
+        }
+
         if (!empty($groups)){
             $group = "group by ".implode(",",$groups);
         } else {
