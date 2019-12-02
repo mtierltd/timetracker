@@ -9,6 +9,9 @@
     <licence>agpl</licence>
     <author mail="info@mtier.org" >MTier Ltd.</author>
     <namespace>TimeTracker</namespace>
+    <documentation>
+	<admin>https://github.com/mtierltd/timetracker</admin>
+    </documentation>
     <category>tools</category>
     <bugs>https://github.com/mtierltd/timetracker/issues</bugs>
     <dependencies>
