@@ -5,6 +5,23 @@
 
     $( function() {
 
+      var entityMap = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#x2F;',
+        '`': '&#x60;',
+        '=': '&#x3D;'
+      };
+      
+      function escapeHtml (string) {
+        return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+          return entityMap[s];
+        });
+      }
+
         getWorkItems();
         var timerInterval;
         dialogWorkItemEditForm = $( "#dialog-work-item-edit-form" ).dialog({
@@ -164,6 +181,10 @@
         }
         function getWorkItems(){
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/work-intervals');
+            $.ajaxSetup({
+              scriptCharset: "utf-8",
+              contentType: "application/json; charset=utf-8"
+          });
             $.getJSON( baseUrl, function( data ) {
                 
                 if (data.running.length > 0){
@@ -195,9 +216,9 @@
                         
                         $.each(workItem.children, function (ckey, child){
                             //debugger;
-                            children.push("<div class='wi-child'><li><div class='wi-child-element'><div class='wi-child-name clickable'  data-details='"+child.details+"' data-myid="+child.id+" data-name='"+child.name+"'>"+cutString(child.name,64)+
-                            "<div class='wi-child-details clickable' data-details='"+child.details+"' data-myid="+child.id+" data-name='"+child.name+"'>"+cutString(child.details,64)+"</div>"+"</div>"+
-                            "<span class='fas clickable fa-trash wi-trash' id="+child.id+"></span><span class='set-project' data-myid="+child.id+" data-projectid="+child.projectId+" data-projectname='"+child.projectName+"'></span>"+
+                            children.push("<div class='wi-child'><li><div class='wi-child-element'><div class='wi-child-name clickable'  data-details='"+escapeHtml(child.details)+"' data-myid="+child.id+" data-name='"+escapeHtml(child.name)+"'>"+escapeHtml(cutString(child.name,64))+
+                            "<div class='wi-child-details clickable' data-details='"+escapeHtml(child.details)+"' data-myid="+child.id+" data-name='"+escapeHtml(child.name)+"'>"+escapeHtml(cutString(child.details,64))+"</div>"+"</div>"+
+                            "<span class='fas clickable fa-trash wi-trash' id="+child.id+"></span><span class='set-project' data-myid="+child.id+" data-projectid="+child.projectId+" data-projectname='"+escapeHtml(child.projectName)+"'></span>"+
                             "<span class='set-tag' data-myid="+child.id+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' data-tagnames='"+child.tags.map(function(tag) {return tag.name}).join(',')+"'></span>"+
                             "<div class='wi-child-hours' data-myid="+child.id+" data-start-date='"+child.start+"' data-end-date='"+(child.start+child.duration)+"'>"+tsToHour(child.start)+"&nbsp;-&nbsp;"+
                             ((child.running == 1)?'':tsToHour(child.start+child.duration))+
