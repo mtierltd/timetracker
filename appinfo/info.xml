@@ -5,7 +5,7 @@
     <name>Time Tracker</name>
     <summary>Time Tracker App</summary>
     <description><![CDATA[Time Tracker App]]></description>
-    <version>0.0.39</version>
+    <version>0.0.40</version>
     <licence>agpl</licence>
     <author mail="info@mtier.org" >MTier Ltd.</author>
     <namespace>TimeTracker</namespace>
@@ -15,7 +15,7 @@
     <category>tools</category>
     <bugs>https://github.com/mtierltd/timetracker/issues</bugs>
     <dependencies>
-        <nextcloud min-version="14" max-version="17"/>
+        <nextcloud min-version="14" max-version="18"/>
     </dependencies>
     <navigations>
         <navigation>
