@@ -183,7 +183,7 @@
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/work-intervals');
             $.ajaxSetup({
               scriptCharset: "utf-8",
-              contentType: "application/json; charset=utf-8"
+              //contentType: "application/json; charset=utf-8"
           });
             $.getJSON( baseUrl, function( data ) {
                 

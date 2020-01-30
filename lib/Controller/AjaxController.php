@@ -299,8 +299,9 @@ class AjaxController extends Controller {
 			 $de->setTimeZone(new \DateTimeZone('UTC'));
 			 $wi->setDuration($de->getTimestamp() - $dt->getTimestamp());
 		 }
-
+		 
 		$this->workIntervalMapper->update($wi);
+		$running = $this->workIntervalMapper->findAllRunning($this->userId);
 		
 		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
 	}
