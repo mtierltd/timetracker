@@ -595,6 +595,25 @@ class AjaxController extends Controller {
 		return $this->getProjects();
 	}
 
+	public function deleteProjectWithData($id) {
+		if (!$this->isThisAdminUser()){
+			return;
+		}
+		$this->userToProjectMapper->deleteAllForProject($id);
+		$wi = $this->workIntervalMapper->findAllForProject($id);
+		if ($wi != null){
+			foreach ($wi as $w){
+				$this->workIntervalToTagMapper->deleteAllForWorkInterval($w->id);
+			}
+		}
+		$this->workIntervalMapper->deleteAllForProject($id);
+		$this->tagMapper->allowedTags($id,[]);
+		$this->projectMapper->delete($id);
+
+		
+		return $this->getProjects();
+	}
+
 		
 	/**
 	 *

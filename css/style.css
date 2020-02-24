@@ -207,7 +207,9 @@ html[xmlns] .clearfix { display: block;}
 .project-name{
 	flex:0.3;
 }
-
+button.redButton {
+    background-color: red;
+}
 .king-table-region .pagination-bar {
 	height: 50px;
     margin: 20px 0px 20px 0px;

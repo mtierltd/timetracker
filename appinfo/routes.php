@@ -40,6 +40,7 @@ return [
        ['name' => 'ajax#add_project', 'url' => '/ajax/add-project/{name}', 'verb' => 'POST'],
        ['name' => 'ajax#edit_project', 'url' => '/ajax/edit-project/{id}', 'verb' => 'POST'],
        ['name' => 'ajax#delete_project', 'url' => '/ajax/delete-project/{id}', 'verb' => 'POST'],
+       ['name' => 'ajax#delete_project_with_data', 'url' => '/ajax/delete-project-with-data/{id}', 'verb' => 'POST'],
 
 
        ['name' => 'ajax#get_tags', 'url' => '/ajax/tags', 'verb' => 'GET'],

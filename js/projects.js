@@ -85,6 +85,8 @@
                    }
                   
                 });
+              } else {
+                $(".admin-only").hide();
               }
 
 
@@ -237,6 +239,28 @@
               $('input.select2-input').attr('autocomplete', "xxxxxxxxxxx")
             },
             buttons: {
+              "Delete project": { text:'Delete project',
+              click:function(){
+
+                $("#dialog-confirm").dialog({
+                  buttons : {
+                    "Confirm" : {click: function() {
+                          deleteProject(dialogProjectEditForm);
+                          $("#dialog-confirm").dialog("close");
+                          },
+                            
+                    text: 'Confirm',
+                    class:'primary'
+                  },
+                    "Cancel" : function() {
+                      $(this).dialog("close");
+                    }
+                  }
+                });
+                $("#dialog-confirm").dialog('open');
+
+                 
+              }, class:'redButton admin-only'},
               "Edit project": { text:'Edit project',
               click:function(){
                   editProject(dialogProjectEditForm);
@@ -275,6 +299,25 @@
                 });
 
         }
+        function deleteProject(dialogProjectEditForm){
+          target = dialogProjectEditForm.target;
+          form =  dialogProjectEditForm.find( "form" );
+          var baseUrl = OC.generateUrl('/apps/timetracker/ajax/delete-project-with-data/'+target.getData().id);
+          var jqxhr = $.post( baseUrl, {name:form.find("#name").val(), clientId:form.find("#client-select-popup").val(), locked:form.find("#locked").is(':checked')?'1':'0',archived:form.find("#archived").is(':checked')?'1':'0',  allowedTags:form.find("#locked-select-tags").val(), allowedUsers:form.find("#locked-select-users").val() },function() {
+              getProjects();
+              $(dialogProjectEditForm).dialog("close");
+            })
+              .done(function(data, status, jqXHR) {
+                var response = data;
+                if ('Error' in response){
+                  alert(response.Error);
+                }
+              })
+              .fail(function() {
+                alert( "error" );
+              });
+
+      }
         function getProjects(){
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/projects-table');
             // var table = window.kingtable = new KingTable({

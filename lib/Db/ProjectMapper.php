@@ -56,6 +56,19 @@ class ProjectMapper extends Mapper {
         return $this->findEntities($sql, []);
     }
 
+    public function delete($project_id) {
+        $sql = 'delete FROM `*PREFIX*timetracker_project` ' .
+            ' where id = ?';
+            
+            try {
+                $this->execute($sql, [$project_id]);
+                return;
+            } catch (\OCP\AppFramework\Db\DoesNotExistException $e){
+                return;
+            }
+        
+    }
+
 
 
    

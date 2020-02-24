@@ -87,4 +87,22 @@ class WorkIntervalMapper extends Mapper {
         return $this->findEntities($sql, [$user],$limit, $offset);
     }
 
+    public function findAllForProject($project_id){
+        $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where project_id = ?';
+        return $this->findEntities($sql, [$project_id]);
+    }
+
+    public function deleteAllForProject($project_id) {
+        $sql = 'delete FROM `*PREFIX*timetracker_work_interval` ' .
+            ' where project_id = ?';
+            
+            try {
+                $this->execute($sql, [$project_id]);
+                return;
+            } catch (\OCP\AppFramework\Db\DoesNotExistException $e){
+                return;
+            }
+        
+    }
+
 }
