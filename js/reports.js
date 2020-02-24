@@ -181,7 +181,20 @@
                     
                     return h + ':' + m + ':' + s;
                     
-                  },}, //column will be allocated 1/5 of the remaining space
+                  },bottomCalc:"sum", bottomCalcParams:{
+    			precision:1,
+		},bottomCalcFormatter:function(cell, formatterParams, onRendered){
+                    //cell - the cell component
+                    //formatterParams - parameters set for the column
+                    //onRendered - function to call when the formatter has been rendered
+                    var duration = cell.getValue();
+                    var s = Math.floor( (duration) % 60 );
+                    var m = Math.floor( (duration/60) % 60 );
+                    var h = Math.floor( (duration/(60*60)));
+
+                    return h + ':' + m + ':' + s;
+
+                  }}, //column will be allocated 1/5 of the remaining space
               ],
                 ajaxResponse:function(url, params, response){
           
