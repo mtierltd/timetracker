@@ -277,6 +277,38 @@
                   return '<a href="'+baseUrl+'">'+"Download"+'</a>';
                   
                 }},
+                {formatter:"buttonCross", width:40, align:"center", cellClick:function(e, cell){
+                  $("#dialog-confirm").dialog({
+                   buttons : {
+                     "Confirm" : {click: function() {
+                       var baseUrl = OC.generateUrl('/apps/timetracker/ajax/delete-timeline/'+cell.getRow().getData().id);
+                           var jqxhr = $.post( baseUrl, function() {
+                              getTimelines();
+                              $("#dialog-confirm").dialog("close");
+                           })
+                               .done(function(data, status, jqXHR) {
+                                 var response = data;
+                                 if ('Error' in response){
+                                   alert(response.Error);
+                                 }
+                               })
+                               .fail(function() {
+                               alert( "error" );
+                               })
+                               return false;
+                     },
+                     text: 'Confirm',
+                     class:'primary'
+                   },
+                     "Cancel" : function() {
+                       $(this).dialog("close");
+                     }
+                   }
+                 });
+                 $("#dialog-confirm").dialog('open');
+   
+                 //cell.getRow().delete();
+             }},
                
             ],
               ajaxResponse:function(url, params, response){

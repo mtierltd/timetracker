@@ -53,5 +53,6 @@ return [
        ['name' => 'ajax#get_timelines_admin', 'url' => '/ajax/timelines-admin', 'verb' => 'GET'],
        ['name' => 'ajax#download_timeline', 'url' => '/ajax/download-timeline/{id}', 'verb' => 'GET'],
        ['name' => 'ajax#edit_timeline', 'url' => '/ajax/edit-timeline/{id}', 'verb' => 'POST'],
+       ['name' => 'ajax#delete_timeline', 'url' => '/ajax/delete-timeline/{id}', 'verb' => 'POST'],
     ]
 ];

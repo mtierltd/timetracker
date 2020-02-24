@@ -953,5 +953,19 @@ class AjaxController extends Controller {
 		return new JSONResponse(["Timeline" => $timeline]);
 	}
 
+	/**
+	 *
+	 * @NoAdminRequired
+	 */
+
+	public function deleteTimeline($id) {
+		$tl = $this->timelineMapper->find($id);
+		if ($tl->userUid == $this->userId){
+			$this->timelineMapper->delete($tl);
+		}
+		
+		return new JSONResponse(["Timeline" => $timeline]);
+	}
+
 
 }
