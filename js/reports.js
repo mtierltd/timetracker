@@ -158,6 +158,11 @@
        
           function getReport(){
               var baseUrl = OC.generateUrl('/apps/timetracker/ajax/report?name=&from='+start.unix()+'&to='+end.unix()+'&group1='+group1+'&group2='+group2+'&timegroup='+group3+'&filterProjectId='+filterProjectId+'&filterClientId='+filterClientId);
+              function pad(n, width, z) {
+                z = z || '0';
+                n = n + '';
+                return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+              }
               var table = new Tabulator("#report", {
                 ajaxURL:baseUrl,
                 layout:"fitColumns",
@@ -179,7 +184,7 @@
                     var m = Math.floor( (duration/60) % 60 );
                     var h = Math.floor( (duration/(60*60)));
                     
-                    return h + ':' + m + ':' + s;
+                    return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
                     
                   },bottomCalc:"sum", bottomCalcParams:{
     			precision:1,
@@ -192,7 +197,7 @@
                     var m = Math.floor( (duration/60) % 60 );
                     var h = Math.floor( (duration/(60*60)));
 
-                    return h + ':' + m + ':' + s;
+                    return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
 
                   }}, //column will be allocated 1/5 of the remaining space
               ],
