@@ -73,9 +73,9 @@ class AjaxController extends Controller {
 	 *
 	 * @NoAdminRequired
 	 */
-	public function workIntervals() {
+	public function workIntervals($days) {
 		$i = 0;
-		$tryIntervals=[90,180,365,365*5];
+		$tryIntervals=[$days,90,180,365,365*5];
 		do {
 			$l = $this->workIntervalMapper->findLatestDays($this->userId,$tryIntervals[$i],0);
 			$i++;

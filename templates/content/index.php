@@ -56,6 +56,15 @@
 </div>
 
 <div class="clearfix"> </div>
+<br/>
+<div class="time-controls">
+  <div id="report-range" style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc; width: 100%">
+      <i class="fa fa-calendar"></i>&nbsp;
+      <span></span> <i class="fa fa-caret-down"></i>
+  </div>
+</div>
+<br/>
+
 <div class="clearfix"> </div>
 <div id="work-intervals">
 </div>
