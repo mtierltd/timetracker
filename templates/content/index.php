@@ -36,7 +36,7 @@
   </form>
 </div>
 
-<div id="dialog-manual-entry" title="Edit work item" class='hidden'>
+<div id="dialog-manual-entry" title="Add work item" class='hidden'>
   <p class="validateTips">All form fields are required.</p>
  
   <form id='form-manual-entry'>

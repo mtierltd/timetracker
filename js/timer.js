@@ -99,64 +99,67 @@
             autoOpen: false,
             buttons : 
               [ {
-                id: 'confirm-button',
-                text: "Confirm",
-                click: function() {
-                    var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-work-interval/'+$('#name-manual-entry').val());
-                   
-                    var jqxhr = $.post( baseUrl,{start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'), end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset(), details:$('#details-manual-entry').val()} ,function() {
-                        getWorkItems();
-                        $("#dialog-manual-entry").dialog("close");
-                    })
-                    .done(function(data, status, jqXHR) {
-                        var response = data;
-                        if ('Error' in response){
-                          alert(response.Error);
-                        }
+                  id: 'confirm-button',
+                  text: "Confirm",
+                  click: function() {
+                      var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-work-interval/'+$('#name-manual-entry').val());
+                    
+                      var jqxhr = $.post( baseUrl,{start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'), end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset(), details:$('#details-manual-entry').val()} ,function() {
+                          getWorkItems();
+                          $("#dialog-manual-entry").dialog("close");
                       })
-                    .fail(function() {
-                        alert( "error" );
-                    })
+                      .done(function(data, status, jqXHR) {
+                          var response = data;
+                          if ('Error' in response){
+                            alert(response.Error);
+                          }
+                        })
+                      .fail(function() {
+                          alert( "error" );
+                      })
+                  },
                 },
+                {
+                  id: 'cancel-button',
+                  text: "Cancel",
+                  click: function() {
+                    $(this).dialog("close");
+                  },
                 },
-              {
-                id: 'cancel-button',
-              text: "Cancel",
-              click: function() {
-                $(this).dialog("close");
-                },
-              },]
+              ]
+
           });
 
           $('#manual-entry-button').click(function(e) {
+            $("#hours-manual-entry").val('');
             $("#dialog-manual-entry").dialog("open");
             return false;
         });
         validateManualEntryFields();
 
-          function editWorkIntem(dialogWorkItemEditForm){
-            target = dialogWorkItemEditForm.target;
-            form =  dialogWorkItemEditForm.find( "form" );
-            var id = $(target).data('myid');
-            var baseUrl = OC.generateUrl("/apps/timetracker/ajax/update-work-interval/"+id);
-            var jqxhr = $.post( baseUrl, {name:form.find("#name").val(),details:form.find("#details").val()},function() {
-                getWorkItems();
-                $(dialogWorkItemEditForm).dialog("close");
-              })
-              .done(function(data, status, jqXHR) {
-                var response = data;
-                if ('Error' in response){
-                  alert(response.Error);
-                }
-              })
-                .fail(function() {
-                  alert( "error" );
-                })
-                .always(function() {
-                  
-                });
+        function editWorkIntem(dialogWorkItemEditForm){
+          target = dialogWorkItemEditForm.target;
+          form =  dialogWorkItemEditForm.find( "form" );
+          var id = $(target).data('myid');
+          var baseUrl = OC.generateUrl("/apps/timetracker/ajax/update-work-interval/"+id);
+          var jqxhr = $.post( baseUrl, {name:form.find("#name").val(),details:form.find("#details").val()},function() {
+              getWorkItems();
+              $(dialogWorkItemEditForm).dialog("close");
+            })
+            .done(function(data, status, jqXHR) {
+              var response = data;
+              if ('Error' in response){
+                alert(response.Error);
+              }
+            })
+            .fail(function() {
+              alert( "error" );
+            })
+            .always(function() {
+              
+            });
 
-        }
+      }
         function cutString(s, n){
             if (s.length < n) {
                 return s;
