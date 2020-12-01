@@ -4,9 +4,9 @@
 
 
     $( function() {
-        var days='31';
-        var start = moment().subtract(29, 'days');
-        var end = moment();
+        var days='30';
+        var start = moment().startOf('day').subtract(29, 'days');
+        var end = moment().endOf('day');
 
         function cb(start, end) {
             $('#report-range span').html(start.format('DD/MM/YY') + ' - ' + end.format('DD/MM/YY'));
@@ -15,25 +15,25 @@
             timePicker: false,
             startDate: start,
             endDate: end,
+            showCustomRangeLabel: false,
             ranges: {
-                'Today': [moment(), moment()],
-                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                'Last 90 Days': [moment().subtract(89, 'days'), moment()],
-                'Last 365 Days': [moment().subtract(364, 'days'), moment()],
-                'This Month': [moment().startOf('month'), moment().endOf('month')],
-                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
-                'The Month Before Last': [moment().subtract(2, 'month').startOf('month'), moment().subtract(2, 'month').endOf('month')],
-                'This Year': [moment().startOf('year'), moment().endOf('year')],
-                'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
+                'Today': [moment().startOf('day'), moment().endOf('day')],
+                'Last 7 Days': [moment().startOf('day').subtract(6, 'days'), moment().endOf('day')],
+                'Last 30 Days': [moment().startOf('day').subtract(29, 'days'), moment().endOf('day')],
+                'Last 90 Days': [moment().startOf('day').subtract(89, 'days'), moment().endOf('day')],
+                'Last 365 Days': [moment().startOf('day').subtract(364, 'days'), moment().endOf('day')],
+                'This Month': [moment().startOf('month'), moment().endOf('day')],
+                'This Year': [moment().startOf('year'), moment().endOf('day')],
+                'Starting last year': [moment().startOf('year').subtract(1, 'year'), moment().endOf('day')],
+                'Last 3 years': [moment().startOf('day').subtract(3, 'year'), moment().endOf('day')],
+                'Last 5 years': [moment().startOf('day').subtract(5, 'year'), moment().endOf('day')],
             },
             locale: {
                 format: 'DD/MM/YY'
             }
           },cb);
           $("#report-range").on('apply.daterangepicker', function(ev, picker) {
-            days = (picker.endDate.unix()-picker.startDate.unix()) / 86400;
+            days = Math.round((picker.endDate.unix()-picker.startDate.unix()) / 86400);
             getWorkItems();
           });
       cb(start, end);

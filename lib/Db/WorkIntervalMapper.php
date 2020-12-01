@@ -60,7 +60,7 @@ class WorkIntervalMapper extends Mapper {
         }
     }
 
-    public function findLatestDays($user, $limitDays = 10, $startDay = 0, $limit = 100, $offset = 0){
+    public function findLatestDays($user, $limitDays = 10, $startDay = 0, $limit = 5000, $offset = 0){
         if ($this->dbengine == 'MYSQL'){
         $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and 
                 start > unix_timestamp(curdate() + interval 1 day - interval ? day) and 
