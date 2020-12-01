@@ -47,12 +47,12 @@ class WorkIntervalMapper extends Mapper {
     }
 
     public function findLatest($user, $limit = 10, $offset = 0){
-        $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? order by id desc';
+        $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? order by start desc';
         return $this->findEntities($sql, [$user],$limit, $offset);
     }
 
     public function findLatestByName($user, $name){
-        $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and name = ? order by id desc';
+        $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and name = ? order by start desc';
         try {
             return $this->findEntity($sql, [$user, $name], 1, 0);
         } catch (\OCP\AppFramework\Db\DoesNotExistException $e){
@@ -65,20 +65,20 @@ class WorkIntervalMapper extends Mapper {
         $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and 
                 start > unix_timestamp(curdate() + interval 1 day - interval ? day) and 
                 start < unix_timestamp(curdate() + interval 1 day - interval ? day) 
-                order by id desc';
+                order by start desc';
                 return $this->findEntities($sql, [$user,$limitDays,$startDay],$limit, $offset);
         } else {
             $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and 
             start > extract(epoch from current_date + interval \'1\' day - interval \''.(int)$limitDays.'\' day) and 
             start < extract(epoch from current_date + interval \'1\' day - interval \''.(int)$startDay.'\' day)
-            order by id desc';
+            order by start desc';
             return $this->findEntities($sql, [$user],$limit, $offset);
         }
         
     }
 
     public function findAllRunning($user, $limit = 100, $offset = 0){
-        $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and running = 1 order by id desc';
+        $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and running = 1 order by start desc';
         return $this->findEntities($sql, [$user],$limit, $offset);
     }
 
