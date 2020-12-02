@@ -166,6 +166,37 @@
               var table = new Tabulator("#report", {
                 ajaxURL:baseUrl,
                 layout:"fitColumns",
+                downloadDataFormatter:function(data){
+                  //data - active table data array
+                  data.forEach(function(row){
+
+                      var time = row.time;
+                      var duration = row.totalDuration;
+                      if (group1 != '' || group2 != '' || group3 != ''){
+                        row.ended = '*';
+                      } else {
+                        var ended = moment(time, 'YYYY-MM-DD hh:mm:ss').add(duration,"seconds").format('YYYY-MM-DD HH:mm');
+                        row.ended = ended;
+                        
+                      }
+
+                      var s = Math.floor( (duration) % 60 );
+                      var m = Math.floor( (duration/60) % 60 );
+                      var h = Math.floor( (duration/(60*60)));
+                    
+                      row.totalDuration = pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
+
+                      if (row.project == null){
+                        row.project = '';
+                      }
+                      if (row.client == null){
+                        row.client = '';
+                      }
+
+                  });
+          
+                  return data;
+                },
                 columns:[
                   //{title:"Id", field:"id", width:100}, //column has a fixed width of 100px;
                   {title:"#", field:"", formatter:"rownum"},
@@ -187,19 +218,32 @@
                     return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
                     
                   },bottomCalc:"sum", bottomCalcParams:{
-    			precision:1,
-		},bottomCalcFormatter:function(cell, formatterParams, onRendered){
-                    //cell - the cell component
-                    //formatterParams - parameters set for the column
-                    //onRendered - function to call when the formatter has been rendered
-                    var duration = cell.getValue();
-                    var s = Math.floor( (duration) % 60 );
-                    var m = Math.floor( (duration/60) % 60 );
-                    var h = Math.floor( (duration/(60*60)));
+    			          precision:1,
+		                },bottomCalcFormatter:function(cell, formatterParams, onRendered){
+                      //cell - the cell component
+                      //formatterParams - parameters set for the column
+                      //onRendered - function to call when the formatter has been rendered
+                      var duration = cell.getValue();
+                      var s = Math.floor( (duration) % 60 );
+                      var m = Math.floor( (duration/60) % 60 );
+                      var h = Math.floor( (duration/(60*60)));
 
-                    return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
+                      return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
 
-                  }}, //column will be allocated 1/5 of the remaining space
+                    }}, //column will be allocated 1/5 of the remaining space
+                    {title:"Ended", field:"ended",visible:false, formatter:function(cell, formatterParams, onRendered){
+                      //cell - the cell component
+                      //formatterParams - parameters set for the column
+                      //onRendered - function to call when the formatter has been rendered
+                      if (group1 != '' || group2 != '' || group3 != ''){
+                        return '*';
+                      }
+                      var time = cell.getRow().getData().time;
+                      var duration = cell.getRow().getData().totalDuration;
+                      var ended = moment(time, 'YYYY-MM-DD hh:mm:ss').add(duration,"seconds").format('YYYY-MM-DD HH:mm');
+                      return ended;
+                      
+                    }},
               ],
                 ajaxResponse:function(url, params, response){
           
@@ -207,11 +251,15 @@
               },
               });
               $("#download-csv").off().click(function(){
+                table.showColumn("ended");
                 table.download("csv", "data.csv");
+                table.hideColumn("ended");
                 return false;
             });
             $("#download-json").off().click(function(){
+              table.showColumn("ended");
               table.download("json", "data.json");
+              table.hideColumn("ended");
               return false;
             });
           }
