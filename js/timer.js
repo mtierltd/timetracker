@@ -260,7 +260,7 @@
                             ((child.running == 1)?'':tsToHour(child.start+child.duration))+
                                     "</div>"+
                             "<div class='wi-child-duration'>"+((child.running == 1)?'running...':secondsToTimer(child.duration))+"</div>"+
-                            "<div class='wi-play-space'><span class='fas clickable fa-play wi-play' id="+child.id+" data-work-name='"+child.name+"'></span><div>"+"</div></li></div>");
+                            "<div class='wi-play-space'><span class='fas clickable fa-play wi-play' id="+child.id+" data-work-name='"+child.name+"' data-projectid="+child.projectId+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' ></span><div>"+"</div></li></div>");
                         });
 
 
@@ -324,7 +324,7 @@
                 $('.wi-play').click(function(e) {
                     e.preventDefault();
                     $('#work-input').val($(this).data('work-name'));
-                    startTimer();
+                    startTimer($(this).data('projectid'), $(this).data('tagids'));
                     return false;
                 })
                 $('.wi-trash').click(function(e) {
@@ -497,7 +497,7 @@
               });
         }
 
-        function startTimer(){
+        function startTimer(projectId = null, tags = ""){
             if(localStorage.getItem('isTimerStarted') === 'true'){
                 stopTimer();
             }
@@ -506,7 +506,7 @@
             if (workName == ''){
                 workName = 'no description';
             }
-            var jqxhr = $.post( "ajax/start-timer/"+workName, function() {
+            var jqxhr = $.post( "ajax/start-timer/"+workName, { projectId: projectId, tags: tags}, function() {
                 localStorage.setItem('isTimerStarted', true);
                 $('#start-tracking > span').addClass("stop-button").removeClass("play-button");
                 getWorkItems();

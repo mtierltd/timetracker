@@ -146,6 +146,16 @@ class AjaxController extends Controller {
 
 	public function startTimer($name) {
 		//$this->endTimer();
+		$projectId = null;
+		if (isset($this->request->projectId) && (!empty($this->request->projectId))){
+			$projectId = $this->request->projectId;
+		}
+
+		$tags = null;
+		if (isset($this->request->tags) && (!empty($this->request->tags))){
+			$tags = $this->request->tags;
+		}
+
 		if (strlen($name) > 255){
 			return new JSONResponse(["Error" => "Name too long"]);
 		}
@@ -154,15 +164,22 @@ class AjaxController extends Controller {
 		$winterval->setRunning(1);
 		$winterval->setName($name);
 		$winterval->setUserUid($this->userId);
+		
+		// first get tags and project ids from the last work item with the same name
 		$lwinterval = $this->workIntervalMapper->findLatestByName($this->userId, $name);
-		if ($lwinterval != null){
+		if ($projectId == null && $lwinterval != null){
 			
 			$winterval->setProjectId($lwinterval->projectId);
 		}
+
+		if($projectId != null){
+			$winterval->setProjectId($projectId);
+		}
+
 		$this->workIntervalMapper->insert($winterval);
-		if ($lwinterval != null){
-			$tags = $this->workIntervalToTagMapper->findAllForWorkInterval($lwinterval->id);
-			foreach($tags as $t){
+		if ($tags == null && $lwinterval != null){
+			$lastTags = $this->workIntervalToTagMapper->findAllForWorkInterval($lwinterval->id);
+			foreach($lastTags as $t){
 				$wtot = new WorkIntervalToTag();
 				$wtot->setWorkIntervalId($winterval->id);
 				$wtot->setTagId($t->tagId);
@@ -171,6 +188,20 @@ class AjaxController extends Controller {
 			}
 
 		}
+		
+		if ($tags != null){
+			$tagsArray  = explode(",", $tags);
+			foreach($tagsArray as $t){
+				$wtot = new WorkIntervalToTag();
+				$wtot->setWorkIntervalId($winterval->id);
+				$wtot->setTagId($t);
+				$wtot->setCreatedAt(time());
+				$this->workIntervalToTagMapper->insert($wtot);
+			}
+
+		}
+
+		
 		
 		
 		//echo json_encode((array)$winterval);
