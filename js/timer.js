@@ -409,13 +409,15 @@
                         tagIds = $(this).data('tagids').toString().split(',');
                         tagNames = $(this).data('tagnames').toString().split(',');
                     }
+
                   $(this).select2({
                     tags: true,
                     width: '200px',
                     placeholder: "Select tags...",
                     allowClear: true,
+        
                     ajax: { 
-                        url:  OC.generateUrl('/apps/timetracker/ajax/tags')+'?workItem='+$(this).data('myid'),
+                        url:  function (params) { return OC.generateUrl('/apps/timetracker/ajax/tags')+'?workItem='+$(this).data('myid')+'&q='+params;},
                         formatNoMatches: function() {
                             return '';
                         },

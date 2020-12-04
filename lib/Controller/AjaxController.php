@@ -770,6 +770,7 @@ class AjaxController extends Controller {
 	public function getTags(){
 		$workItem = $this->request->workItem;
 		$project = null;
+		$q = $this->request->q;
 		if ($workItem != null){
 			$wi = $this->workIntervalMapper->find($workItem);
 			if ($wi->projectId != null){
@@ -781,6 +782,15 @@ class AjaxController extends Controller {
 			$tags = $this->tagMapper->findAllAlowedForProject($project->id);
 		} else {
 			$tags = $this->tagMapper->findAll($this->userId);
+		}
+		if ($q != null){
+			$filteredTags = [];
+			foreach($tags as $t){
+				if (stripos($t->name, $q) !== FALSE){
+					$filteredTags[] = $t;
+				}
+			}
+			$tags = $filteredTags;
 		}
 		return new JSONResponse(["Tags" => json_decode(json_encode($tags), true)]);
 	}
