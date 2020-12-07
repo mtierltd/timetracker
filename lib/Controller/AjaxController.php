@@ -231,7 +231,8 @@ class AjaxController extends Controller {
 		foreach($running as $r){
 			$r->setRunning(0);
 			$r->setDuration($now - $r->start);
-			$r->setName($name);
+			if ($name != 'no description')
+				$r->setName($name);
 			$this->workIntervalMapper->update($r);
 		}
 		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
