@@ -102,7 +102,7 @@
                   id: 'confirm-button',
                   text: "Confirm",
                   click: function() {
-                      var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-work-interval/'+$('#name-manual-entry').val());
+                      var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-work-interval/'+encodeURIComponent(encodeURIComponent($('#name-manual-entry').val()))); // encode twice so we can have slashes
                     
                       var jqxhr = $.post( baseUrl,{start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'), end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset(), details:$('#details-manual-entry').val()} ,function() {
                           getWorkItems();
@@ -508,7 +508,7 @@
             if (workName == ''){
                 workName = 'no description';
             }
-            var jqxhr = $.post( "ajax/start-timer/"+workName, { projectId: projectId, tags: tags}, function() {
+            var jqxhr = $.post( "ajax/start-timer/"+encodeURIComponent(encodeURIComponent(workName)), { projectId: projectId, tags: tags}, function() {
                 localStorage.setItem('isTimerStarted', true);
                 $('#start-tracking > span').addClass("stop-button").removeClass("play-button");
                 getWorkItems();
@@ -530,7 +530,7 @@
             if (workName == ''){
                 workName = 'no description';
             }
-            var jqxhr = $.post( "ajax/stop-timer/"+workName, function() {
+            var jqxhr = $.post( "ajax/stop-timer/"+encodeURIComponent(encodeURIComponent(workName)), function() { // encode twice so we can pass / character
                 localStorage.setItem('isTimerStarted', false);
                 $('#start-tracking > span').addClass("play-button").removeClass("stop-button");
                 getWorkItems();

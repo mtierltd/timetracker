@@ -147,6 +147,7 @@ class AjaxController extends Controller {
 	public function startTimer($name) {
 		//$this->endTimer();
 		$projectId = null;
+		$name = urldecode($name);
 		if (isset($this->request->projectId) && (!empty($this->request->projectId))){
 			$projectId = $this->request->projectId;
 		}
@@ -219,6 +220,7 @@ class AjaxController extends Controller {
 	 */
 
 	public function stopTimer($name) {
+		$name = urldecode($name);
 		if (strlen($name) > 255){
 			return new JSONResponse(["Error" => "Name too long"]);
 		}
@@ -350,7 +352,7 @@ class AjaxController extends Controller {
 		$wi->setRunning(0);
 		
 		if (isset($this->request->name)) {
-			$wi->setName($this->request->name);
+			$wi->setName(urldecode($this->request->name));
 		}
 		if (isset($this->request->details)) {
 			if (strlen($this->request->details) > 1024){
