@@ -1,7 +1,7 @@
 
-
+ 
 (function() {
-
+ 
 
     $( function() {
         var days='30';
@@ -230,6 +230,10 @@
                     localStorage.setItem('timerStartTimeLocal', data.running[0].start + now - data.now );
                     $('#start-tracking > span').addClass("stop-button").removeClass("play-button");
                     timerInterval = setInterval(function() {
+                        if (localStorage.getItem('isTimerStarted') === 'false'){
+                          clearInterval(timerInterval);
+                          return;
+                        }
                         var timerStartTimeLocal = localStorage.getItem('timerStartTimeLocal');
                         var now = Math.floor(Date.now() / 1000);
 
@@ -339,7 +343,7 @@
                                     .done(function(data, status, jqXHR) {
                                         var response = data;
                                         if ('Error' in response){
-                                        alert(response.Error);
+                                          alert(response.Error);
                                         }
                                     })
                                     .fail(function() {
@@ -465,7 +469,7 @@
                            .done(function(data, status, jqXHR) {
                                 var response = data;
                                 if ('Error' in response){
-                                alert(response.Error);
+                                  alert(response.Error);
                                 }
                                 getWorkItems();
                              })
@@ -484,7 +488,7 @@
                            .done(function(data, status, jqXHR) {
                                 var response = data;
                                 if ('Error' in response){
-                                alert(response.Error);
+                                  alert(response.Error);
                                 }
                                 getWorkItems();
                             })
@@ -501,7 +505,8 @@
 
         function startTimer(projectId = null, tags = ""){
             if(localStorage.getItem('isTimerStarted') === 'true'){
-                stopTimer();
+                stopTimer(startTimer, [projectId, tags]);
+                return;
             }
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/start-timer');
             var workName = $('#work-input').val();
@@ -509,44 +514,55 @@
                 workName = 'no description';
             }
             var jqxhr = $.post( "ajax/start-timer/"+encodeURIComponent(encodeURIComponent(workName)), { projectId: projectId, tags: tags}, function() {
-                localStorage.setItem('isTimerStarted', true);
-                $('#start-tracking > span').addClass("stop-button").removeClass("play-button");
-                getWorkItems();
                })
                .done(function(data, status, jqXHR) {
                 var response = data;
                 if ('Error' in response){
                   alert(response.Error);
+                } else {
+                  localStorage.setItem('isTimerStarted', true);
+                  $('#start-tracking > span').addClass("stop-button").removeClass("play-button");
                 }
               })
                .fail(function() {
                   alert( "error" );
-               });
+               }).always(function() {
+                getWorkItems();
+              });
             
         }
-        function stopTimer(){
+        function stopTimer(onStopped = null, args = []){
             
             var workName = $('#work-input').val();
             if (workName == ''){
                 workName = 'no description';
             }
             var jqxhr = $.post( "ajax/stop-timer/"+encodeURIComponent(encodeURIComponent(workName)), function() { // encode twice so we can pass / character
-                localStorage.setItem('isTimerStarted', false);
-                $('#start-tracking > span').addClass("play-button").removeClass("stop-button");
-                getWorkItems();
                })
                .done(function(data, status, jqXHR) {
                 var response = data;
                 if ('Error' in response){
                   alert(response.Error);
+                } else {
+                  localStorage.setItem('isTimerStarted', false);
+                  $('#start-tracking > span').addClass("play-button").removeClass("stop-button");
+                  if (onStopped != null){
+                    onStopped(args[0], args[1]);
+                  } else {
+                    getWorkItems();
+                  }
                 }
               })
                 .fail(function() {
                   alert( "error" );
                 })
                 .always(function() {
+                  
                 });
         }
+
+
+
         $( "#datepicker-from" ).datepicker();
         $( "#datepicker-to" ).datepicker();
         
