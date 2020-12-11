@@ -1,7 +1,23 @@
 
+var $ = require("jquery");
+require("jquery-migrate");
+
+// var moment = require("moment");
+require("jqueryui");
+require("jqueryui/jquery-ui.css");
+import Tabulator from 'tabulator-tables';
+require('tabulator-tables/dist/css/tabulator.css');
+
+//require('tabulator-tables/dist/js/jquery_wrapper.js');
+// import 'select2/dist/js/select2.full.js'
+// require('select2/dist/css/select2.css');
+// require('daterangepicker/daterangepicker.css');
 
 (function() {
 
+    $.ajaxSetup({
+      headers: { 'RequestToken': OC.requestToken }
+    });
 
     $( function() {
 
@@ -30,7 +46,7 @@
                 })
             return false;
         });
-        dialogClientEditForm = $( "#dialog-client-edit-form" ).dialog({
+        var dialogClientEditForm = $( "#dialog-client-edit-form" ).dialog({
             autoOpen: false,
             height: 400,
             width: 350,
@@ -53,15 +69,15 @@
             }
           });
        
-          form = dialogClientEditForm.find( "form" ).on( "submit", function( event ) {
+          var form = dialogClientEditForm.find( "form" ).on( "submit", function( event ) {
             event.preventDefault();
             editClient(dialogClientEditForm);
           });
 
         getClients();
         function editClient(dialogClientEditForm){
-            target = dialogClientEditForm.target;
-            form =  dialogClientEditForm.find( "form" );
+            var target = dialogClientEditForm.target;
+            var form =  dialogClientEditForm.find( "form" );
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/edit-client/'+target);
             var jqxhr = $.post( baseUrl, {name:form.find("#name").val()},function() {
                 getClients();

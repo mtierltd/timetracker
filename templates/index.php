@@ -1,14 +1,17 @@
 <?php
+//script('timetracker', "jquery-3.5.1.min");
+//script('timetracker', "jquery-3.5.0");
+/*
 script('timetracker', "kingtable");
 script('timetracker', "moment.min");
 script('timetracker', "daterangepicker.min");
 script('timetracker', "tabulator");
 script('timetracker', "Chart.min");
-//script('timetracker', "select2");
+script('timetracker', "select2.min");
 style('timetracker', "kingtable");
 style('timetracker', "daterangepicker");
 style('timetracker', "tabulator");
-
+*/
 //style('timetracker', "select2");
 
 //style('files', 'files');

@@ -4,7 +4,7 @@
 <div id="client-input-container" class='center'>
         <form>
             <input tabindex="1" type="text" spellcheck="false" autocomplete="off" class="" value="" placeholder="New project name..." id="new-project-input">
-            <div class="form-control" id="client-select"></div>
+            <select class="form-control" id="client-select"></select>
             <input type="submit" value="Add project" id="new-project-submit" class='ui-button primary'>
         </form>
 </div>
@@ -41,13 +41,13 @@
       </div>
       <div class='hidden' id='locked-options'>
       <label for="locked-select-tags">Allowed Tags</label>
-        <div class="form-control" id="locked-select-tags"></div>
+        <select class="form-control" id="locked-select-tags" multiple="multiple"><option></option></select>
         <label for="locked-select-users">Users</label>
-        <div class="form-control" id="locked-select-users"></div>
+        <select class="form-control" id="locked-select-users" multiple="multiple"><option></option></select>
       </div>
       <div>
       <label for="client-select-popup">Client</label>
-      <div class="form-control" id="client-select-popup"></div>
+      <select class="form-control" id="client-select-popup"><option></option></select>
       </div>
       <!-- Allow form submission with keyboard without duplicating the dialog button -->
       <input type="submit" id="edit-name-submit" tabindex="-1" style="position:absolute; top:-1000px" class='ui-button primary'>

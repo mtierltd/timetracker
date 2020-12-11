@@ -1,5 +1,19 @@
-(function() {
+var $ = require("jquery");
+require("jquery-migrate");
+// var moment = require("moment");
+require("jqueryui");
+require("jqueryui/jquery-ui.css");
+require("daterangepicker");
+import Tabulator from 'tabulator-tables';
+require('tabulator-tables/dist/css/tabulator.css');
+require('daterangepicker/daterangepicker.css');
+import 'select2/dist/js/select2.full.js'
+require('select2/dist/css/select2.css');
 
+(function() {
+  $.ajaxSetup({
+    headers: { 'RequestToken': OC.requestToken }
+  });
     $( function() {
 
       var group1 = "project";
@@ -50,21 +64,20 @@
           $("#group1").select2();
           $("#group2").select2();
           $("#group3").select2();
-          $('#group1').on("change", function(e) { 
-            group1 = e.val;
+          $('#group1').on("select2:select select2:unselect", function(e) { 
+            group1 = e.params.data.id;
             getReport();
           });
-          $('#group2').on("change", function(e) {
-            group2 = e.val;
+          $('#group2').on("select2:select select2:unselect", function(e) { 
+            group2 = e.params.data.id;
             getReport();
           });
-          $('#group3').on("change", function(e) { 
-            group3 = e.val;
+          $('#group3').on("select2:select select2:unselect", function(e) { 
+            group3 = e.params.data.id;
             getReport();
           });
           getReport();
           $("#filter-project").select2({
-            tags: true,
             width: '200px',
             escapeMarkup : function(markup) { return markup; },
             placeholder: "Select project",
@@ -75,7 +88,7 @@
                 
                 dataType: 'json',
                 delay: 250,
-                results: function (data, page) { //json parse
+                processResults: function (data, page) { //json parse
                     return { 
                         results: $.map(data.Projects,function(val, i){
                         return { id: val.id, text:val.name};
@@ -88,22 +101,12 @@
                 cache: false,
                 
             },
-            initSelection: function(element, callback) {
-                
-                var results;
-                    results = [];
-                    results.push({
-                        id: projectId,
-                        text: projectName,
-                        });
-                    
-                    callback(results[0]);
-            }
         });
 
-        $("#filter-project").on("change", function (e) { 
+        $('#filter-project').on("select2:select select2:unselect", function(e) { 
          
-          filterProjectId = $(e.target).val();
+          
+          filterProjectId = ($(e.target).val() != null)? $(e.target).val() : "";
           getReport();
         });
 
@@ -121,10 +124,10 @@
               
               dataType: 'json',
               delay: 250,
-              results: function (data, page) { //json parse
+              processResults: function (data, page) { //json parse
                   return { 
                       results: $.map(data.Clients,function(val, i){
-                      return { id: val.id, text:val.name};
+                        return { id: val.id, text:val.name};
                       }),
                       pagination: {
                       more: false,
@@ -134,24 +137,17 @@
               cache: false,
               
           },
-          initSelection: function(element, callback) {
-              
-              var results;
-                  results = [];
-                  results.push({
-                      id: clientId,
-                      text: clientName,
-                      });
-                  
-                  callback(results[0]);
-          }
       });
 
-      $("#filter-client").on("change", function (e) { 
+      
+      $('#filter-client').on("select2:select select2:unselect", function(e) { 
        
-        filterClientId = $(e.target).val();
+        
+        filterClientId = ($(e.target).val() != null)? $(e.target).val() : "";
         getReport();
       });
+
+
         $('input.select2-input').attr('autocomplete', "xxxxxxxxxxx");
 
         

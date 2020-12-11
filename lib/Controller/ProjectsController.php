@@ -30,7 +30,7 @@ class ProjectsController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function index() {
-		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/projects', 'script' => 'projects']);  // templates/index.php
+		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/projects', 'script' => 'dist/projects']);  // templates/index.php
 	}
 
 

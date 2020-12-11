@@ -25,7 +25,7 @@ class TagsController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function index() {
-		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/tags', 'script' => 'tags']);  // templates/index.php
+		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/tags', 'script' => 'dist/tags']);  // templates/index.php
 	}
 
 

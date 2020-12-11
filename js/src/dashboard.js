@@ -1,4 +1,14 @@
+var $ = require("jquery");
+require("jquery-migrate");
+// var moment = require("moment");
+require("jqueryui");
+require("jqueryui/jquery-ui.css");
+var Chart = require("chart.js");
 (function() {
+  $.ajaxSetup({
+    headers: { 'RequestToken': OC.requestToken }
+  });
+
     $( function() {
         $(document).ready(function() {
 

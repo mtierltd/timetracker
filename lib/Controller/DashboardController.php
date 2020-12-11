@@ -25,7 +25,7 @@ class DashboardController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function index() {
-		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/dashboard', 'script' => 'dashboard']);  // templates/index.php
+		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/dashboard', 'script' => 'dist/dashboard']);  // templates/index.php
 	}
 
 

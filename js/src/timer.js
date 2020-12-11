@@ -1,7 +1,26 @@
+var $ = require("jquery");
+require("jquery-migrate");
+require("daterangepicker");
+var moment = require("moment");
+require("jqueryui");
+require("jqueryui/jquery-ui.css");
+//import 'select2/dist/js/select2.full.js'
+import 'select2/dist/js/select2.js'
+require('select2/dist/css/select2.css');
+require('daterangepicker/daterangepicker.css');
 
- 
-(function() {
- 
+
+(
+  
+
+function() {
+  
+    $.ajaxSetup({
+      headers: { 'RequestToken': OC.requestToken }
+    });
+  /*select2($);*/
+
+
 
     $( function() {
         var days='30';
@@ -57,7 +76,7 @@
 
         getWorkItems();
         var timerInterval;
-        dialogWorkItemEditForm = $( "#dialog-work-item-edit-form" ).dialog({
+        var dialogWorkItemEditForm = $( "#dialog-work-item-edit-form" ).dialog({
             autoOpen: false,
             height: 400,
             width: 350,
@@ -104,10 +123,16 @@
                   click: function() {
                       var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-work-interval/'+encodeURIComponent(encodeURIComponent($('#name-manual-entry').val()))); // encode twice so we can have slashes
                     
-                      var jqxhr = $.post( baseUrl,{start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'), end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset(), details:$('#details-manual-entry').val()} ,function() {
-                          getWorkItems();
-                          $("#dialog-manual-entry").dialog("close");
-                      })
+                      var jqxhr = $.post( baseUrl,
+                            {
+                              start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'),
+                              end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'), 
+                              tzoffset: new Date().getTimezoneOffset(),
+                              async: true,
+                              details:$('#details-manual-entry').val()} ,function() {
+                                getWorkItems();
+                                $("#dialog-manual-entry").dialog("close");
+                              })
                       .done(function(data, status, jqXHR) {
                           var response = data;
                           if ('Error' in response){
@@ -215,7 +240,7 @@
             var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
             return formattedTime;
         }
-        function getWorkItems(){
+        function getWorkItems() {
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/work-intervals?days='+days);
             $.ajaxSetup({
               scriptCharset: "utf-8",
@@ -249,35 +274,64 @@
 
                 var days = [];
                 $.each( data.days, function( dayName, dayMap ) {
-
+                  
                     var dayItems = [];
                     $.each(dayMap, function (dayItemName, workItem){
                         var children = [];
                         
                         $.each(workItem.children, function (ckey, child){
-                            //debugger;
-                            children.push("<div class='wi-child'><li><div class='wi-child-element'><div class='wi-child-name clickable'  data-details='"+escapeHtml(child.details)+"' data-myid="+child.id+" data-name='"+escapeHtml(child.name)+"'>"+escapeHtml(cutString(child.name,64))+
-                            "<div class='wi-child-details clickable' data-details='"+escapeHtml(child.details)+"' data-myid="+child.id+" data-name='"+escapeHtml(child.name)+"'>"+escapeHtml(cutString(child.details,64))+"</div>"+"</div>"+
-                            "<span class='fas clickable fa-trash wi-trash' id="+child.id+"></span><span class='set-project' data-myid="+child.id+" data-projectid="+child.projectId+" data-projectname='"+escapeHtml(child.projectName)+"'></span>"+
-                            "<span class='set-tag' data-myid="+child.id+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' data-tagnames='"+child.tags.map(function(tag) {return tag.name}).join(',')+"'></span>"+
-                            "<div class='wi-child-hours' data-myid="+child.id+" data-start-date='"+child.start+"' data-end-date='"+(child.start+child.duration)+"'>"+tsToHour(child.start)+"&nbsp;-&nbsp;"+
-                            ((child.running == 1)?'':tsToHour(child.start+child.duration))+
+                            children.push(
+                              "<li>"+
+                                "<div class='wi-child'>"+
+                                  "<div class='wi-child-element'>"+
+                                    "<div class='wi-child-name clickable'  data-details='"+escapeHtml(child.details)+"' data-myid="+child.id+" data-name='"+escapeHtml(child.name)+"'>"+escapeHtml(cutString(child.name,64))+
+                                      "<div class='wi-child-details clickable' data-details='"+escapeHtml(child.details)+"' data-myid="+child.id+" data-name='"+escapeHtml(child.name)+"'>"+escapeHtml(cutString(child.details,64))+"</div>"+
                                     "</div>"+
-                            "<div class='wi-child-duration'>"+((child.running == 1)?'running...':secondsToTimer(child.duration))+"</div>"+
-                            "<div class='wi-play-space'><span class='fas clickable fa-play wi-play' id="+child.id+" data-work-name='"+child.name+"' data-projectid="+child.projectId+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' ></span><div>"+"</div></li></div>");
+                                    "<span class='fas clickable fa-trash wi-trash' id="+child.id+"></span>"+
+                                    "<select class='set-project' data-myid="+child.id+" data-projectid="+child.projectId+" data-projectname='"+escapeHtml(child.projectName)+"'>"+
+                                      ((child.projectName == null)?"":("<option selected='selected' value='"+child.projectId+"' text='"+escapeHtml(child.projectName)+"' >"+escapeHtml(child.projectName)+"</option>"))+
+                                    "</select>"+
+                                    "<select class='set-tag' multiple=\"multiple\" data-myid="+child.id+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' data-tagnames='"+child.tags.map(function(tag) {return tag.name}).join(',')+"'>"+
+                                      child.tags.map(function(tag) {return "<option selected='selected' value='"+tag.id+"' text='"+tag.name+"' >"+tag.name+"</option>";}).join(' ')+
+                                    "</select>"+
+                                    "<div class='wi-child-hours' data-myid="+child.id+" data-start-date='"+child.start+"' data-end-date='"+(child.start+child.duration)+"'>"+
+                                      tsToHour(child.start)+"&nbsp;-&nbsp;"+((child.running == 1)?'':tsToHour(child.start+child.duration))+
+                                    "</div>"+
+                                    "<div class='wi-child-duration'>"+((child.running == 1)?'running...':secondsToTimer(child.duration))+"</div>"+
+                                    "<div class='wi-play-space'>"+
+                                      "<span class='fas clickable fa-play wi-play' id="+child.id+" data-work-name='"+child.name+"' data-projectid="+child.projectId+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' ></span>"+
+                                    "</div>"+
+                                  "</div>"+
+                                "</div>"+
+                              "</li>");
                         });
 
 
-                        dayItems.push("<div class='work-item'>"+"<ul><li class=''><div class='work-item-element'>"+
-                                    ((children.length == 1)?"<div class='wi-len-empty'>&nbsp;</div>":"<div class='wi-len'>"+children.length+"</div>")+
-                                    "<div class='wi-name'>"+
-                                    cutString(dayItemName,128)+"</div><div class='wi-duration'>"+secondsToTimer(workItem.totalTime)+
-                                    "</div>"+
-                                    "</div></li>"+children.join("")+"</ul>"+"</div>");
+                        dayItems.push("<div class='work-item'>"+
+                                        "<ul>"+
+                                          "<li class=''>"+
+                                            "<div class='work-item-element'>"+
+                                              ((children.length == 1)?"<div class='wi-len-empty'>&nbsp;</div>":"<div class='wi-len'>"+children.length+"</div>")+
+                                              "<div class='wi-name'>"+
+                                                cutString(dayItemName,128)+
+                                              "</div>"+
+                                              "<div class='wi-duration'>"+secondsToTimer(workItem.totalTime)+
+                                              "</div>"+
+                                            "</div>"+
+                                          "</li>"+
+                                          children.join("")+
+                                        "</ul>"+
+                                      "</div>");
                     });
-                    days.push( "<div class='day-work-intervals'><ul><li class='day-list-item'>" +
-                        "<div class='day-name'>" + dayName +"</div>"+ dayItems.join("") + "</li></ul></div>" );
-                  });
+                    days.push(  "<div class='day-work-intervals'>"+
+                                  "<ul>"+
+                                    "<li class='day-list-item'>" +
+                                      "<div class='day-name'>" + dayName +"</div>"+ 
+                                      dayItems.join("") + 
+                                    "</li>"+
+                                  "</ul>"+
+                                "</div>" );
+                });
 
                   $("#work-intervals").html($( "<div/>", {
                       "class": "my-new-list",
@@ -376,7 +430,7 @@
                             
                             dataType: 'json',
                             delay: 250,
-                            results: function (data, page) { //json parse
+                            processResults: function (data) { //json parse
                                 return { 
                                     results: $.map(data.Projects,function(val, i){
                                         return { id: val.id, text:val.name};
@@ -389,16 +443,6 @@
                             cache: false,
                             
                         },
-                        initSelection: function(element, callback) {
-                            var results;
-                                results = [];
-                                results.push({
-                                    id: projectId,
-                                    text: projectName,
-                                    });
-                                
-                                callback(results[0]);
-                        }
                     });
                     $(this).data('myid',id);
                     
@@ -421,13 +465,23 @@
                     allowClear: true,
         
                     ajax: { 
-                        url:  function (params) { return OC.generateUrl('/apps/timetracker/ajax/tags')+'?workItem='+$(this).data('myid')+'&q='+params;},
+                        url:  function () { return OC.generateUrl('/apps/timetracker/ajax/tags')+'?workItem='+$(this).data('myid');},
+                        data: function (params){
+                          var query = {
+                            q: params.term,
+                            type: 'public'
+                          }
+                    
+                          // Query parameters will be ?search=[term]&type=public
+                          return query;
+                        },
+                        headers: { 'RequestToken': OC.requestToken },
                         formatNoMatches: function() {
                             return '';
                         },
                         dataType: 'json',
                         delay: 250,
-                        results: function (data, page) { //json parse
+                        processResults: function (data) { //json parse
                           return { 
                              results: $.map(data.Tags,function(val, i){
                                return { id: val.id, text:val.name};
@@ -439,27 +493,13 @@
                         },
                         cache: false,
                     },
-                    initSelection: function(element, callback) {
-                        var results;
-                            results = [];
-                            for(var x=0;x<tagIds.length; x++){
-
-                                if (tagIds[x] == ''){
-                                    continue;
-                                }
-                                results.push({
-                                    id: tagIds[x],
-                                    text: tagNames[x],
-                                });
-                            }
-                            callback(results);
-                    }
                   });
                   $(this).select2('val', []);
                 });
                   $('input.select2-input').attr('autocomplete', "xxxxxxxxxxx")
 
-                  $(".set-project").on("change", function (e) { 
+                  //$(".set-project").on("change", function (e) {
+                  $(".set-project").on("select2:select select2:unselect", function (e) {
                         var myid = $(e.target).data('myid');
                         var selectedId = $(e.target).val();
                         var jqxhr = $.post( "ajax/update-work-interval/"+myid,{projectId:selectedId}, function() {
@@ -479,11 +519,17 @@
                             .always(function() {
                             });
                     });
+                    $(".set-project").on("select2:unselecting", function(e) {
+                        var self = $(this);
+                        setTimeout(function() {
+                          self.select2('close');
+                      }, 0);
+                    });
 
                     $(".set-tag").on("change", function (e) { 
                         var myid = $(e.target).data('myid');
                         var selectedTag = $(e.target).val();
-                        var jqxhr = $.post( "ajax/update-work-interval/"+myid,{tagId:selectedTag}, function() {
+                        var jqxhr = $.post( "ajax/update-work-interval/"+myid,{tagId:selectedTag.join(",")}, function() {
                            })
                            .done(function(data, status, jqXHR) {
                                 var response = data;
@@ -498,6 +544,12 @@
                             .always(function() {
                             });
                     });
+                    $(".set-tag").on("select2:unselecting", function(e) {
+                      var self = $(this);
+                      setTimeout(function() {
+                        self.select2('close');
+                    }, 0);
+                  });
               }).fail(function() {
                 alert( "error getting work items" );
               });

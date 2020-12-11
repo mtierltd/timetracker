@@ -54,13 +54,13 @@
 <div class="filter-controls">
   <label for="filter-project">
       Filter projects
-    <span id="filter-project" style="width: 200px;">
-    </span>
+    <select id="filter-project" style="width: 200px;">
+    </select>
   </label>
   <label for="filter-client">
       Filter clients
-    <span id="filter-client" style="width: 200px;">
-    </span>
+    <select id="filter-client" style="width: 200px;">
+    </select>
   </label>
 </div>
 <div class="table-controls">

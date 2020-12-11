@@ -1,6 +1,18 @@
+var $ = require("jquery");
+require("jquery-migrate");
+// var moment = require("moment");
+require("jqueryui");
+require("jqueryui/jquery-ui.css");
+import Tabulator from 'tabulator-tables';
+require('tabulator-tables/dist/css/tabulator.css');
+import 'select2/dist/js/select2.full.js'
+require('select2/dist/css/select2.css');
+
 (function() {
 
-
+  $.ajaxSetup({
+    headers: { 'RequestToken': OC.requestToken }
+  });
     function timeConverter(UNIX_timestamp){
         var a = new Date(UNIX_timestamp * 1000);
         var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -32,8 +44,8 @@
 
 
             function editTimeline(dialogTimelineEditForm){
-                target = dialogTimelineEditForm.target;
-                form =  dialogTimelineEditForm.find( "form" );
+                var target = dialogTimelineEditForm.target;
+                var form =  dialogTimelineEditForm.find( "form" );
                 var baseUrl = OC.generateUrl('/apps/timetracker/ajax/edit-timeline/'+target.getData().id);
                 var jqxhr = $.post( baseUrl, {status:form.find("#status").val()},function() {
                     getTimelines();
@@ -51,7 +63,7 @@
 
             }
 
-            dialogTimelineEditForm = $( "#dialog-timeline-edit-form" ).dialog({
+            var dialogTimelineEditForm = $( "#dialog-timeline-edit-form" ).dialog({
                 autoOpen: false,
                 height: 400,
                 width: 350,
@@ -137,7 +149,6 @@
                   //cell - the cell component
                   //formatterParams - parameters set for the column
                   //onRendered - function to call when the formatter has been rendered
-                  //debugger;
                   var baseUrl = OC.generateUrl('/apps/timetracker/ajax/download-timeline/'+cell.getRow().getData()["id"]);
                   
                   return '<a href="'+baseUrl+'">'+"Download"+'</a>';
@@ -147,7 +158,6 @@
                   {formatter:editIcon, width:40, align:"center", cellClick:function(e, cell){
 
                     dialogTimelineEditForm.target = cell.getRow();
-                    //debugger;
                     dialogTimelineEditForm.find('#status').val(cell.getRow().getData().status);
                     dialogTimelineEditForm.dialog("open");
                     return false;

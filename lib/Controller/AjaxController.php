@@ -300,8 +300,14 @@ class AjaxController extends Controller {
 
 			}
 		}
+		
 		 if (isset($this->request->tagId)) {
-			$tags = \explode(",", $this->request->tagId);
+			 if (is_array($this->request->tagId)){
+				$tags = $this->request->tagId;
+			 } else {
+
+				 $tags = \explode(",", $this->request->tagId);
+			 }
 			$this->workIntervalToTagMapper->deleteAllForWorkInterval($id);
 			$project = null;
 			$locked = 0;

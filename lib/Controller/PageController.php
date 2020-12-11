@@ -26,7 +26,7 @@ class PageController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function index() {
-		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/index', 'script' => 'timer']);  // templates/index.php
+		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/index', 'script' => 'dist/timer']);  // templates/index.php
 	}
 
 

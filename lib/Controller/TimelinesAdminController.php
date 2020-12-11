@@ -25,7 +25,7 @@ class TimelinesAdminController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function index() {
-		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/timelines-admin', 'script' => 'timelines-admin']);  // templates/index.php
+		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/timelines-admin', 'script' => 'dist/timelinesadmin']);  // templates/index.php
 	}
 
 

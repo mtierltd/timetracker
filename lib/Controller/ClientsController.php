@@ -26,7 +26,7 @@ class ClientsController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function index() {
-		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/clients', 'script' => 'clients']);  // templates/index.php
+		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/clients', 'script' => 'dist/clients']);  // templates/index.php
 	}
 
 

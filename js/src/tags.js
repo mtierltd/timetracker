@@ -1,6 +1,15 @@
-
+var $ = require("jquery");
+require("jquery-migrate");
+// var moment = require("moment");
+require("jqueryui");
+require("jqueryui/jquery-ui.css");
+import Tabulator from 'tabulator-tables';
+require('tabulator-tables/dist/css/tabulator.css');
 
 (function() {
+  $.ajaxSetup({
+    headers: { 'RequestToken': OC.requestToken }
+  });
 
     $( function() {
 
@@ -31,7 +40,7 @@
                 })
           return false;
         });
-        dialogTagEditForm = $( "#dialog-tag-edit-form" ).dialog({
+        var dialogTagEditForm = $( "#dialog-tag-edit-form" ).dialog({
             autoOpen: false,
             height: 400,
             width: 350,
@@ -53,15 +62,15 @@
             }
           });
        
-          form = dialogTagEditForm.find( "form" ).on( "submit", function( event ) {
+          var form = dialogTagEditForm.find( "form" ).on( "submit", function( event ) {
             event.preventDefault();
             editTag(dialogTagEditForm);
           });
 
         getTags();
         function editTag(dialogTagEditForm){
-            target = dialogTagEditForm.target;
-            form =  dialogTagEditForm.find( "form" );
+            var target = dialogTagEditForm.target;
+            var form =  dialogTagEditForm.find( "form" );
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/edit-tag/'+target);
             var jqxhr = $.post( baseUrl, {name:form.find("#name").val()},function() {
                 getTags();
