@@ -3,8 +3,37 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>timetracker</id>
     <name>Time Tracker</name>
-    <summary>Time Tracker App</summary>
-    <description><![CDATA[Time Tracker App]]></description>
+    <summary lang="en">Track your time spent with different tasks, aggregate by project or clients!</summary>
+    <summary lang="de">Ein Zeitmesser für tägliche Aufgaben, mit Übersichten für Projekte oder Kunden!</summary>
+    <description lang="en">
+        Track your time spent with different tasks each day using this time tracker app! Features include:
+        
+        - Timer which automatically stores stop / start times
+        - Assign tasks to projects and clients
+        - Use tags to categorize your tasks independently from projects and clients
+        - Manually enter tasks when you forgot to start the timer
+        - Manually edit start and stop times of previous tasks
+        - Display an overview of your tasks in a fancy stacked donut / pie chart!
+        - Filter tasks by project, client or time range
+        - Archive projects that are no longer needed
+        
+        This app is still under development, so stay tuned for updates and additional features! If you have any suggestions, bug reports or feature requests, feel free to head over to our [GitHub project page](https://github.com/mtierltd/timetracker) and search through the existing issues, maybe your topic is already under discussion! And if it's not, feel free to file a new issue for it.
+        
+        And for now, start making your time tracking easier by using this app! 
+    </description>
+    <description lang="de">
+        Behalte den Überblick über den Zeitaufwand täglicher Aufgaben mit dieser Time Tracker-App! Folgende Features erwarten Dich:
+        
+        - Ein integrierter Timer, der Start- und Stopp-Zeiten automatisch aufzeichnet
+        - Aufgaben können Projekten und Kunden zugeordnet werden
+        - Einträge können mittels Tags kategorisiert werden, unabhängig von Projekten oder Kunden!
+        - Vergessen, den Timer zu starten? Kein Problem! Einfach mit der manuellen Eingabe die Aufgabe nachträglich hinzufügen...
+        - ... oder den Eintrag hinterher bearbeiten!
+        - Den Überblick behalten, mittels der integrierten Tabellen und Diagrammen!
+        - Einträge durchsuchen anhand von Projekt- oder Kundenzugehörigkeit, oder einem Zeitfenster.
+        
+        Diese App wird aktuell noch weiterentwickelt, also: Augen offen halten für neue Features! Und falls Dir irgendwelche Verbesserungsvorschläge, Probleme oder neue Features einfallen, schau mal auf unserem [GitHub Projekt](https://github.com/mtierltd/timetracker) vorbei, vielleicht wird Dein Thema bereits diskutiert! Und falls nicht, starte gerne eine neue Diskussion, wir freuen uns auf Dein Feedback!
+    </description>
     <version>0.0.45</version>
     <licence>agpl</licence>
     <author mail="info@mtier.org" >MTier Ltd.</author>
@@ -14,6 +43,14 @@
     </documentation>
     <category>tools</category>
     <bugs>https://github.com/mtierltd/timetracker/issues</bugs>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-u7j37.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-m0jq9.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-6dj9p.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-otj7x.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-kykd8.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-nbk8s.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-vuk8t.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-03kxw.png</screenshot>
     <dependencies>
         <nextcloud min-version="14" max-version="20"/>
     </dependencies>
