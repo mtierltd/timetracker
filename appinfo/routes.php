@@ -18,6 +18,7 @@ return [
        ['name' => 'dashboard#index', 'url' => '/dashboard', 'verb' => 'GET'],
        ['name' => 'reports#index', 'url' => '/reports', 'verb' => 'GET'],
        ['name' => 'timelines#index', 'url' => '/timelines', 'verb' => 'GET'],
+       
        ['name' => 'timelinesAdmin#index', 'url' => '/timelines-admin', 'verb' => 'GET'],
        
        ['name' => 'tags#index', 'url' => '/tags', 'verb' => 'GET'],
@@ -55,5 +56,6 @@ return [
        ['name' => 'ajax#download_timeline', 'url' => '/ajax/download-timeline/{id}', 'verb' => 'GET'],
        ['name' => 'ajax#edit_timeline', 'url' => '/ajax/edit-timeline/{id}', 'verb' => 'POST'],
        ['name' => 'ajax#delete_timeline', 'url' => '/ajax/delete-timeline/{id}', 'verb' => 'POST'],
+       ['name' => 'ajax#email_timeline', 'url' => '/ajax/email-timeline/{id}', 'verb' => 'POST'],
     ]
 ];
