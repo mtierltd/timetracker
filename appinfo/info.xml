@@ -5,7 +5,7 @@
     <name>Time Tracker</name>
     <summary>Time Tracker App</summary>
     <description><![CDATA[Time Tracker App]]></description>
-    <version>0.0.45</version>
+    <version>0.0.46</version>
     <licence>agpl</licence>
     <author mail="info@mtier.org" >MTier Ltd.</author>
     <namespace>TimeTracker</namespace>
