@@ -3,9 +3,41 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>timetracker</id>
     <name>Time Tracker</name>
+    <summary lang="en">Track your time spent with different tasks, aggregate by project or clients!</summary>
+    <summary lang="de">Ein Zeitmesser für tägliche Aufgaben, mit Übersichten für Projekte oder Kunden!</summary>
+    <description lang="en">
+        Track your time spent with different tasks each day using this time tracker app! Features include:
+        
+        # Adding entries
+        With the integrated timer, you only need to press start and stop! Times will be stored automatically, with 1-second-precision. Forgot to press start? Just use the manual editor, to add entries from the past. Or edit existing ones in case you need to change something!
+        
+        # Projects, Clients and Tags
+        Assign tasks to projects and clients! This allows you to display aggregated durations for each project or client, or filter for tasks by projects or clients. You need some more categorization? That's what tags are made for! Create tags to categorize tasks independently from projects or clients.
+        
+        # Lost track of your work time?
+        No problem! Just use the Dashboard view to display a nice donut / pie chart of your tasks! Or filter for tasks in the Reports or Timeline view to display total or aggregated values.
+        
+        This app is still under development, so stay tuned for updates and additional features! If you have any suggestions, bug reports or feature requests, feel free to head over to our [GitHub project page](https://github.com/mtierltd/timetracker) and search through the existing issues, maybe your topic is already under discussion! And if it's not, feel free to file a new issue for it.
+        
+        And for now, start making your time tracking easier by using this app! 
+    </description>
+    <description lang="de">
+        Behalte den Überblick über den Zeitaufwand täglicher Aufgaben mit dieser Time Tracker-App! Folgende Features erwarten dich:
+        
+        # Einträge anlegen
+        Ein integrierter Timer macht es Dir leicht, neue Einträge hinzuzufügen. Mit einem Klick auf Start und Stopp werden die Zeiten automatisch aufgezeichnet! Vergessen, den Startknopf zu drücken? Kein Problem! Mit dem Manuellen Editor können Einträge auch nachträglich erstellt werden. Oder Einträge bearbeitet werden, falls die Zeiten nochmal angepasst werden müssen.
+        
+        # Projekte, Kunden und Tags
+        Aufgaben können Projekten und Kunden zugeordnet werden. Dadurch lässt sich später einfach herausfinden, wie viel Zeit für ein spezifisches Projekt oder einen Kunden verwendet wurden. Und wenn das noch nicht genug ist, gibt es Tags, um Aufgaben auch Projekt- und Kundenübergreifend zu kategorisieren!
+        
+        # Den Überblick behalten
+        Mit dem integrierten Dashboard lässt sich anhand eines Kuchen-/Donut-Diagramms leicht ein Gesamtbild bekommen, wie viel Zeit für ein bestimmtes Projekt verwendet wurde. Mit der Berichts- oder Timeline-Ansicht lassen sich zudem Aufgaben filtern, um Zeiten zu aggregieren!
+        
+        Diese App wird aktuell noch weiterentwickelt, also: Augen offen halten für neue Features! Und falls Dir irgendwelche Verbesserungsvorschläge, Probleme oder neue Features einfallen, schau mal auf unserem [GitHub Projekt](https://github.com/mtierltd/timetracker) vorbei, vielleicht wird Dein Thema bereits diskutiert! Und falls nicht, starte gerne eine neue Diskussion, wir freuen uns auf Dein Feedback!
+    </description>
     <summary>Time Tracker App</summary>
     <description><![CDATA[Time Tracker App]]></description>
-    <version>0.0.46</version>
+    <version>0.0.47</version>
     <licence>agpl</licence>
     <author mail="info@mtier.org" >MTier Ltd.</author>
     <namespace>TimeTracker</namespace>
@@ -14,6 +46,14 @@
     </documentation>
     <category>tools</category>
     <bugs>https://github.com/mtierltd/timetracker/issues</bugs>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-u7j37.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-m0jq9.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-6dj9p.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-otj7x.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-kykd8.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-nbk8s.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-vuk8t.png</screenshot>
+    <screenshot>https://abload.de/img/bildschirmfotoam2021-03kxw.png</screenshot>
     <dependencies>
         <nextcloud min-version="14" max-version="20"/>
     </dependencies>
