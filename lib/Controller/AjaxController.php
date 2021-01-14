@@ -976,6 +976,7 @@ class AjaxController extends Controller {
 		$timeFormat = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
 		return $timeFormat;
 	}
+	
 	/**
 	 *
 	 * @NoAdminRequired
@@ -983,7 +984,7 @@ class AjaxController extends Controller {
 	 */
 	public function downloadTimeline($id){
 		$te = $this->timelineEntryMapper->findTimelineEntries($id);
-		if (count($te) == 0){
+		if (count($te) == 0){ // nothing to send
 			exit(0);
 		}
 
@@ -1034,6 +1035,61 @@ class AjaxController extends Controller {
 		}
 		
 		return new JSONResponse(["Timeline" => $timeline]);
+	}
+
+	/**
+	 *
+	 * @NoAdminRequired
+	 */
+
+	public function emailTimeline($id) {
+
+		$te = $this->timelineEntryMapper->findTimelineEntries($id);
+		if (count($te) == 0){ // nothing to send
+			exit(0);
+		}
+		$user = $te[0]->userUid;
+
+		$email = $this->request->email;
+		$emails = explode(';',$email);
+		$subject = $this->request->subject;
+		$content = $this->request->content;
+		
+		// output headers so that the file is downloaded rather than displayed
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename=timeline-'.$user.'-'.$id.'.csv');
+
+		// create a file pointer connected to the output stream
+		$id = (int)$id;
+		$path = sys_get_temp_dir() . DIRECTORY_SEPARATOR. 'timeline-'.$user.'-'.$id.'.csv';
+		$output = fopen($path, "w");
+		//$path = stream_get_meta_data($output)['uri'];
+		// output the column headings
+		fputcsv($output, array('id', 'User Uid', 'Name', 'Project Name', 'Client Name', 'Time Interval', 'Total Duration'));
+		$totalDuration = 0;
+		foreach($te as $t){
+			
+				fputcsv($output, [$t->id, $t->userUid, $t->name, $t->projectName, $t->clientName, $t->timeInterval, $this->secondsToTime($t->totalDuration)]);
+				$totalDuration += $t->totalDuration;
+		}
+		fputcsv($output, ['TOTAL', '', '', '', '', '', $this->secondsToTime($totalDuration)]);
+		
+		
+		
+		$mailer = \OC::$server->getMailer();
+		$message = $mailer->createMessage();
+		$attach = $mailer->createAttachmentFromPath($path);
+		$message->setSubject($subject);
+		//$message->setTo([$email => 'Recipient']);
+		$message->setTo($emails);
+		$message->setPlainBody($content);
+		//$message->setHtmlBody($content);
+		$message->attach($attach);
+		$mailer->send($message);
+		
+		fclose($output);
+		unlink($path);
+		return new JSONResponse([]);
 	}
 
 

@@ -220,6 +220,23 @@ require('select2/dist/css/select2.css');
                     });
                 return false;
             });
+            $("#timeline-csv-email").off().click(function(){
+              var baseUrl = OC.generateUrl('/apps/timetracker/ajax/email-timeline');
+              $.post(baseUrl,   // url
+                { 
+                  from: start.unix(),
+                  to: end.unix(),
+                  group1: group1,
+                  group2: group2,
+                  timegroup: group3,
+                  filterProjectId: filterProjectId,
+                  filterClientId: filterClientId
+                 }, // data to be submit
+                function(data, status, jqXHR) {// success callback
+                  getTimelines();
+                  });
+              return false;
+          });
             
           }
 
@@ -277,38 +294,87 @@ require('select2/dist/css/select2.css');
                   return '<a href="'+baseUrl+'">'+"Download"+'</a>';
                   
                 }},
-                {formatter:"buttonCross", width:40, align:"center", cellClick:function(e, cell){
-                  $("#dialog-confirm").dialog({
-                   buttons : {
-                     "Confirm" : {click: function() {
-                       var baseUrl = OC.generateUrl('/apps/timetracker/ajax/delete-timeline/'+cell.getRow().getData().id);
-                           var jqxhr = $.post( baseUrl, function() {
-                              getTimelines();
-                              $("#dialog-confirm").dialog("close");
-                           })
-                               .done(function(data, status, jqXHR) {
-                                 var response = data;
-                                 if ('Error' in response){
-                                   alert(response.Error);
-                                 }
-                               })
-                               .fail(function() {
-                               alert( "error" );
-                               })
-                               return false;
-                     },
-                     text: 'Confirm',
-                     class:'primary'
-                   },
-                     "Cancel" : function() {
-                       $(this).dialog("close");
-                     }
-                   }
-                 });
-                 $("#dialog-confirm").dialog('open');
+                {title:"Email", field:"", formatter:"rownum",formatter:function(cell, formatterParams, onRendered){
+                  //cell - the cell component
+                  //formatterParams - parameters set for the column
+                  //onRendered - function to call when the formatter has been rendered
+                  
+                  
+                  return '<a href=# data-id="'+cell.getRow().getData()["id"]+'">Email</a>';
+                  
+                  },cellClick:function(e, cell){
+                    $("#dialog-send-email-form").dialog({
+                      buttons : {
+                        "Confirm" : {
+                          click: function() {
+                            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/email-timeline/'+cell.getRow().getData().id);
+
+                            var jqxhr = $.post( baseUrl, {
+                                  email:$('#email-address').val(),
+                                  subject:$('#email-subject').val(),
+                                  content:$('#email-content').val(),
+                                }, function() {
+                              $("#dialog-send-email-form").dialog("close");
+                              debugger;
+                            })
+                              .done(function(data, status, jqXHR) {
+                                var response = data;
+                                if ('Error' in response){
+                                  alert(response.Error);
+                                }
+                              })
+                              .fail(function() {
+                              alert( "error" );
+                              })
+                              return false;
+                          },
+                          text: 'Confirm',
+                          class:'primary'
+                        },
+                        "Cancel" : function() {
+                          $(this).dialog("close");
+                        }
+                      }
+                    });
+                    $("#dialog-send-email-form").dialog('open');
    
                  //cell.getRow().delete();
-             }},
+                  }
+              },
+                {formatter:"buttonCross", width:40, align:"center", cellClick:function(e, cell){
+                    $("#dialog-confirm").dialog({
+                      buttons : {
+                        "Confirm" : {
+                          click: function() {
+                            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/delete-timeline/'+cell.getRow().getData().id);
+                            var jqxhr = $.post( baseUrl, function() {
+                              getTimelines();
+                              $("#dialog-confirm").dialog("close");
+                            })
+                              .done(function(data, status, jqXHR) {
+                                var response = data;
+                                if ('Error' in response){
+                                  alert(response.Error);
+                                }
+                              })
+                              .fail(function() {
+                              alert( "error" );
+                              })
+                              return false;
+                          },
+                          text: 'Confirm',
+                          class:'primary'
+                        },
+                        "Cancel" : function() {
+                          $(this).dialog("close");
+                        }
+                      }
+                    });
+                    $("#dialog-confirm").dialog('open');
+   
+                 //cell.getRow().delete();
+                  }
+                },
                
             ],
               ajaxResponse:function(url, params, response){

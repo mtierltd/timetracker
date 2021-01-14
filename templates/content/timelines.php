@@ -1,4 +1,3 @@
-
 <div id="timetracker-projects" class='theme-white'>
 <h1 class='page-title'>Timelines</h1>
 
@@ -12,6 +11,29 @@
     <fieldset>
       <label for="name">Name</label>
       <input type="text" name="name" id="name" value="" class="text ui-widget-content ui-corner-all">
+ 
+      <!-- Allow form submission with keyboard without duplicating the dialog button -->
+      <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+    </fieldset>
+  </form>
+</div>
+<div id="dialog-send-email-form" title="Send timeline to email" class='hidden'>
+  <p class="validateTips">All form fields are required. Please make sure that your email settings are correct in your Nextcloud configuration.</p>
+ <br/>
+  <form>
+    <fieldset>
+      <label for="email">Destination Email addresses (; separated):</label>
+      <div class="clearfix"> </div>
+      <input type="text" name="email" id="email-address" value="" class="text ui-widget-content ui-corner-all" style="width:250px;">
+      <div class="clearfix"> </div>
+      <label for="subject">Subject:</label>
+      <div class="clearfix"> </div>
+      <input type="text" name="subject" id="email-subject" value="" placehoder="Subject line" style="width:250px;" class="text ui-widget-content ui-corner-all">
+      <div class="clearfix"> </div>
+      <label for="content">Email Content:</label>
+      <div class="clearfix"> </div>
+      <textarea id="email-content" name="content" rows="4" cols="50" class="text ui-widget-content ui-corner-all" style="width:250px;"></textarea>
+      
  
       <!-- Allow form submission with keyboard without duplicating the dialog button -->
       <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
