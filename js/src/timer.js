@@ -90,6 +90,7 @@ function() {
               }
             },
             close: function() {
+              var form =  dialogWorkItemEditForm.find( "form" );
               form[ 0 ].reset();
             }
           });
