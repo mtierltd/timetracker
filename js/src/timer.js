@@ -163,8 +163,8 @@ function() {
         validateManualEntryFields();
 
         function editWorkIntem(dialogWorkItemEditForm){
-          target = dialogWorkItemEditForm.target;
-          form =  dialogWorkItemEditForm.find( "form" );
+          var target = dialogWorkItemEditForm.target;
+          var form =  dialogWorkItemEditForm.find( "form" );
           var id = $(target).data('myid');
           var baseUrl = OC.generateUrl("/apps/timetracker/ajax/update-work-interval/"+id);
           var jqxhr = $.post( baseUrl, {name:form.find("#name").val(),details:form.find("#details").val()},function() {
@@ -372,7 +372,7 @@ function() {
                     e.preventDefault();
                     dialogWorkItemEditForm.target = e.target;
                     
-                    form = dialogWorkItemEditForm.find( "form" )
+                    var form = dialogWorkItemEditForm.find( "form" )
                     form.find("#name").val($(e.target).data("name"));
                     form.find("#details").val($(e.target).data("details"));
                     dialogWorkItemEditForm.dialog("open");
