@@ -290,7 +290,7 @@ function() {
                                       "<div class='wi-child-details clickable' data-details='"+escapeHtml(child.details)+"' data-myid="+child.id+" data-name='"+escapeHtml(child.name)+"'>"+escapeHtml(cutString(child.details,64))+"</div>"+
                                     "</div>"+
                                     "<span class='fas clickable fa-trash wi-trash' id="+child.id+"></span>"+
-                                    "<select class='set-project' data-myid="+child.id+" data-projectid="+child.projectId+" data-projectname='"+escapeHtml(child.projectName)+"'>"+
+                                    "<select class='set-project' data-myid="+child.id+" data-projectid="+child.projectId+" data-projectname='"+escapeHtml(child.projectName)+"' data-projectcolor='"+escapeHtml(child.projectColor)+"'>"+
                                       ((child.projectName == null)?"":("<option selected='selected' value='"+child.projectId+"' text='"+escapeHtml(child.projectName)+"' >"+escapeHtml(child.projectName)+"</option>"))+
                                     "</select>"+
                                     "<select class='set-tag' multiple=\"multiple\" data-myid="+child.id+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' data-tagnames='"+child.tags.map(function(tag) {return tag.name}).join(',')+"'>"+
@@ -420,6 +420,7 @@ function() {
                     var projectId = $(this).data('projectid');
                    
                     var projectName = $(this).data('projectname');
+                    var projectColor = $(this).data('projectcolor');
                                         
                     
                     $(this).select2({
@@ -427,6 +428,26 @@ function() {
                         escapeMarkup : function(markup) { return markup; },
                         placeholder: "<span class='fas fa-folder'></span>",
                         allowClear: true,
+                        templateResult: function formatState (project) {
+                          var color = '#ffffff';
+                          if (project.color) {
+                            color = project.color;
+                          }
+                          var $state = $(
+                            '<span class="select-project"><span class="select-project-color" style="background-color:'+color+';" ></span>' + project.text + '</span>'
+                          );
+                          return $state;
+                        },
+                        templateSelection: function formatState (project) {
+                          var color = '#ffffff';
+                          if (projectColor) {
+                            color = projectColor;
+                          }
+                          var $state = $(
+                            '<span class="select-project"><span class="select-project-color" style="background-color:'+color+';" ></span>' + project.text + '</span>'
+                          );
+                          return $state;
+                        },
                         ajax: { 
                             url:  OC.generateUrl('/apps/timetracker/ajax/projects'),
                             
@@ -435,7 +456,7 @@ function() {
                             processResults: function (data) { //json parse
                                 return { 
                                     results: $.map(data.Projects,function(val, i){
-                                        return { id: val.id, text:val.name};
+                                        return { id: val.id, text:val.name, color: val.color};
                                         }),
                                     pagination: {
                                     more: false,

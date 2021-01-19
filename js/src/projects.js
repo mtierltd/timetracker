@@ -9,48 +9,60 @@ import 'select2/dist/js/select2.full.js'
 require('select2/dist/css/select2.css');
 require('../../css/style.css');
 //require("piklor.js");
-/*var Piklor  = require('./piklor.js');
-require('../../css/piklor.css');*/
+var Piklor  = require('./piklor.js');
+require('../../css/piklor.css');
 
 (function() {
+  var colorArray = [
+    "#1abc9c"
+  , "#2ecc71"
+  , "#3498db"
+  , "#9b59b6"
+  , "#34495e"
+  , "#16a085"
+  , "#27ae60"
+  , "#2980b9"
+  , "#8e44ad"
+  , "#2c3e50"
+  , "#f1c40f"
+  , "#e67e22"
+  , "#e74c3c"
+  , "#ecf0f1"
+  , "#95a5a6"
+  , "#f39c12"
+  , "#d35400"
+  , "#c0392b"
+  , "#bdc3c7"
+  , "#7f8c8d"
+  , "#bf678b"
+  , "#bf678b"
+  , "#c98879"
+  , "#ddcb55"
+  , "#a5b872"
+  , "#6ea68f"
+  , "#3794ac"
+  , "#0082c9"
+  , "#2d73be"
+  , "#5b64b3"
+  , "#8855a8"
+];
 
   $.ajaxSetup({
     headers: { 'RequestToken': OC.requestToken }
   });
     $( function() {
-
+      var pkedit = null;
         function isAdmin(){
           return oc_isadmin;
         }
 
         $(document).ready(function() {
+            
             $("#dialog-confirm").dialog({
               autoOpen: false,
               modal: true
             });
-/*            debugger;
-            var pk = new Piklor.Piklor(".color-picker", [
-              "#1abc9c"
-            , "#2ecc71"
-            , "#3498db"
-            , "#9b59b6"
-            , "#34495e"
-            , "#16a085"
-            , "#27ae60"
-            , "#2980b9"
-            , "#8e44ad"
-            , "#2c3e50"
-            , "#f1c40f"
-            , "#e67e22"
-            , "#e74c3c"
-            , "#ecf0f1"
-            , "#95a5a6"
-            , "#f39c12"
-            , "#d35400"
-            , "#c0392b"
-            , "#bdc3c7"
-            , "#7f8c8d"
-          ], {
+            var pk = new Piklor.Piklor("#color-picker-project-new", colorArray, {
               open: ".picker-wrapper .btn"
           })
         , wrapperEl = pk.getElm(".picker-wrapper")
@@ -60,8 +72,9 @@ require('../../css/piklor.css');*/
         pk.colorChosen(function (col) {
           wrapperEl.style.backgroundColor = col;
           header.style.backgroundColor = col;
-          footer.style.backgroundColor = col;
-      });*/
+          $('#new-project-color').val(col);
+          //footer.style.backgroundColor = col;
+      });
 
         
             // OC.currentUser
@@ -97,6 +110,7 @@ require('../../css/piklor.css');*/
         $("#new-project-submit").click(function (e) {
             e.preventDefault();
             var selectedClient = $('#client-select').select2('data');
+            var selectedColor =  $('#new-project-color').val();
             var clientId = null;
             if (selectedClient.length > 0){
               clientId = selectedClient[0].id;
@@ -104,7 +118,7 @@ require('../../css/piklor.css');*/
             if ($("#new-project-input").val().trim() == '')
               return false;
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-project/'+$("#new-project-input").val());
-            var jqxhr = $.post( baseUrl, {clientId:clientId} ,function() {
+            var jqxhr = $.post( baseUrl, {clientId:clientId, color:selectedColor} ,function() {
                 getProjects();
                 $(dialogProjectEditForm).dialog("close");
               })
@@ -125,6 +139,24 @@ require('../../css/piklor.css');*/
             width: 350,
             modal: true,
             create: function( event, ui ) {
+
+              var wrapperEl;
+              var header;
+              var footer;
+              pkedit = new Piklor.Piklor("#color-picker-project-edit", colorArray, {
+                  open: ".picker-wrapper-project-edit .btn"
+                  })
+                , wrapperEl = pkedit.getElm(".picker-wrapper-project-edit")
+                , header = pkedit.getElm("header")
+                , footer = pkedit.getElm("footer")
+                ;
+                pkedit.colorChosen(function (col) {
+                  wrapperEl.style.backgroundColor = col;
+                  //header.style.backgroundColor = col;
+                  $('#project-edit-color').val(col);
+                  //footer.style.backgroundColor = col;
+              });
+
               if (isAdmin()){
                 $(".admin-only").removeClass('hidden');
                 $('#locked').click(function(){
@@ -294,7 +326,15 @@ require('../../css/piklor.css');*/
             var target = dialogProjectEditForm.target;
             var form =  dialogProjectEditForm.find( "form" );
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/edit-project/'+target.getData().id);
-            var jqxhr = $.post( baseUrl, {name:form.find("#name").val(), clientId:form.find("#client-select-popup").val(), locked:form.find("#locked").is(':checked')?'1':'0',archived:form.find("#archived").is(':checked')?'1':'0',  allowedTags:$("#locked-select-tags").val().join(","), allowedUsers:$("#locked-select-users").val().join(",") },function() {
+            var jqxhr = $.post( baseUrl, {
+                                        name:form.find("#name").val(), 
+                                        clientId:form.find("#client-select-popup").val(), 
+                                        color:form.find("#project-edit-color").val(), 
+                                        locked:form.find("#locked").is(':checked')?'1':'0',
+                                        archived:form.find("#archived").is(':checked')?'1':'0',
+                                        allowedTags:$("#locked-select-tags").val().join(","), 
+                                        allowedUsers:$("#locked-select-users").val().join(",") 
+                                      },function() {
                 getProjects();
                 $(dialogProjectEditForm).dialog("close");
               })
@@ -334,6 +374,7 @@ require('../../css/piklor.css');*/
             var columns = [
               //{title:"Id", field:"id", width:100}, //column has a fixed width of 100px;
               {title:"#", field:"", formatter:"rownum", width: 40, align: "center"},
+              {title:"Color", field:"color", formatter:"color", width: 40}, //column will be allocated 1/5 of the remaining space
               {title:"Name", field:"name", widthGrow:1}, //column will be allocated 1/5 of the remaining space
               {title:"Client", field:"client", widthGrow:1}, //column will be allocated 1/5 of the remaining space
               {title:"Locked", field:"locked", widthGrow:1, formatter:"tickCross"}, //column will be allocated 1/5 of the remaining space  
@@ -368,7 +409,8 @@ require('../../css/piklor.css');*/
                 
                 form = dialogProjectEditForm.find( "form" )
                 form.find("#name").val(row.getData().name);
-                
+                form.find("#project-edit-color").val(row.getData().color);
+                pkedit.set(row.getData().color);
                 //form.find("#client-select-popup").val($(e.target).data("client-id")).trigger('change');
                 var clientSelectData = {
                   clientId: row.getData().clientId,

@@ -5,6 +5,13 @@
         <form>
             <input tabindex="1" type="text" spellcheck="false" autocomplete="off" class="" value="" placeholder="New project name..." id="new-project-input">
             <select class="form-control" id="client-select"></select>
+            <input tabindex="2" type="text" spellcheck="false" autocomplete="off" class="hidden" id="new-project-color">
+            <div class="picker-wrapper">
+              <button class="btn" onclick="return false;">Select a color</button>
+              <div class="color-picker" id='color-picker-project-new'>
+              </div>
+            </div>
+            
             <input type="submit" value="Add project" id="new-project-submit" class='ui-button primary'>
         </form>
 </div>
@@ -18,7 +25,6 @@
         </div>
         
 </div>
-
 <div id="dialog-confirm" title="Confirmation Required" class='hidden'>
   Are you sure you want to delete this project?
 </div>
@@ -30,6 +36,15 @@
       <div>
         <label for="name">Name</label>
         <input type="text" name="name" id="name" value="" class="text ui-widget-content ui-corner-all">
+      </div>
+      <div>
+        <label for="name">Color</label>
+        <input type="text" name="color" id="project-edit-color" value="" class="text ui-widget-content ui-corner-all hidden">
+        <div class="picker-wrapper-project-edit">
+              <button class="btn" onclick="return false;">Select a color</button>
+              <div class="color-picker" id='color-picker-project-edit'>
+              </div>
+        </div>
       </div>
       <div class='hidden admin-only' id='locked-div'>
         <label for="locked">Locked</label>

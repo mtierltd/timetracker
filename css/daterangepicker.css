@@ -386,3 +386,36 @@
     float: right; }
   .daterangepicker .drp-calendar.left {
     clear: none !important; } }
+.daterangepicker {
+  background-color: var(--color-main-background);
+}
+.daterangepicker .calendar-table {
+    border: 1px solid var(--color-main-background);
+    border-radius: 4px;
+    background-color: var(--color-main-background);
+}
+.daterangepicker select.hourselect, .daterangepicker select.minuteselect, .daterangepicker select.secondselect, .daterangepicker select.ampmselect {
+    width: 50px;
+    margin: 0 auto;
+    background:var(--color-background-dark);
+    border: 1px solid var(--color-background-dark);
+    padding: 2px;
+    outline: 0;
+    font-size: 12px;
+}
+
+.daterangepicker td.off, .daterangepicker td.off.in-range, .daterangepicker td.off.start-date, .daterangepicker td.off.end-date {
+    background-color:var(--color-main-background);
+    border-color: transparent;
+    color:  var(--color-background-darker);
+}
+
+.daterangepicker td.available:hover, .daterangepicker th.available:hover {
+    background-color: var(--color-background-darker);
+    border-color: transparent;
+    color: inherit;
+}
+.daterangepicker .ranges li:hover {
+    background-color: var(--color-background-darker);
+}
+

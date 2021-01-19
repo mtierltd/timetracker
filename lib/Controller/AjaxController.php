@@ -111,6 +111,7 @@ class AjaxController extends Controller {
 					'tags' => $tags,
 					'userUid' => $wi->userUid,
 					'projectName' => ($project === null)?null:$project->name,
+					'projectColor' =>  ($project === null)?null:$project->color,
 			];
 			$days[$dt][$wi->name]['children'][] = $wa;
 			$days[$dt][$wi->name]['totalTime'] += $wa['duration'];
@@ -527,6 +528,10 @@ class AjaxController extends Controller {
 		if (isset($this->request->clientId)) {
 			$clientId = $this->request->clientId;
 		}
+		$color = '#ffffff';
+		if (isset($this->request->color)) {
+			$color = $this->request->color;
+		}
 		if (trim($name) == ''){
 			return;
 		}
@@ -534,6 +539,7 @@ class AjaxController extends Controller {
 		if ($p == null){
 			$p = new Project();
 			$p->setName($name);
+			$p->setColor($color);
 			$p->setCreatedAt(time());
 			$p->setCreatedByUserUid($this->userId);
 			$p->setClientId($clientId);
@@ -575,6 +581,10 @@ class AjaxController extends Controller {
 				$p->setName($name);
 			}
 		}
+		if (isset($this->request->color)){
+			$color = $this->request->color;
+			$p->setColor($color);
+		}
 		if (isset($this->request->clientId)){
 			$clientId = $this->request->clientId;
 			$p->setClientId($clientId);
@@ -604,6 +614,7 @@ class AjaxController extends Controller {
 				$this->userToProjectMapper->insert($up);
 			}
 		}
+		
 		if (isset($this->request->archived) && $p->getArchived() != $this->request->archived){
 			if (($this->isThisAdminUser() || $p->createdByUserUid == $this->userId) ){
 				
@@ -693,6 +704,7 @@ class AjaxController extends Controller {
 			$out['name'] = $p->name;
 			$out['locked'] = $p->locked;
 			$out['archived'] = $p->archived;
+			$out['color'] = $p->color;
 			$out['client'] = null;
 			$tags = $this->tagMapper->findAllAlowedForProject($p->id);
 			$users = array_map(function ($utop) { return $utop->userUid;},$this->userToProjectMapper->findAllForProject($p->id));

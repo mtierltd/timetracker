@@ -51,6 +51,13 @@
       <length>64</length>
     </field>
     <field>
+      <name>color</name>
+      <type>text</type>
+      <notnull>true</notnull>
+      <default>#ffffff</default>
+      <length>7</length>
+    </field>
+    <field>
       <name>client_id</name>
       <type>integer</type>
       <notnull>false</notnull>

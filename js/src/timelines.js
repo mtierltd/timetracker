@@ -101,6 +101,16 @@ require('../../css/style.css');
             escapeMarkup : function(markup) { return markup; },
             placeholder: "Select project",
             allowClear: true,
+            templateResult: function formatState (project) {
+              var color = '#ffffff';
+              if (project.color) {
+                color = project.color;
+              }
+              var $state = $(
+                '<span class="select-project"><span class="select-project-color" style="background-color:'+color+';" ></span>' + project.text + '</span>'
+              );
+              return $state;
+            },
             ajax: { 
               tags: true,
                 url:  OC.generateUrl('/apps/timetracker/ajax/projects'),
@@ -110,7 +120,7 @@ require('../../css/style.css');
                 processResults: function (data, page) { //json parse
                     return { 
                         results: $.map(data.Projects,function(val, i){
-                        return { id: val.id, text:val.name};
+                        return { id: val.id, text:val.name, color: val.color};
                         }),
                         pagination: {
                         more: false,
@@ -316,7 +326,6 @@ require('../../css/style.css');
                                   content:$('#email-content').val(),
                                 }, function() {
                               $("#dialog-send-email-form").dialog("close");
-                              debugger;
                             })
                               .done(function(data, status, jqXHR) {
                                 var response = data;

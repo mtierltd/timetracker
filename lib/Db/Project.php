@@ -8,6 +8,7 @@ class Project extends Entity {
 
     public $id;
     public $name;
+    public $color;
     public $clientId;
     public $createdByUserUid;
     public $createdAt;
@@ -20,6 +21,7 @@ class Project extends Entity {
         
         $this->addType('id', 'integer');
         $this->addType('name', 'string');
+        $this->addType('color', 'string');
         $this->addType('clientId', 'integer');
         $this->addType('createdByUserUid', 'string');
         $this->addType('createdAt', 'integer');

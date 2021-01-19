@@ -502,3 +502,14 @@ td.ε_row {
 	background-color: var(--color-main-background);
 	color: var(--color-text-normal);
 }
+.select-project-color {
+    display: inline-block;
+    width: 9px;
+    height: 5px;
+    margin: 3px;
+    border-radius: 100%;
+}
+
+.select-project {
+	/*font-size: 24px;*/
+}
