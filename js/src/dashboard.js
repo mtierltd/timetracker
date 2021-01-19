@@ -2,7 +2,8 @@ var $ = require("jquery");
 require("jquery-migrate");
 // var moment = require("moment");
 require("jqueryui");
-require("jqueryui/jquery-ui.css");
+//require("jqueryui/jquery-ui.css");
+require('../../css/style.css');
 var Chart = require("chart.js");
 (function() {
   $.ajaxSetup({

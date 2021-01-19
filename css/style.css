@@ -458,3 +458,47 @@ td.ε_row {
     background: var(--color-background-dark);
     color: var(--color-text-lighter);
 }
+.select2-search { background-color: var(--color-main-background); color: var(--color-text-darker)}
+.select2-search input { background-color: var(--color-main-background); color: var(--color-text-darker)}
+.select2-results { background-color: var(--color-main-background); color: var(--color-text-darker)}
+.select2-selection { background-color: var(--color-main-background); color: var(--color-text-darker)}
+.select2-container--default .select2-selection--single {
+	background-color: var(--color-main-background);
+	color: var(--color-text-darker)
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered{
+	line-height: 26px;
+	background-color: var(--color-main-background);
+	color: var(--color-text-darker)
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder{
+	background-color: var(--color-main-background);
+	color: var(--color-text-lighter)
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice {
+	background-color: var(--color-main-background);
+	color: var(--color-text-lighter);
+}
+.select2-container--default .select2-selection--multiple {
+	background-color: var(--color-main-background);
+}
+.select2-container--default.select2-container--focus .select2-selection--multiple {
+	border: solid var(--color-text-lighter) 1px;
+}
+
+#report-range{
+	/*var(--color-background-dark);*/
+
+}
+.select2-dropdown {
+	background-color: var(--color-background-dark);
+}
+.ui-button{
+	background-color: var(--color-main-background);
+	color: var(--color-text-normal);
+}
+.ui-widget-content {
+	background-color: var(--color-main-background);
+	color: var(--color-text-normal);
+}

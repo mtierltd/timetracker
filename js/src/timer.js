@@ -3,11 +3,12 @@ require("jquery-migrate");
 require("daterangepicker");
 var moment = require("moment");
 require("jqueryui");
-require("jqueryui/jquery-ui.css");
+//require("jqueryui/jquery-ui.css");
 //import 'select2/dist/js/select2.full.js'
 import 'select2/dist/js/select2.js'
 require('select2/dist/css/select2.css');
 require('daterangepicker/daterangepicker.css');
+require('../../css/style.css');
 
 
 (
@@ -126,7 +127,7 @@ function() {
                     
                       var jqxhr = $.post( baseUrl,
                             {
-                              start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'),
+                              start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'), 
                               end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'), 
                               tzoffset: new Date().getTimezoneOffset(),
                               async: true,

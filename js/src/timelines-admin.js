@@ -2,11 +2,12 @@ var $ = require("jquery");
 require("jquery-migrate");
 // var moment = require("moment");
 require("jqueryui");
-require("jqueryui/jquery-ui.css");
+//require("jqueryui/jquery-ui.css");
 import Tabulator from 'tabulator-tables';
 require('tabulator-tables/dist/css/tabulator.css');
 import 'select2/dist/js/select2.full.js'
 require('select2/dist/css/select2.css');
+require('../../css/style.css');
 
 (function() {
 
