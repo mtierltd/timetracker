@@ -77,7 +77,7 @@ class ReportItemMapper extends Mapper {
                     $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(min(start)),'%Y-%m-%d') as time";
                 }
             } elseif ($timegroup == 'week') {
-                $selectFields[]= "STR_TO_DATE(CONCAT(YEARWEEK(FROM_UNIXTIME(start)),' Monday'), '%x%v %W') as time";
+                $selectFields[]= "STR_TO_DATE(CONCAT(YEARWEEK(FROM_UNIXTIME(start), 1),' Monday'), '%x%v %W') as time";
             }elseif ($timegroup == 'day') {
                 $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(start),'%Y-%m-%d') as time";
             }elseif ($timegroup == 'year') {
