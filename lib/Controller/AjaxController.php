@@ -18,6 +18,8 @@ use OCA\TimeTracker\Db\Project;
 use OCA\TimeTracker\Db\UserToProject;
 use OCA\TimeTracker\Db\Tag;
 use OCA\TimeTracker\Db\TagMapper;
+use OCA\TimeTracker\Db\Goal;
+use OCA\TimeTracker\Db\GoalMapper;
 use OCA\TimeTracker\Db\UserToTagMapper;
 use OCA\TimeTracker\Db\UserToTag;
 use OCA\TimeTracker\Db\WorkIntervalToTag;
@@ -38,6 +40,7 @@ class AjaxController extends Controller {
 	protected $projectMapper;
 	protected $userToProjectMapper;
 	protected $tagMapper;
+	protected $goalMapper;
 	protected $request;
 	protected $workIntervalToTagMapper;
 	protected $reportItemMapper;
@@ -46,8 +49,8 @@ class AjaxController extends Controller {
 
 	public function __construct($AppName, IRequest $request, IUserSession $userSession, 
 							WorkIntervalMapper $workIntervalMapper, ClientMapper $clientMapper, UserToClientMapper $userToClientMapper,
-							ProjectMapper $projectMapper, UserToProjectMapper $userToProjectMapper, TagMapper $tagMapper,WorkIntervalToTagMapper $workIntervalToTagMapper, ReportItemMapper $reportItemMapper, 
-							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, $UserId){
+							ProjectMapper $projectMapper, UserToProjectMapper $userToProjectMapper, TagMapper $tagMapper, WorkIntervalToTagMapper $workIntervalToTagMapper, ReportItemMapper $reportItemMapper, 
+							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper, $UserId){
 		parent::__construct($AppName, $request);
 		$this->userId = $UserId;
 		$this->userSession = $userSession;
@@ -59,6 +62,7 @@ class AjaxController extends Controller {
 		$this->userToProjectMapper = $userToProjectMapper;
 
 		$this->tagMapper = $tagMapper;
+		$this->goalMapper = $goalMapper;
 
 		$this->workIntervalToTagMapper = $workIntervalToTagMapper;
 		$this->reportItemMapper = $reportItemMapper;
@@ -1115,4 +1119,154 @@ class AjaxController extends Controller {
 	}
 
 
+
+
+
+	/**
+	 *
+	 * @NoAdminRequired
+	 */
+	public function addGoal() {
+
+		$projectId = $this->request->projectId;
+		$hours = $this->request->hours;
+		$interval = $this->request->interval;
+
+		$g = $this->goalMapper->findByUserProject($this->userId, $projectId);
+		if ($g == null){
+			$g = new Goal();
+			$g->setProjectId($projectId);
+			$g->setUserUid($this->userId);
+			$g->setCreatedAt(time());
+			$g->setHours($hours);
+			$g->setInterval($interval);
+			$this->goalMapper->insert($g);
+		} else 	if ($g != null){
+			return new JSONResponse(["Error" => "There can be only one goal per project"]);
+		}
+
+		
+		return $this->getGoals();
+	}
+	
+	/**
+	 *
+	 * @NoAdminRequired
+	 */
+	public function deleteGoal($id) {
+		$c = $this->goalMapper->find($id);
+		if ($c == null){
+			return;
+		}
+		if ($c->userUid != $this->userId){
+			return;
+		}
+		$this->goalMapper->delete($c);
+		return $this->getGoals();
+	}
+
+	public function getStartOfWeek($timestamp){
+		$date = new \DateTime('@'.$timestamp);
+		$weeknumber = $date->format("W");
+		$year = $date->format("Y");
+		$weekstartdt = new \DateTime();
+		$weekstartdt->setISODate($year, $weeknumber);
+
+		return $weekstartdt;
+	}
+	public function getStartOfMonth($timestamp){
+		$date = new \DateTime('@'.$timestamp);
+		$date->modify('first day of this month');
+
+		return $date;
+	}
+
+	public function getWeeksSince($timestamp){
+		$start  = $this->getStartOfWeek($timestamp);
+		$end = $this->getStartOfWeek(time());
+		$oneWeek = \DateInterval::createFromDateString('1 week');
+		$currentWeek = $start;
+		$weeks = [];
+		while ($currentWeek < $end){
+			$weeks[] = $currentWeek->format("Y-m-d");
+			$currentWeek->add($oneWeek);
+		}
+		return $weeks;
+	}
+	public function getMonthsSince($timestamp){
+		$start  = $this->getStartOfMonth($timestamp);
+		$end = $this->getStartOfMonth(time());
+		$oneMonth = \DateInterval::createFromDateString('1 month');
+		$currentMonth = $start;
+		$months = [];
+		while ($currentMonth < $end){
+			$months[] = $currentMonth->format("Y-m");
+			$currentMonth->add($oneMonth);
+		}
+		return $months;
+	}
+	/**
+	 *
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+
+	public function getGoals(){
+		$goals = $this->goalMapper->findAll($this->userId);
+		$weekStart = $this->getStartOfWeek(time())->format('Y-m-d');
+		$monthStart = $this->getStartOfMonth(time())->format('Y-m');
+		
+		$ret = [];
+		foreach($goals as $goal){
+			$rgoal = [];
+			if ($goal->interval == 'Weekly'){
+				$goalWeekStart = $this->getStartOfWeek($goal->createdAt);
+				$repItems = $this->reportItemMapper->report($this->userId, $goalWeekStart->getTimestamp(),time(),[$goal->projectId],"","","week","project","",false,0,10000);
+				$intervals = $this->getWeeksSince($goalWeekStart->getTimestamp());
+			} elseif ($goal->interval == 'Monthly'){
+				$goalMonthStart = $this->getStartOfMonth($goal->createdAt);
+				$repItems = $this->reportItemMapper->report($this->userId, $goalMonthStart->getTimestamp(),time(),[$goal->projectId],"","","month","project","",false,0,10000);
+				$intervals = $this->getMonthsSince($goalMonthStart->getTimestamp());
+
+			}
+			$workedSecondsCurrentPeriod = 0;
+			$debtSeconds = 0;
+			array_pop($intervals);
+			foreach($intervals as $interval){
+				$workedInInterval = 0;
+				foreach($repItems as $repItem) {
+					if ($interval == $repItem->time) {					
+						$workedInInterval = $repItem->totalDuration;
+						break;	
+					} 
+				}
+				$debtSeconds += ($goal->hours*3600 - $workedInInterval);
+			}
+
+			foreach($repItems as $period){
+				if ($goal->interval == 'Weekly' && $period->time == $weekStart){
+					$workedSecondsCurrentPeriod += $period->totalDuration;
+				} elseif ($goal->interval == 'Monthly' && $period->time == $monthStart){
+					$workedSecondsCurrentPeriod += $period->totalDuration;
+				}
+			}
+
+			$rgoal = [
+				'id' => $goal->id,
+    			'userUid' => $goal->userUid,
+    			'projectId' => $goal->projectId,
+    			'projectName' => $goal->projectName,
+    			'hours' => $goal->hours,
+    			'interval' => $goal->interval,
+				'createdAt'  => $goal->createdAt,
+				'workedHoursCurrentPeriod'  => round($workedSecondsCurrentPeriod / 3600, 2),
+				'debtHours'  => round($debtSeconds / 3600, 2),
+				'remainingHours'  => round($goal->hours - $workedSecondsCurrentPeriod / 3600, 2),
+				'totalRemainingHours'  => round(($debtSeconds + $goal->hours *3600 - $workedSecondsCurrentPeriod) / 3600, 2),
+			];
+			$ret[] = $rgoal;
+		}
+		return new JSONResponse(["Goals" => json_decode(json_encode($ret), true)]);
+	}
 }
+

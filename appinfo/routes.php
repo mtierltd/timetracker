@@ -22,6 +22,7 @@ return [
        ['name' => 'timelinesAdmin#index', 'url' => '/timelines-admin', 'verb' => 'GET'],
        
        ['name' => 'tags#index', 'url' => '/tags', 'verb' => 'GET'],
+       ['name' => 'goals#index', 'url' => '/goals', 'verb' => 'GET'],
 
        ['name' => 'ajax#start_timer', 'url' => '/ajax/start-timer/{name}', 'verb' => 'POST'],
        ['name' => 'ajax#stop_timer', 'url' => '/ajax/stop-timer/{name}', 'verb' => 'POST'],
@@ -48,6 +49,11 @@ return [
        ['name' => 'ajax#add_tag', 'url' => '/ajax/add-tag/{name}', 'verb' => 'POST'],
        ['name' => 'ajax#edit_tag', 'url' => '/ajax/edit-tag/{id}', 'verb' => 'POST'],
        ['name' => 'ajax#delete_tag', 'url' => '/ajax/delete-tag/{id}', 'verb' => 'POST'],
+
+       ['name' => 'ajax#get_goals', 'url' => '/ajax/goals', 'verb' => 'GET'],
+       ['name' => 'ajax#add_goal', 'url' => '/ajax/add-goal', 'verb' => 'POST'],
+       ['name' => 'ajax#delete_goal', 'url' => '/ajax/delete-goal/{id}', 'verb' => 'POST'],
+
 
        ['name' => 'ajax#get_report', 'url' => '/ajax/report', 'verb' => 'GET'],
        ['name' => 'ajax#post_timeline', 'url' => '/ajax/timeline', 'verb' => 'POST'],

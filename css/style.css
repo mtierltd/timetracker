@@ -273,6 +273,14 @@ td.ε_row {
 	margin: 40px;
 	flex-wrap: wrap;
 }
+#timetracker-goals {
+    width: 100%;
+    /* display: block; */
+    /*background-color: rgb(250, 251, 252);*/
+    display: inline-block;
+	margin: 40px;
+	padding: 20px;
+}
 .set-project{
 	line-height: 32px;
     min-width: 200px;
@@ -346,6 +354,10 @@ td.ε_row {
   
 	background-image: var(--icon-folder-000);
   }
+.nav-icon-timer {
+  
+	background-image: var(--icon-play-000);
+  }
 .nav-icon-clients {
     background-image: var(--icon-contacts-000);
 }
@@ -357,6 +369,9 @@ td.ε_row {
 }
 .nav-icon-dashboard {
     background-image: var(--icon-desktop-000);
+}
+.nav-icon-goals {
+    background-image: var(--icon-monitoring-000);
 }
 /* .ui-button.primary {
     background-color: red;

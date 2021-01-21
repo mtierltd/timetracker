@@ -1,6 +1,7 @@
 <ul>
-	<li><a href="<?php p(\OC::$server->getURLGenerator()->linkToRoute('timetracker.page.index'));?>" class='nav-icon-recent svg'>Timer</a></li>
+	<li><a href="<?php p(\OC::$server->getURLGenerator()->linkToRoute('timetracker.page.index'));?>" class='nav-icon-timer'>Timer</a></li>
 	<li><a href="<?php p(\OC::$server->getURLGenerator()->linkToRoute('timetracker.dashboard.index'));?>" class='nav-icon-dashboard'>Dashboard</a></li>
+	<li><a href="<?php p(\OC::$server->getURLGenerator()->linkToRoute('timetracker.goals.index'));?>" class='nav-icon-goals'>Goals</a></li>
 	<li><a href="<?php p(\OC::$server->getURLGenerator()->linkToRoute('timetracker.reports.index'));?>"" class='nav-icon-reports'>Reports</a></li>
 	<li><a href="<?php p(\OC::$server->getURLGenerator()->linkToRoute('timetracker.timelines.index'));?>"" class='nav-icon-reports'>Timelines</a></li>
 	<?php if (\OC_User::isAdminUser(\OC_User::getUser())): ?>

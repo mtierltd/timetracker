@@ -521,4 +521,50 @@
 </table>
 
 
+<table>
+  <name>*dbprefix*timetracker_goal</name>
+  
+  <declaration>
+    <field>
+      <name>id</name>
+      <type>integer</type>
+      <default>0</default>
+      <notnull>true</notnull>
+      <autoincrement>1</autoincrement>
+      <length>4</length>
+    </field>
+    <field>
+      <name>user_uid</name>
+      <type>text</type>
+      <notnull>true</notnull>
+      <length>128</length>
+    </field>
+    <field>
+      <name>project_id</name>
+      <type>integer</type>
+      <notnull>true</notnull>
+      <length>4</length>
+    </field>
+    <field>
+      <name>hours</name>
+      <type>integer</type>
+      <notnull>true</notnull>
+      <length>4</length>
+    </field>
+    <field>
+      <name>interval</name>
+      <type>text</type>
+      <notnull>true</notnull>
+      <length>12</length>
+    </field>
+    <field>
+      <name>created_at</name>
+      <type>integer</type>
+      <notnull>true</notnull>
+      <length>4</length>
+    </field>
+  </declaration>
+</table>
+
+
 </database>

@@ -8,6 +8,7 @@ module.exports =  {
     projects: './src/projects.js',
     reports: './src/reports.js',
     tags: './src/tags.js',
+    goals: './src/goals.js',
     timelines: './src/timelines.js',
     timelinesadmin: './src/timelines-admin.js',
   },
