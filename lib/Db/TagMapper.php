@@ -33,7 +33,12 @@ class TagMapper extends Mapper {
     public function find($id) {
         $sql = 'SELECT * FROM `*PREFIX*timetracker_tag` ' .
             'WHERE `id` = ?';
-        return $this->findEntity($sql, [$id]);
+        try {
+            $e = $this->findEntity($sql, [$id]);
+            return $e;
+        } catch (\OCP\AppFramework\Db\DoesNotExistException $e){
+            return null;
+        }
     }
 
 

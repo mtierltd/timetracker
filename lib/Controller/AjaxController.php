@@ -98,7 +98,9 @@ class AjaxController extends Controller {
 			$tags = [];
 			$wiToTags = $this->workIntervalToTagMapper->findAllForWorkInterval($wi->id);
 			foreach($wiToTags as $wiToTag){
-				$tags[] = $this->tagMapper->find($wiToTag->tagId);
+				$t = $this->tagMapper->find($wiToTag->tagId);
+				if ($t != null)
+					$tags[] = $t;
 			}
 			
 			$wa = ['duration' => $wi->duration,
@@ -317,6 +319,14 @@ class AjaxController extends Controller {
 			foreach($tags as $tag){
 				if (empty($tag))
 					continue;
+				if(!is_numeric($tag)){
+					$c = new Tag();
+					$c->setName($tag);
+					$c->setUserUid($this->userId);
+					$c->setCreatedAt(time());
+					$this->tagMapper->insert($c);
+					$tag = $c->id;
+				}
 				$newWiToTag = new WorkIntervalToTag();
 				$newWiToTag->setWorkIntervalId($id);
 				$newWiToTag->setTagId($tag);
