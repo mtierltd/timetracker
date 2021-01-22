@@ -324,6 +324,11 @@ class AjaxController extends Controller {
 				if (empty($tag))
 					continue;
 				if(!is_numeric($tag)){
+					if ($wi->projectId != null){
+						$project = $this->projectMapper->find($wi->projectId);
+						if($project && $project->locked)
+							continue; // don't add new tags to locked projects
+					}
 					$c = new Tag();
 					$c->setName($tag);
 					$c->setUserUid($this->userId);
