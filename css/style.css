@@ -88,6 +88,7 @@ html[xmlns] .clearfix { display: block;}
 .wi-child-element {
 	display: flex;
 	border-bottom: #eee solid 1px;
+	flex-direction:row;
 }
 .wi-child-duration {
     padding: 10px;
@@ -527,4 +528,38 @@ td.ε_row {
 
 .select-project {
 	/*font-size: 24px;*/
+}
+.tags-select {
+	width:200px;
+}
+.project-select {
+	width:200px;
+}
+@media screen and (max-width: 700px) {
+	.wi-child-element {
+		display: inline-flex;
+		flex-direction:column;
+		width: 100%;
+	}
+	.wi-trash {
+		display: inline;
+	}
+	.wi-child-duration {
+		text-align: left;
+	}
+	.wi-child{
+		border-bottom: 2px var(--color-background-darker) solid;
+	}
+	.tags-select {
+		width:auto;
+	}
+	.project-select {
+		width:auto;
+	}
+	.wi-play{
+		display:table;
+		margin: 0 auto;
+	}
+	
+
 }

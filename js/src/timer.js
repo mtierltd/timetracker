@@ -5,7 +5,7 @@ var moment = require("moment");
 require("jqueryui");
 //require("jqueryui/jquery-ui.css");
 //import 'select2/dist/js/select2.full.js'
-import 'select2/dist/js/select2.js'
+import 'select2/dist/js/select2.full.js'
 require('select2/dist/css/select2.css');
 require('daterangepicker/daterangepicker.css');
 require('../../css/style.css');
@@ -424,7 +424,7 @@ function() {
                                         
                     
                     $(this).select2({
-                        width: '200px',
+                        containerCssClass:'project-select',
                         escapeMarkup : function(markup) { return markup; },
                         placeholder: "<span class='fas fa-folder'></span>",
                         allowClear: true,
@@ -483,7 +483,7 @@ function() {
 
                   $(this).select2({
                     tags: true,
-                    width: '200px',
+                    containerCssClass:'tags-select',
                     placeholder: "Select tags...",
                     allowClear: true,
         
