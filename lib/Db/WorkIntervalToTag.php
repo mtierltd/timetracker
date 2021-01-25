@@ -18,7 +18,7 @@ class WorkIntervalToTag extends Entity {
         $this->addType('id', 'integer');
         $this->addType('workIntervalId', 'integer');
         $this->addType('tagId', 'integer');
-        $this->addType('createdAt', 'timestamp');
+        $this->addType('createdAt', 'integer');
 
     }
 }

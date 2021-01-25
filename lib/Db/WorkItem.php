@@ -22,7 +22,7 @@ class WorkItem extends Entity {
         $this->addType('projectId', 'integer');
         $this->addType('tagId', 'integer');
         $this->addType('totalDuration', 'integer');
-        $this->addType('createdAt', 'timestamp');
+        $this->addType('createdAt', 'integer');
         $this->addType('userUid', 'string');
     }
 }

@@ -22,7 +22,7 @@ class UserToClient extends Entity {
         $this->addType('clientId', 'integer');
         $this->addType('admin', 'integer');
         $this->addType('access', 'integer');
-        $this->addType('createdAt', 'timestamp');
+        $this->addType('createdAt', 'integer');
 
     }
 }

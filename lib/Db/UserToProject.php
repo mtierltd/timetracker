@@ -22,7 +22,7 @@ class UserToProject extends Entity {
         $this->addType('projectId', 'integer');
         $this->addType('admin', 'integer');
         $this->addType('access', 'integer');
-        $this->addType('createdAt', 'timestamp');
+        $this->addType('createdAt', 'integer');
 
     }
 }
