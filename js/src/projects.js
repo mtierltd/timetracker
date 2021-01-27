@@ -198,27 +198,7 @@ require('../../css/piklor.css');
                   cache: false,
                 },
               });
-              $.ajax(OC.generateUrl('/apps/timetracker/ajax/tags'), {
-                    dataType: "json"
-                  }).done(function(data) { 
-                    var arr = $('#locked-select-tags').val().map(function (x){
-                             return parseInt(x);
-                       });
-                    $.each(data.Tags, function( index, value ){
-                      if (arr.includes(value.id) ){
-                        $('#locked-select-tags').append(
-                          '<option selected="selected" value="' + value.id + '">' + value.name + '</option>'
-                        );
-                      } else {
-                        $('#locked-select-tags').append(
-                          '<option value="' + value.id + '">' + value.name + '</option>'
-                        );
 
-                      }
-                      }
-                    );
-                    $('#locked-select-tags').trigger("change");
-                  });
                   
 
 
@@ -227,6 +207,10 @@ require('../../css/piklor.css');
                 width: '200px',
                 placeholder: "Select users...",
                 allowClear: true,
+                results: function(data) {
+                  lastResults = data.results;
+                  return {results: data};
+                }, 
                 ajax: { 
                   headers: {
                     "requesttoken" : oc_requesttoken,
@@ -417,30 +401,69 @@ require('../../css/piklor.css');
                   clientName: row.getData().client,
                 };
                 
-                // var tagSelectData = [{
-                //   allowedTags: row.getData().allowedTags,
-
-                // }];
-
-                //form.find("#client-select-popup").select2("val",JSON.stringify(clientSelectData));
-                $("#client-select-popup").val(clientSelectData.clientId).change();
-                // $('#client-select-popup').append(
-                //   '<option selected="selected" value="' + clientSelectData.clientId + '">' + clientSelectData.clientName + '</option>'
-                // );
+                if (clientSelectData.clientId != null){
+                  $('#client-select-popup').append(
+                    '<option selected="selected" value="' + clientSelectData.clientId + '">' + clientSelectData.clientName + '</option>'
+                  );
+                  $("#client-select-popup").trigger('change');
+                  }
 
                 form.find("#archived").prop('checked', row.getData().archived);
                 if (isAdmin()){
                   var tags = row.getData().origAllowedTags.map(function(e){ return e.id;});
                   var users = row.getData().allowedUsers;
                   
-                  
-                  //form.find("#locked-select-tags").select2("val",tags);
-                  // $('#locked-select-tags').append(tags.each( function(tag){
-                  //     '<option selected="selected" value="' + tag + '">' + tag + '</option>'
-                  // }).join()
-                  // );
-                  $("#locked-select-tags").val(tags).change();
-                  $("#locked-select-users").val(users).change();
+                  $.ajax(OC.generateUrl('/apps/timetracker/ajax/tags'), {
+                    dataType: "json"
+                  }).done(function(data) { 
+                    $('#locked-select-tags').html('');
+                    $.each(data.Tags, function( index, value ){
+                      if (tags.includes(value.id) ){
+                        var option = new Option(value.name, value.id, true, true);
+                        $('#locked-select-tags').append(option).trigger('change');
+
+                      }
+                    }
+                    );
+                    $('#locked-select-tags').trigger({
+                      type: 'select2:select',
+                      params: {
+                          data: data
+                      }
+                  });
+                    
+                  });
+
+                  $.ajax('/ocs/v2.php/cloud/users/details?offset=0&search=', {
+                    dataType: "json",
+                    headers: {
+                      "requesttoken" : oc_requesttoken,
+                     
+                    },
+                  }).done(function(data) { 
+
+                    var userMap = $.map(data.ocs.data.users,function(val, i){
+                      return { id: i, text:val.displayname};
+                    });
+                    
+                    $('#locked-select-users').val(null).trigger('change');
+                    $('#locked-select-users').html('');
+                    $.each(userMap, function( index, value ){
+                      if (users.includes(value.text) ){
+                        var option = new Option(value.text, value.id, true, true);
+                        $('#locked-select-users').append(option).trigger('change');
+
+                      }
+                    }
+                    );
+                    $('#locked-select-users').trigger({
+                      type: 'select2:select',
+                      params: {
+                          data: data
+                      }
+                  });
+                  });
+
                   form.find("#locked").prop('checked', row.getData().locked);
                   if($('#locked').is(':checked')){
                     $("#locked-options").removeClass('hidden');
