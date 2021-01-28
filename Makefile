@@ -131,6 +131,7 @@ appstore:
 	echo $(app_name)
 	pwd
 	gtar  \
+	--owner=0 --group=0 \
 	--exclude-vcs \
 	--exclude="$(app_name)/build" \
 	--exclude="$(app_name)/tests" \
@@ -153,7 +154,7 @@ appstore:
 	--exclude="$(app_name)/.*" \
 	--exclude="$(app_name)/.git" \
 	--exclude="$(app_name)/js/.*" \
-	 -cvzf $(appstore_package_name).tar.gz ../$(app_name) 
+	 -czf $(appstore_package_name).tar.gz ../$(app_name) 
 
 .PHONY: test
 test: composer
