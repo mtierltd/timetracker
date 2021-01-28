@@ -415,14 +415,14 @@ function() {
                     return false;
                 });
 
+                var projectsAjaxUrl = OC.generateUrl('/apps/timetracker/ajax/projects');
                 $(".set-project").each(function(){
+                  //var interval = setInterval( function() {
+
                     var id = $(this).data('myid');
                     var projectId = $(this).data('projectid');
-                   
-                    var projectName = $(this).data('projectname');
                     var projectColor = $(this).data('projectcolor');
-                                        
-                    
+
                     $(this).select2({
                         containerCssClass:'project-select',
                         escapeMarkup : function(markup) { return markup; },
@@ -448,8 +448,8 @@ function() {
                           );
                           return $state;
                         },
-                        ajax: { 
-                            url:  OC.generateUrl('/apps/timetracker/ajax/projects'),
+                        ajax: {
+                            url: projectsAjaxUrl,
                             
                             dataType: 'json',
                             delay: 250,
@@ -470,54 +470,54 @@ function() {
                     $(this).data('myid',id);
                     
                     $(this).val(projectId).trigger('change');
-
+                    //clearInterval(interval);
+                  //}.bind(this),0);
                 });
+                
+                var tagsAjaxUrl = OC.generateUrl('/apps/timetracker/ajax/tags');
                 $(".set-tag").each(function(){
-                    var id = $(this).data('myid');
-                    var tagIds = [];
-                    var tagNames = [];
-                    if(typeof($(this).data('tagids')) !== 'undefined'){
-                        tagIds = $(this).data('tagids').toString().split(',');
-                        tagNames = $(this).data('tagnames').toString().split(',');
-                    }
+                  //var interval = setInterval( function() {
+                      
 
-                  $(this).select2({
-                    tags: true,
-                    containerCssClass:'tags-select',
-                    placeholder: "Select tags...",
-                    allowClear: true,
-        
-                    ajax: { 
-                        url:  function () { return OC.generateUrl('/apps/timetracker/ajax/tags')+'?workItem='+$(this).data('myid');},
-                        data: function (params){
-                          var query = {
-                            q: params.term,
-                            type: 'public'
-                          }
-                    
-                          // Query parameters will be ?search=[term]&type=public
-                          return query;
-                        },
-                        headers: { 'RequestToken': OC.requestToken },
-                        formatNoMatches: function() {
-                            return '';
-                        },
-                        dataType: 'json',
-                        delay: 250,
-                        processResults: function (data) { //json parse
-                          return { 
-                             results: $.map(data.Tags,function(val, i){
-                               return { id: val.id, text:val.name};
-                             }),
-                             pagination: {
-                               more: false,
-                             }
-                          };
-                        },
-                        cache: false,
-                    },
-                  });
-                  $(this).select2('val', []);
+                    $(this).select2({
+                      tags: true,
+                      containerCssClass:'tags-select',
+                      placeholder: "Select tags...",
+                      allowClear: true,
+          
+                      ajax: { 
+                          url:  function () { return tagsAjaxUrl+'?workItem='+$(this).data('myid');},
+                          data: function (params){
+                            var query = {
+                              q: params.term,
+                              type: 'public'
+                            }
+                      
+                            // Query parameters will be ?search=[term]&type=public
+                            return query;
+                          },
+                          headers: { 'RequestToken': OC.requestToken },
+                          formatNoMatches: function() {
+                              return '';
+                          },
+                          dataType: 'json',
+                          delay: 250,
+                          processResults: function (data) { //json parse
+                            return { 
+                              results: $.map(data.Tags,function(val, i){
+                                return { id: val.id, text:val.name};
+                              }),
+                              pagination: {
+                                more: false,
+                              }
+                            };
+                          },
+                          cache: false,
+                      },
+                    });
+                    $(this).select2('val', []);
+                    //clearInterval(interval);
+                  //}.bind(this),0);
                 });
                   $('input.select2-input').attr('autocomplete', "xxxxxxxxxxx")
 
