@@ -38,7 +38,7 @@ class GoalMapper extends Mapper {
 
 
     public function findAll($user){
-        $sql = 'SELECT tg.*,p.name as projectName FROM `*PREFIX*timetracker_goal` tg  join `*PREFIX*timetracker_project` p on p.id = tg.project_id where tg.user_uid = ? order by tg.created_at desc';
+        $sql = 'SELECT tg.*,p.name as project_name FROM `*PREFIX*timetracker_goal` tg  join `*PREFIX*timetracker_project` p on p.id = tg.project_id where tg.user_uid = ? order by tg.created_at desc';
         return $this->findEntities($sql, [$user]);
     }
 
