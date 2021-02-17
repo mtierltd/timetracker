@@ -3,8 +3,33 @@ require("jquery-migrate");
 // var moment = require("moment");
 require("jqueryui");
 //require("jqueryui/jquery-ui.css");
+require("daterangepicker");
+var moment = require("moment");
+
+require('daterangepicker/daterangepicker.css');
 require('../../css/style.css');
 var Chart = require("chart.js");
+
+
+Chart.plugins.register({
+  afterDraw: function(chart) {
+  if (chart.data.datasets.length === 0 || chart.data.datasets[0].data.length === 0) {
+      // No data is present
+    var ctx = chart.chart.ctx;
+    var width = chart.chart.width;
+    var height = chart.chart.height
+    chart.clear();
+
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = "16px normal 'Helvetica Nueue'";
+    ctx.fillText('No data to display', width / 2, height / 2);
+    ctx.restore();
+  }
+}
+});
+
 (function() {
   $.ajaxSetup({
     headers: { 'RequestToken': OC.requestToken }
@@ -20,6 +45,40 @@ var Chart = require("chart.js");
           var group3 = '';
           var filterProjectId = '';
           var filterClientId = '';
+          var myDoughnutChart = null;
+
+
+          function cb(start, end) {
+            $('#report-range span').html(start.format('DD/MM/YY') + ' - ' + end.format('DD/MM/YY'));
+          }
+          $("#report-range").daterangepicker({
+              timePicker: false,
+              startDate: start,
+              endDate: end,
+              showCustomRangeLabel: false,
+              ranges: {
+                  'Today': [moment().startOf('day'), moment().endOf('day')],
+                  'Last 7 Days': [moment().startOf('day').subtract(6, 'days'), moment().endOf('day')],
+                  'Last 30 Days': [moment().startOf('day').subtract(29, 'days'), moment().endOf('day')],
+                  'Last 90 Days': [moment().startOf('day').subtract(89, 'days'), moment().endOf('day')],
+                  'Last 365 Days': [moment().startOf('day').subtract(364, 'days'), moment().endOf('day')],
+                  'This Month': [moment().startOf('month'), moment().endOf('day')],
+                  'This Year': [moment().startOf('year'), moment().endOf('day')],
+                  'Starting last year': [moment().startOf('year').subtract(1, 'year'), moment().endOf('day')],
+                  'Last 3 years': [moment().startOf('day').subtract(3, 'year'), moment().endOf('day')],
+                  'Last 5 years': [moment().startOf('day').subtract(5, 'year'), moment().endOf('day')],
+              },
+              locale: {
+                  format: 'DD/MM/YY'
+              }
+            },cb);
+          $("#report-range").on('apply.daterangepicker', function(ev, picker) {
+            //days = Math.round((picker.endDate.unix()-picker.startDate.unix()) / 86400);
+            start = picker.startDate;
+            getData();
+          });
+          cb(start, end);
+
        
           var chartData = {};
           getData();
@@ -147,9 +206,13 @@ var Chart = require("chart.js");
                               }
                             }
                           };
+                          if (myDoughnutChart != null){
+                            myDoughnutChart.destroy();
+                          }
 
                           var ctx = document.getElementById("myChart").getContext("2d");
-                          var myDoughnutChart = new Chart(ctx, {
+
+                          myDoughnutChart = new Chart(ctx, {
                             type: 'doughnut',
                             data: chartData,
                             options: {
@@ -166,11 +229,12 @@ var Chart = require("chart.js");
                                     return (h+" hours "+m+" minutes")
                                   },
                                   afterLabel: function(tooltipItem, data) {
-                                    
                                     var dataset = data['datasets'][tooltipItem.datasetIndex];
+                                    if (!(0 in dataset["_meta"]))
+                                      return '';
                                     var percent = Math.round((dataset['data'][tooltipItem['index']] / dataset["_meta"][0]['total']) * 100)
                                     return '(' + percent + '%)';
-                                  }
+                                  },
                                 },
 
                               }
