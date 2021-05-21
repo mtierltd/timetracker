@@ -24,7 +24,7 @@ class ReportItem extends Entity {
         
         $this->addType('id', 'integer');
         $this->addType('name', 'string');
-        $this->addType('name', 'details');
+        $this->addType('details', 'string');
         $this->addType('projectId', 'integer');
         $this->addType('userUid', 'string');
         $this->addType('time', 'string');
