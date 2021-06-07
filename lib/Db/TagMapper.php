@@ -60,7 +60,11 @@ class TagMapper extends Mapper {
         foreach ($tag_ids as $t){
             if (empty($t))
                 continue;
-            $sql = 'insert into `*PREFIX*timetracker_locked_project_allowed_tag` (project_id, tag_id, created_at) values(?,?,UNIX_TIMESTAMP(now()))  ';
+            if ($this->dbengine == 'MYSQL'){
+                $sql = 'insert into `*PREFIX*timetracker_locked_project_allowed_tag` (project_id, tag_id, created_at) values(?,?,UNIX_TIMESTAMP(now()))  ';
+            } else {
+                $sql = 'insert into `*PREFIX*timetracker_locked_project_allowed_tag` (project_id, tag_id, created_at) values(?,?,extract(epoch from now()))  ';
+            }
             $this->execute($sql, [$id, $t]);
         }
         return;
