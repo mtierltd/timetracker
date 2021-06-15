@@ -60,6 +60,27 @@ class WorkIntervalMapper extends Mapper {
         }
     }
 
+    public function findLatestInterval($user, $from, $to, $limit = 5000, $offset = 0){
+        $filters[] = "(user_uid = ?)";
+        $params[] = $user;
+
+        if (!empty($from)){
+            $filters[] = "(start > ?)";
+            $params[] = $from;
+
+        }
+        if (!empty($to)){
+            $filters[] = "(start < ?)";
+            $params[] = $to;
+
+        }
+
+        if ($this->dbengine == 'MYSQL'){
+            $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where '.implode(" and ",$filters).' order by start desc';
+            return $this->findEntities($sql, $params, $limit, $offset);
+        }
+    }
+
     public function findLatestDays($user, $limitDays = 10, $startDay = 0, $limit = 5000, $offset = 0){
         if ($this->dbengine == 'MYSQL'){
         $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where user_uid = ? and 
@@ -74,7 +95,6 @@ class WorkIntervalMapper extends Mapper {
             order by start desc';
             return $this->findEntities($sql, [$user],$limit, $offset);
         }
-        
     }
 
     public function findAllRunning($user, $limit = 100, $offset = 0){

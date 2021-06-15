@@ -78,12 +78,9 @@ class AjaxController extends Controller {
 	 * @NoAdminRequired
 	 */
 	public function workIntervals() {
-		$ndays = 30;
-		if (isset($this->request->days)){
-			$ndays = $this->request->days;
-		}
-
-		$l = $this->workIntervalMapper->findLatestDays($this->userId, $ndays, 0);
+		$from = $this->request->from;
+		$to = $this->request->to;
+		$l = $this->workIntervalMapper->findLatestInterval($this->userId, $from, $to);
 		$days = [];
 		foreach ($l as $wi){
 			//$dt = date("d/m/Y", $wi->start);

@@ -35,7 +35,6 @@ function() {
             timePicker: false,
             startDate: start,
             endDate: end,
-            showCustomRangeLabel: false,
             ranges: {
                 'Today': [moment().startOf('day'), moment().endOf('day')],
                 'Last 7 Days': [moment().startOf('day').subtract(6, 'days'), moment().endOf('day')],
@@ -53,7 +52,8 @@ function() {
             }
           },cb);
           $("#report-range").on('apply.daterangepicker', function(ev, picker) {
-            days = Math.round((picker.endDate.unix()-picker.startDate.unix()) / 86400);
+            start = picker.startDate;
+            end = picker.endDate;
             getWorkItems();
           });
       cb(start, end);
@@ -243,7 +243,7 @@ function() {
             return formattedTime;
         }
         function getWorkItems() {
-            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/work-intervals?days='+days);
+            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/work-intervals?from='+start.unix()+'&to='+end.unix());
             $.ajaxSetup({
               scriptCharset: "utf-8",
               //contentType: "application/json; charset=utf-8"
