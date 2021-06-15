@@ -75,10 +75,8 @@ class WorkIntervalMapper extends Mapper {
 
         }
 
-        if ($this->dbengine == 'MYSQL'){
-            $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where '.implode(" and ",$filters).' order by start desc';
-            return $this->findEntities($sql, $params, $limit, $offset);
-        }
+        $sql = 'SELECT * FROM `*PREFIX*timetracker_work_interval` where '.implode(" and ",$filters).' order by start desc';
+        return $this->findEntities($sql, $params, $limit, $offset);
     }
 
     public function findLatestDays($user, $limitDays = 10, $startDay = 0, $limit = 5000, $offset = 0){
