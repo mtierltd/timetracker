@@ -68,7 +68,8 @@ require('../../css/style.css');
               
             },
             locale: {
-                format: 'DD/MM/YY'
+                format: 'DD/MM/YY',
+                firstDay: firstDay
               }
             },cb);
             $("#report-range").on('apply.daterangepicker', function(ev, picker) {

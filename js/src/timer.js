@@ -48,7 +48,8 @@ function() {
                 'Last 5 years': [moment().startOf('day').subtract(5, 'year'), moment().endOf('day')],
             },
             locale: {
-                format: 'DD/MM/YY'
+                format: 'DD/MM/YY',
+                firstDay: firstDay
             }
           },cb);
           $("#report-range").on('apply.daterangepicker', function(ev, picker) {
@@ -101,7 +102,8 @@ function() {
             //endDate:tsToDate($(this).data('end-date')),
             timePicker24Hour: true,
             locale: {
-                format: 'DD/MM/YY hh:mm:ss'
+                format: 'DD/MM/YY hh:mm:ss',
+                firstDay: firstDay
               }
         });
         function validateManualEntryFields(){
@@ -348,7 +350,8 @@ function() {
                         endDate:tsToDate($(this).data('end-date')),
                         timePicker24Hour: true,
                         locale: {
-                            format: 'DD/MM/YY hh:mm:ss'
+                            format: 'DD/MM/YY hh:mm:ss',
+                            firstDay: firstDay
                           }
                     });
 

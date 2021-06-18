@@ -69,7 +69,8 @@ Chart.plugins.register({
                   'Last 5 years': [moment().startOf('day').subtract(5, 'year'), moment().endOf('day')],
               },
               locale: {
-                  format: 'DD/MM/YY'
+                  format: 'DD/MM/YY',
+                  firstDay: firstDay
               }
             },cb);
           $("#report-range").on('apply.daterangepicker', function(ev, picker) {
