@@ -72,10 +72,10 @@ composer:
 ifeq (, $(composer))
 	@echo "No composer command available, downloading a copy from the web"
 	mkdir -p $(build_tools_directory)
-	curl -sS https://getcomposer.org/installer | php-7.2
+	curl -sS https://getcomposer.org/installer | php-7.4
 	mv composer.phar $(build_tools_directory)
-	php-7.2 $(build_tools_directory)/composer.phar install --prefer-dist
-	php-7.2 $(build_tools_directory)/composer.phar update --prefer-dist
+	php-7.4 $(build_tools_directory)/composer.phar install --prefer-dist
+	php-7.4 $(build_tools_directory)/composer.phar update --prefer-dist
 else
 	composer install --prefer-dist
 	composer update --prefer-dist
