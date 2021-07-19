@@ -35,7 +35,7 @@ Mit dem integrierten Dashboard lässt sich anhand eines Kuchen-/Donut-Diagramms 
 
 Diese App wird aktuell noch weiterentwickelt, also: Augen offen halten für neue Features! Und falls Dir irgendwelche Verbesserungsvorschläge, Probleme oder neue Features einfallen, schau mal auf unserem [GitHub Projekt](https://github.com/mtierltd/timetracker) vorbei, vielleicht wird Dein Thema bereits diskutiert! Und falls nicht, starte gerne eine neue Diskussion, wir freuen uns auf Dein Feedback!
     </description>
-    <version>0.0.60</version>
+    <version>0.0.61</version>
     <licence>agpl</licence>
     <author mail="info@mtier.org" >MTier Ltd.</author>
     <namespace>TimeTracker</namespace>
