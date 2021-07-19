@@ -47,6 +47,7 @@ appstore_build_directory=$(CURDIR)/build/artifacts/appstore
 appstore_package_name=$(appstore_build_directory)/$(app_name)
 npm=$(shell which npm 2> /dev/null)
 composer=$(shell which composer 2> /dev/null)
+php=$(shell which php-7.4 2> /dev/null) -dallow_url_fopen=On
 
 all: build
 
@@ -72,10 +73,10 @@ composer:
 ifeq (, $(composer))
 	@echo "No composer command available, downloading a copy from the web"
 	mkdir -p $(build_tools_directory)
-	curl -sS https://getcomposer.org/installer | php-7.4
+	curl -sS https://getcomposer.org/installer | $(php)
 	mv composer.phar $(build_tools_directory)
-	php-7.4 $(build_tools_directory)/composer.phar install --prefer-dist
-	php-7.4 $(build_tools_directory)/composer.phar update --prefer-dist
+	$(php) $(build_tools_directory)/composer.phar install --prefer-dist
+	$(php) $(build_tools_directory)/composer.phar update --prefer-dist
 else
 	composer install --prefer-dist
 	composer update --prefer-dist
