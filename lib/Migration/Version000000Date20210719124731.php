@@ -62,7 +62,7 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
 				'notnull' => false,
 				'length' => 4,
 			]);
-			$table->addColumn('created_by_user_id', 'string', [
+			$table->addColumn('created_by_user_uid', 'string', [
 				'notnull' => true,
 				'length' => 128,
 			]);
@@ -269,7 +269,7 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
 				'notnull' => false,
 				'length' => 4,
 			]);
-			$table->addColumn('user_id', 'text', [
+			$table->addColumn('user_uid', 'text', [
 				'notnull' => true,
 				'length' => 128,
 			]);
