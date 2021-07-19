@@ -53,7 +53,7 @@ Diese App wird aktuell noch weiterentwickelt, also: Augen offen halten für neue
     <screenshot>https://abload.de/img/bildschirmfotoam2021-vuk8t.png</screenshot>
     <screenshot>https://abload.de/img/bildschirmfotoam2021-03kxw.png</screenshot>
     <dependencies>
-        <nextcloud min-version="22" max-version="22"/>
+        <nextcloud min-version="20" max-version="22"/>
     </dependencies>
     <navigations>
         <navigation>
