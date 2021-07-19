@@ -9,12 +9,12 @@ use OCP\AppFramework\Db\Mapper;
 class WorkIntervalToTagMapper extends Mapper {
 
     public function __construct(IDBConnection $db) {
-        parent::__construct($db, 'timetracker_workinterval_to_tag');
+        parent::__construct($db, 'timetracker_workint_to_tag');
     }
 
 
     public function find($id) {
-        $sql = 'SELECT * FROM `*PREFIX*timetracker_workinterval_to_tag` ' .
+        $sql = 'SELECT * FROM `*PREFIX*timetracker_workint_to_tag` ' .
             'WHERE `id` = ?';
             
             try {
@@ -27,7 +27,7 @@ class WorkIntervalToTagMapper extends Mapper {
     }
 
     public function findAllForWorkInterval($workIntervalId) {
-        $sql = 'SELECT * FROM `*PREFIX*timetracker_workinterval_to_tag` ' .
+        $sql = 'SELECT * FROM `*PREFIX*timetracker_workint_to_tag` ' .
             'WHERE `work_interval_id` = ?';
             
             try {
@@ -40,7 +40,7 @@ class WorkIntervalToTagMapper extends Mapper {
     }
 
     public function deleteAllForWorkInterval($workIntervalId) {
-        $sql = 'DELETE FROM `*PREFIX*timetracker_workinterval_to_tag` ' .
+        $sql = 'DELETE FROM `*PREFIX*timetracker_workint_to_tag` ' .
             'WHERE `work_interval_id` = ?';
             
             try {
@@ -53,7 +53,7 @@ class WorkIntervalToTagMapper extends Mapper {
     }
 
     public function deleteAllForTag($tagId) {
-        $sql = 'DELETE FROM `*PREFIX*timetracker_workinterval_to_tag` ' .
+        $sql = 'DELETE FROM `*PREFIX*timetracker_workint_to_tag` ' .
             'WHERE `tag_id` = ?';
             
             try {

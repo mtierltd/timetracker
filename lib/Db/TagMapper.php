@@ -48,22 +48,22 @@ class TagMapper extends Mapper {
     }
 
     public function findAllAlowedForProject($pid){
-        $sql = 'SELECT tt.* FROM `*PREFIX*timetracker_tag` tt  join `*PREFIX*timetracker_locked_project_allowed_tag` atg on tt.id = atg.tag_id where atg.project_id = ? order by tt.name asc';
+        $sql = 'SELECT tt.* FROM `*PREFIX*timetracker_tag` tt  join `*PREFIX*timetracker_lpa_tags` atg on tt.id = atg.tag_id where atg.project_id = ? order by tt.name asc';
         
         return $this->findEntities($sql, [$pid]);
     }
 
     public function allowedTags($id, $tag_ids){
-        $sql = 'delete from `*PREFIX*timetracker_locked_project_allowed_tag` where project_id = ?';
+        $sql = 'delete from `*PREFIX*timetracker_lpa_tags` where project_id = ?';
         $this->execute($sql, [$id]);
         
         foreach ($tag_ids as $t){
             if (empty($t))
                 continue;
             if ($this->dbengine == 'MYSQL'){
-                $sql = 'insert into `*PREFIX*timetracker_locked_project_allowed_tag` (project_id, tag_id, created_at) values(?,?,UNIX_TIMESTAMP(now()))  ';
+                $sql = 'insert into `*PREFIX*timetracker_lpa_tags` (project_id, tag_id, created_at) values(?,?,UNIX_TIMESTAMP(now()))  ';
             } else {
-                $sql = 'insert into `*PREFIX*timetracker_locked_project_allowed_tag` (project_id, tag_id, created_at) values(?,?,extract(epoch from now()))  ';
+                $sql = 'insert into `*PREFIX*timetracker_lpa_tags` (project_id, tag_id, created_at) values(?,?,extract(epoch from now()))  ';
             }
             $this->execute($sql, [$id, $t]);
         }
