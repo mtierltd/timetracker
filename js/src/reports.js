@@ -216,7 +216,19 @@ var dtf = require("./dateformat.js");
                   {title:"User", field:"userUid", widthGrow:1}, //column will be allocated 1/5 of the remaining space
                   {title:"Project", field:"project", widthGrow:1}, //column will be allocated 1/5 of the remaining space
                   {title:"Client", field:"client", widthGrow:1}, //column will be allocated 1/5 of the remaining space
-                  {title:"When", field:"time", widthGrow:1}, //column will be allocated 1/5 of the remaining space
+                  {title:"When", field:"time", widthGrow:1,formatter:function(cell, formatterParams, onRendered){
+                    var t = cell.getValue();
+                    switch(group3) {
+                    case 'day':
+                      return moment.unix(t).format(dtf.dformat());
+                    case 'month':
+                      return moment(t).format(dtf.mformat());
+                    case '':
+                      return moment.unix(t).format(dtf.dtformat());
+                    default:
+                      return t;
+                    }
+		  }},
                   {title:"Total Duration", field:"totalDuration",formatter:function(cell, formatterParams, onRendered){
                     //cell - the cell component
                     //formatterParams - parameters set for the column

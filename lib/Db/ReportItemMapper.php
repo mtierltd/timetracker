@@ -56,30 +56,30 @@ class ReportItemMapper extends Mapper {
             $pg = 1;
             if(empty($timegroup)){
                 if (!$aggregation) {
-                    $selectFields[]= "to_char(to_timestamp(min(start))::date,'YYYY-MM-DD HH24:MI') as time";
+                    $selectFields[]= "start as time";
                 } else {
-                    $selectFields[]= "to_timestamp(min(start))::date as time";
+                    $selectFields[]= "min(start) as time";
                 }
             } elseif ($timegroup == 'week') {
-                $selectFields[]= "to_char(to_timestamp(start)::date, 'YYYY-WW') as time";
+                $selectFields[]= "concat(date_part(\'year\', to_timestamp(start)), 'W', to_char(to_timestamp(start), 'IW')) as time";
             }elseif ($timegroup == 'day') {
-                $selectFields[]= "to_timestamp(start)::date as time";
+                $selectFields[]= "start as time";
             }elseif ($timegroup == 'year') {
-                $selectFields[]= 'date_part(\'year\', to_timestamp(start)::date) as time';
+                $selectFields[]= 'date_part(\'year\', to_timestamp(start)) as time';
             }elseif ($timegroup == 'month') {
-                $selectFields[]= "to_char(to_timestamp(start)::date, 'YYYY-MM') as time";
+                $selectFields[]= "to_char(to_timestamp(start), 'YYYY-MM') as time";
             }
         } else {
             if(empty($timegroup)){
                 if (!$aggregation) {
-                    $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(start),'%Y-%m-%d %H:%i') as time";
+                    $selectFields[]= "start as time";
                 } else {
-                    $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(min(start)),'%Y-%m-%d') as time";
+                    $selectFields[]= "min(start) as time";
                 }
             } elseif ($timegroup == 'week') {
-                $selectFields[]= "STR_TO_DATE(CONCAT(YEARWEEK(FROM_UNIXTIME(start), 1),' Monday'), '%x%v %W') as time";
+                $selectFields[]= "CONCAT(YEAR(FROM_UNIXTIME(start)), 'W', WEEK(FROM_UNIXTIME(start))) as time";
             }elseif ($timegroup == 'day') {
-                $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(start),'%Y-%m-%d') as time";
+                $selectFields[]= "start as time";
             }elseif ($timegroup == 'year') {
                 $selectFields[]= 'YEAR(FROM_UNIXTIME(start)) as time';
             }elseif ($timegroup == 'month') {
