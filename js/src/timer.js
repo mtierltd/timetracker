@@ -125,11 +125,10 @@ function() {
                   text: "Confirm",
                   click: function() {
                       var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-work-interval/'+encodeURIComponent(encodeURIComponent($('#name-manual-entry').val()))); // encode twice so we can have slashes
-                    
                       var jqxhr = $.post( baseUrl,
                             {
-                              start:picker.data('daterangepicker').startDate.format(dtf.dtformat()),
-                              end:picker.data('daterangepicker').endDate.format(dtf.dtformat()),
+                              start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'),
+                              end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'),
                               tzoffset: new Date().getTimezoneOffset(),
                               async: true,
                               details:$('#details-manual-entry').val()} ,function() {
@@ -330,7 +329,7 @@ function() {
 
                     $(this).on('apply.daterangepicker', function(ev, picker) {
                         var id = $(this).data('myid');
-                        var jqxhr = $.post( "ajax/update-work-interval/"+id,{start:picker.startDate.format(dtf.dtformat()), end:picker.endDate.format(dtf.dtformat()), tzoffset: new Date().getTimezoneOffset()}, function() {
+                        var jqxhr = $.post( "ajax/update-work-interval/"+id,{start:picker.startDate.format('DD/MM/YY HH:mm'), end:picker.endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset()}, function() {
                         })
                          .done(function(data, status, jqXHR) {
                             var response = data;
