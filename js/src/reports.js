@@ -11,6 +11,8 @@ import 'select2/dist/js/select2.full.js'
 require('select2/dist/css/select2.css');
 require('../../css/style.css');
 
+var dtf = require("./dateformat.js");
+
 (function() {
   $.ajaxSetup({
     headers: { 'RequestToken': OC.requestToken }
@@ -32,7 +34,7 @@ require('../../css/style.css');
           var start = moment().subtract(29, 'days');
           var end = moment();
           function cb(start, end) {
-            $('#report-range span').html(start.format('DD/MM/YY') + ' - ' + end.format('DD/MM/YY'));
+            $('#report-range span').html(start.format(dtf.dformat()) + ' - ' + end.format(dtf.dformat()));
           }
           $("#report-range").daterangepicker({
             timePicker: false,
@@ -53,7 +55,7 @@ require('../../css/style.css');
               
             },
             locale: {
-                format: 'DD/MM/YY',
+                format: dtf.dformat(),
                 firstDay: firstDay
               }
             },cb);
@@ -184,7 +186,7 @@ require('../../css/style.css');
                       if (group1 != '' || group2 != '' || group3 != ''){
                         row.ended = '*';
                       } else {
-                        var ended = moment(time, 'YYYY-MM-DD hh:mm:ss').add(duration,"seconds").format('YYYY-MM-DD HH:mm');
+                        var ended = moment(time, dtf.dtformat()).add(duration,"seconds").format(dtf.dtformat());
                         row.ended = ended;
                         
                       }
@@ -249,7 +251,7 @@ require('../../css/style.css');
                       }
                       var time = cell.getRow().getData().time;
                       var duration = cell.getRow().getData().totalDuration;
-                      var ended = moment(time, 'YYYY-MM-DD hh:mm:ss').add(duration,"seconds").format('YYYY-MM-DD HH:mm');
+                      var ended = moment(time, dtf.dtformat()).add(duration,"seconds").format(dtf.dtformat());
                       return ended;
                       
                     }},

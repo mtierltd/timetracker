@@ -10,6 +10,7 @@ require('select2/dist/css/select2.css');
 require('daterangepicker/daterangepicker.css');
 require('../../css/style.css');
 
+var dtf = require("./dateformat.js");
 
 (
   
@@ -29,7 +30,7 @@ function() {
         var end = moment().endOf('day');
 
         function cb(start, end) {
-            $('#report-range span').html(start.format('DD/MM/YY') + ' - ' + end.format('DD/MM/YY'));
+            $('#report-range span').html(start.format(dtf.dformat()) + ' - ' + end.format(dtf.dformat()));
         }
         $("#report-range").daterangepicker({
             timePicker: false,
@@ -48,7 +49,7 @@ function() {
                 'Last 5 years': [moment().startOf('day').subtract(5, 'year'), moment().endOf('day')],
             },
             locale: {
-                format: 'DD/MM/YY',
+                format: dtf.dformat(),
                 firstDay: firstDay
             }
           },cb);
@@ -98,11 +99,9 @@ function() {
           });
           var picker = $("#hours-manual-entry").daterangepicker({
             timePicker: true,
-            //startDate:tsToDate($(this).data('start-date')),
-            //endDate:tsToDate($(this).data('end-date')),
             timePicker24Hour: true,
             locale: {
-                format: 'DD/MM/YY hh:mm:ss',
+                format: dtf.dtformat(),
                 firstDay: firstDay
               }
         });
@@ -129,8 +128,8 @@ function() {
                     
                       var jqxhr = $.post( baseUrl,
                             {
-                              start:picker.data('daterangepicker').startDate.format('DD/MM/YY HH:mm'), 
-                              end:picker.data('daterangepicker').endDate.format('DD/MM/YY HH:mm'), 
+                              start:picker.data('daterangepicker').startDate.format(dtf.dtformat()),
+                              end:picker.data('daterangepicker').endDate.format(dtf.dtformat()),
                               tzoffset: new Date().getTimezoneOffset(),
                               async: true,
                               details:$('#details-manual-entry').val()} ,function() {
@@ -215,34 +214,8 @@ function() {
                 return pad(hours,2)+':'+pad(minutes,2)+':'+pad(seconds,2);
             }
         }
-        function tsToDate(ts){
-            var date = new Date(ts*1000);
-            // Hours part from the timestamp
-            var hours = date.getHours();
-            // Minutes part from the timestamp
-            var minutes = "0" + date.getMinutes();
-            // Seconds part from the timestamp
-            var seconds = "0" + date.getSeconds();
-            var year = date.getFullYear() % 100;
-            //var year = date.getYear();
-            var month = date.getMonth()+1;
-            var day = date.getDate();
-            // Will display time in 10:30:23 format
-            var formattedTime = day+"/"+month+"/"+year+" "+hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-            return formattedTime;
-        }
-        function tsToHour(ts){
-            var date = new Date(ts*1000);
-            // Hours part from the timestamp
-            var hours = date.getHours();
-            // Minutes part from the timestamp
-            var minutes = "0" + date.getMinutes();
-            // Seconds part from the timestamp
-            var seconds = "0" + date.getSeconds();
-
-            // Will display time in 10:30:23 format
-            var formattedTime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-            return formattedTime;
+        function tsToHour(ts) {
+            return moment.unix(ts).format(dtf.tformat());
         }
         function getWorkItems() {
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/work-intervals?from='+start.unix()+'&to='+end.unix());
@@ -346,18 +319,18 @@ function() {
                 $(".wi-child-hours").each(function(){
                     $(this).daterangepicker({
                         timePicker: true,
-                        startDate:tsToDate($(this).data('start-date')),
-                        endDate:tsToDate($(this).data('end-date')),
+                        startDate:moment.unix($(this).data('start-date')).format(dtf.dtformat()),
+                        endDate:moment.unix($(this).data('end-date')).format(dtf.dtformat()),
                         timePicker24Hour: true,
                         locale: {
-                            format: 'DD/MM/YY hh:mm:ss',
+                            format: dtf.dtformat(),
                             firstDay: firstDay
                           }
                     });
 
                     $(this).on('apply.daterangepicker', function(ev, picker) {
                         var id = $(this).data('myid');
-                        var jqxhr = $.post( "ajax/update-work-interval/"+id,{start:picker.startDate.format('DD/MM/YY HH:mm'), end:picker.endDate.format('DD/MM/YY HH:mm'), tzoffset: new Date().getTimezoneOffset()}, function() {
+                        var jqxhr = $.post( "ajax/update-work-interval/"+id,{start:picker.startDate.format(dtf.dtformat()), end:picker.endDate.format(dtf.dtformat()), tzoffset: new Date().getTimezoneOffset()}, function() {
                         })
                          .done(function(data, status, jqXHR) {
                             var response = data;

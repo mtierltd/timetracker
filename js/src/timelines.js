@@ -11,6 +11,8 @@ import 'select2/dist/js/select2.full.js'
 require('select2/dist/css/select2.css');
 require('../../css/style.css');
 
+var dtf = require("./dateformat.js");
+
 (function() {
   $.ajaxSetup({
     headers: { 'RequestToken': OC.requestToken }
@@ -23,7 +25,6 @@ require('../../css/style.css');
       var group3 = "day";
       var filterProjectId = "";
       var filterClientId = "";
-
 
       function timeConverter(UNIX_timestamp){
         var a = new Date(UNIX_timestamp * 1000);
@@ -47,7 +48,7 @@ require('../../css/style.css');
           var start = moment().subtract(29, 'days');
           var end = moment();
           function cb(start, end) {
-            $('#report-range span').html(start.format('DD/MM/YY') + ' - ' + end.format('DD/MM/YY'));
+            $('#report-range span').html(start.format(dtf.dformat()) + ' - ' + end.format(dtf.dformat()));
           }
           $("#report-range").daterangepicker({
             timePicker: false,
@@ -68,7 +69,7 @@ require('../../css/style.css');
               
             },
             locale: {
-                format: 'DD/MM/YY',
+                format: dtf.dformat(),
                 firstDay: firstDay
               }
             },cb);

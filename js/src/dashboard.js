@@ -8,9 +8,8 @@ var moment = require("moment");
 
 require('daterangepicker/daterangepicker.css');
 require('../../css/style.css');
+
 var Chart = require("chart.js");
-
-
 Chart.plugins.register({
   afterDraw: function(chart) {
   if (chart.data.datasets.length === 0 || chart.data.datasets[0].data.length === 0) {
@@ -30,6 +29,8 @@ Chart.plugins.register({
 }
 });
 
+var dtf = require("./dateformat.js");
+
 (function() {
   $.ajaxSetup({
     headers: { 'RequestToken': OC.requestToken }
@@ -47,9 +48,8 @@ Chart.plugins.register({
           var filterClientId = '';
           var myDoughnutChart = null;
 
-
           function cb(start, end) {
-            $('#report-range span').html(start.format('DD/MM/YY') + ' - ' + end.format('DD/MM/YY'));
+            $('#report-range span').html(start.format(dtf.dformat()) + ' - ' + end.format(dtf.dformat()));
           }
           $("#report-range").daterangepicker({
               timePicker: false,
@@ -69,7 +69,7 @@ Chart.plugins.register({
                   'Last 5 years': [moment().startOf('day').subtract(5, 'year'), moment().endOf('day')],
               },
               locale: {
-                  format: 'DD/MM/YY',
+                  format: dtf.dformat(),
                   firstDay: firstDay
               }
             },cb);
