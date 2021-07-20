@@ -396,7 +396,8 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
 	}
 
 	protected function moveTimeTrackerWorkIntervalToTag(): void {
-                if (!$this->connection->tableExists('timetracker_workint_to_tag')) {
+                if (!$this->connection->tableExists('timetracker_workint_to_tag') ||
+                    !$this->connection->tableExists('timetracker_workinterval_to_tag')) {
                         return;
                 }
 
@@ -408,6 +409,15 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
                                 'tag_id' => $insert->createParameter('tag_id'),
                                 'created_at' => $insert->createParameter('created_at'),
                         ]);
+
+                $query = $this->connection->getQueryBuilder();
+                $query->select('*')
+                        ->from('timetracker_workint_to_tag');
+                $result = $query->execute();
+                if ($result->fetch()) {
+                        $result->closeCursor();
+                        return;
+                }
 
                 $query = $this->connection->getQueryBuilder();
                 $query->select('*')
@@ -427,7 +437,8 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
         }
 
 	protected function moveTimeTrackerLockedProjectAllowedTag(): void {
-                if (!$this->connection->tableExists('timetracker_lpa_tags')) {
+                if (!$this->connection->tableExists('timetracker_lpa_tags') ||
+                    !$this->connection->tableExists('timetracker_locked_project_allowed_tag')) {
                         return;
                 }
 
@@ -439,6 +450,15 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
                                 'tag_id' => $insert->createParameter('tag_id'),
                                 'created_at' => $insert->createParameter('created_at'),
                         ]);
+
+                $query = $this->connection->getQueryBuilder();
+                $query->select('*')
+                        ->from('timetracker_lpa_tags');
+                $result = $query->execute();
+                if ($result->fetch()) {
+                        $result->closeCursor();
+                        return;
+                }
 
                 $query = $this->connection->getQueryBuilder();
                 $query->select('*')
