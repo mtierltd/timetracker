@@ -61,11 +61,11 @@ class ReportItemMapper extends Mapper {
                     $selectFields[]= "min(start) as time";
                 }
             } elseif ($timegroup == 'week') {
-                $selectFields[]= "concat(date_part(\'year\', to_timestamp(start)), 'W', to_char(to_timestamp(start), 'IW')) as time";
+                $selectFields[]= "concat(date_part('year', to_timestamp(start)), 'W', to_char(to_timestamp(start), 'IW')) as time";
             }elseif ($timegroup == 'day') {
                 $selectFields[]= "start as time";
             }elseif ($timegroup == 'year') {
-                $selectFields[]= 'date_part(\'year\', to_timestamp(start)) as time';
+                $selectFields[]= "date_part('year', to_timestamp(start)) as time";
             }elseif ($timegroup == 'month') {
                 $selectFields[]= "to_char(to_timestamp(start), 'YYYY-MM') as time";
             }
