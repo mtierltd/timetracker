@@ -4,6 +4,7 @@ use OCP\IRequest;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
+use OCP\IL10N;
 use OCP\IUserSession;
 use OCA\TimeTracker\Db\WorkIntervalMapper;
 use OCA\TimeTracker\Db\WorkInterval;
@@ -46,8 +47,9 @@ class AjaxController extends Controller {
 	protected $reportItemMapper;
 	protected $timelineMapper;
 	protected $timelineEntryMapper;
+	protected $l10n;
 
-	public function __construct($AppName, IRequest $request, IUserSession $userSession, 
+	public function __construct($AppName, IRequest $request, IUserSession $userSession, IL10N $l10n,
 							WorkIntervalMapper $workIntervalMapper, ClientMapper $clientMapper, UserToClientMapper $userToClientMapper,
 							ProjectMapper $projectMapper, UserToProjectMapper $userToProjectMapper, TagMapper $tagMapper, WorkIntervalToTagMapper $workIntervalToTagMapper, ReportItemMapper $reportItemMapper, 
 							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper, $UserId){
@@ -71,6 +73,7 @@ class AjaxController extends Controller {
 		$this->timelineEntryMapper = $timelineEntryMapper;
 
 		$this->request =  $request;
+		$this->l10n = $l10n;
 	}
 
 	/**
@@ -82,9 +85,13 @@ class AjaxController extends Controller {
 		$to = $this->request->to;
 		$l = $this->workIntervalMapper->findLatestInterval($this->userId, $from, $to);
 		$days = [];
+		$tzoffset = 0;
+		if (isset($this->request->tzoffset)) {
+			$tzoffset = -($this->request->tzoffset * 60);
+		}
+		date_default_timezone_set('UTC');
 		foreach ($l as $wi){
-			//$dt = date("d/m/Y", $wi->start);
-			$dt = date("D, j M", $wi->start);
+			$dt = $this->l10n->l('date', $wi->start+$tzoffset, ['width' => 'medium']);
 			if (!isset($days[$dt])){
 				$days[$dt] = [];
 			}

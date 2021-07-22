@@ -217,7 +217,7 @@ function() {
             return moment.unix(ts).format(dtf.tformat());
         }
         function getWorkItems() {
-            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/work-intervals?from='+start.unix()+'&to='+end.unix());
+            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/work-intervals?from='+start.unix()+'&to='+end.unix()+'&tzoffset='+new Date().getTimezoneOffset());
             $.ajaxSetup({
               scriptCharset: "utf-8",
               //contentType: "application/json; charset=utf-8"
