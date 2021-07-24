@@ -3,7 +3,7 @@
 <h1 class='page-title'>Timelines Admin</h1>
 
 <div id="dialog-confirm" title="Confirmation Required" class='hidden'>
-  Are you sure you want to delete this project?
+  Are you sure you want to delete this timeline?
 </div>
 <div id="dialog-project-edit-form" title="Edit Project" class='hidden'>
   <p class="validateTips">All form fields are required.</p>
