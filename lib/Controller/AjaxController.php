@@ -552,7 +552,7 @@ class AjaxController extends Controller {
 			$clientId = $this->request->clientId;
 		}
 		$color = '#ffffff';
-		if (isset($this->request->color)) {
+		if (isset($this->request->color) && !empty($this->request->color)) {
 			$color = $this->request->color;
 		}
 		if (trim($name) == ''){
