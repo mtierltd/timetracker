@@ -697,8 +697,10 @@ class AjaxController extends Controller {
 		$projects = $this->projectMapper->findAll($this->userId);
 		$parray = json_decode(json_encode($projects), true);
 		foreach($parray as $pi => $pv){
-			$tags = $this->tagMapper->findAllAlowedForProject($pv->id);
-			$parray[$pi]['allowedtags'] = $tags;
+			if (isset($pv->id)) {
+				$tags = $this->tagMapper->findAllAlowedForProject($pv->id);
+				$parray[$pi]['allowedtags'] = $tags;
+			}
 
 		}
 		return new JSONResponse(["Projects" => $parray]);
@@ -952,7 +954,7 @@ class AjaxController extends Controller {
 		$timeline->setTimeGroup($this->request->timegroup);
 		$timeline->setFilterProjects(implode(', ',$filterProjectId));
 		$timeline->setFilterClients(implode(', ',$filterClientId));
-		$timeline->setTimeInterval(gmdate("d/m/Y", $from). ' - '. gmdate("d/m/Y", $to));
+		$timeline->setTimeInterval($this->l10n->l('date', $from) . ' - '. $this->l10n->l('date', $to));
 		$totalDuration = 0;
 		foreach($items as $i){
 			$totalDuration += $i->totalDuration;
@@ -967,8 +969,8 @@ class AjaxController extends Controller {
 			$te->setTimelineId($timeline->id);
 			$te->setUserUid($timeline->userUid);
 			$te->setName($i->name);
-			$te->setProjectName($i->project);
-			//$te->setClientName();
+			$te->setProjectName($i->project ? $i->project : "");
+			$te->setClientName($i->client ? $i->client : "");
 			$te->setTimeInterval($i->time);
 			$te->setTotalDuration($i->totalDuration);
 			$te->setCreatedAt(time());
@@ -1068,8 +1070,7 @@ class AjaxController extends Controller {
 		if ($tl->userUid == $this->userId){
 			$this->timelineMapper->delete($tl);
 		}
-		
-		return new JSONResponse(["Timeline" => $timeline]);
+		return $this->getTimelines();
 	}
 
 	/**
