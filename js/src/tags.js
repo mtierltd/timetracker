@@ -42,8 +42,8 @@ require('../../css/style.css');
         });
         var dialogTagEditForm = $( "#dialog-tag-edit-form" ).dialog({
             autoOpen: false,
-            height: 400,
-            width: 350,
+            height: 'auto',
+            width: 'auto',
             modal: true,
             buttons: {
               "Edit tag": {click: function(){

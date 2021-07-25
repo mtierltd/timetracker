@@ -135,8 +135,8 @@ require('../../css/piklor.css');
         });
         var dialogProjectEditForm = $( "#dialog-project-edit-form" ).dialog({
             autoOpen: false,
-            height: 400,
-            width: 350,
+            height: 'auto',
+            width: 'auto',
             modal: true,
             create: function( event, ui ) {
 

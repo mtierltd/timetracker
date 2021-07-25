@@ -81,8 +81,8 @@ function() {
         var timerInterval;
         var dialogWorkItemEditForm = $( "#dialog-work-item-edit-form" ).dialog({
             autoOpen: false,
-            height: 400,
-            width: 350,
+            height: 'auto',
+            width: 'auto',
             modal: true,
             buttons: {
               "Edit work item": function(){

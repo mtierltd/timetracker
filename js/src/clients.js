@@ -47,8 +47,8 @@ require('../../css/style.css');
         });
         var dialogClientEditForm = $( "#dialog-client-edit-form" ).dialog({
             autoOpen: false,
-            height: 400,
-            width: 350,
+            height: 'auto',
+            width: 'auto',
             modal: true,
             buttons: {
               "Edit client": {click:function(){
