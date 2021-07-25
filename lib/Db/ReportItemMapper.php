@@ -14,6 +14,8 @@ class ReportItemMapper extends Mapper {
         $this->dbengine = 'MYSQL';
         if (strpos(get_class($db->getDatabasePlatform()),'PostgreSQL') !== FALSE){
             $this->dbengine = 'POSTGRES';
+        } else if (strpos(get_class($db->getDatabasePlatform()),'Sqlite') !== FALSE){
+            $this->dbengine = 'SQLITE';
         }
         parent::__construct($db, 'timetracker_work_interval');
     }
@@ -52,36 +54,38 @@ class ReportItemMapper extends Mapper {
         }
 
 
-        if ($this->dbengine != 'MYSQL') {
-            $pg = 1;
-            if(empty($timegroup)){
-                if (!$aggregation) {
-                    $selectFields[]= "start as time";
-                } else {
-                    $selectFields[]= "min(start) as time";
-                }
-            } elseif ($timegroup == 'week') {
-                $selectFields[]= "concat(date_part('year', to_timestamp(start)), 'W', to_char(to_timestamp(start), 'IW')) as time";
-            }elseif ($timegroup == 'day') {
+        if(empty($timegroup)){
+            if (!$aggregation) {
                 $selectFields[]= "start as time";
+            } else {
+                $selectFields[]= "min(start) as time";
+            }
+        } elseif ($timegroup == 'day') {
+            $selectFields[]= "start as time";
+        }
+
+        if ($this->dbengine == 'POSTGRES') {
+            $pg = 1;
+            if ($timegroup == 'week') {
+                $selectFields[]= "concat(date_part('year', to_timestamp(start)), 'W', to_char(to_timestamp(start), 'IW')) as time";
             }elseif ($timegroup == 'year') {
                 $selectFields[]= "date_part('year', to_timestamp(start)) as time";
             }elseif ($timegroup == 'month') {
                 $selectFields[]= "to_char(to_timestamp(start), 'YYYY-MM') as time";
             }
-        } else {
-            if(empty($timegroup)){
-                if (!$aggregation) {
-                    $selectFields[]= "start as time";
-                } else {
-                    $selectFields[]= "min(start) as time";
-                }
-            } elseif ($timegroup == 'week') {
-                $selectFields[]= "CONCAT(YEAR(FROM_UNIXTIME(start)), 'W', WEEK(FROM_UNIXTIME(start))) as time";
-            }elseif ($timegroup == 'day') {
-                $selectFields[]= "start as time";
+        } else if ($this->dbengine == 'SQLITE') {
+            if ($timegroup == 'week') {
+                $selectFields[]= "strftime('%YW%W', datetime(start, 'unixepoch')) as time";
             }elseif ($timegroup == 'year') {
-                $selectFields[]= 'YEAR(FROM_UNIXTIME(start)) as time';
+                $selectFields[]= "strftime('%Y', datetime(start, 'unixepoch')) as time";
+            }elseif ($timegroup == 'month') {
+                $selectFields[]= "strftime('%Y-%m', datetime(start, 'unixepoch')) as time";
+            }
+        } else {
+            if ($timegroup == 'week') {
+                $selectFields[]= "CONCAT(YEAR(FROM_UNIXTIME(start)), 'W', WEEK(FROM_UNIXTIME(start))) as time";
+            }elseif ($timegroup == 'year') {
+                $selectFields[]= "YEAR(FROM_UNIXTIME(start)) as time";
             }elseif ($timegroup == 'month') {
                 $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(start),'%Y-%m') as time";
             }
@@ -104,7 +108,7 @@ class ReportItemMapper extends Mapper {
         if ($aggregation){
             if(($groupOn1 != 'project') && ($groupOn2 != 'project')){
                 $selectFields[] = '\'*\' as "projectId"';
-                if ($this->dbengine != 'MYSQL') {
+                if ($this->dbengine == 'POSTGRES') {
                     $selectFields[] = 'string_agg(distinct p.name, \',\') as project';
                 } else {
                     $selectFields[] = 'group_concat(distinct p.name) as project';
@@ -118,7 +122,7 @@ class ReportItemMapper extends Mapper {
             
             if(($groupOn1 != 'client') && ($groupOn2 != 'client')){
                 $selectFields[] = '\'*\' as "clientId"';
-                if ($this->dbengine != 'MYSQL') {
+                if ($this->dbengine == 'POSTGRES') {
                     $selectFields[] = 'string_agg(distinct c.name, \',\') as client';
                 } else {
                     $selectFields[] = 'group_concat(distinct c.name) as client';
@@ -130,7 +134,7 @@ class ReportItemMapper extends Mapper {
             }
             
             if(($groupOn1 != 'userUid') && ($groupOn2 != 'userUid') && $aggregation){
-                if ($this->dbengine != 'MYSQL') {
+                if ($this->dbengine == 'POSTGRES') {
                     $selectFields[] = 'string_agg(distinct user_uid, \',\') as "userUid"';
                 } else {
                     $selectFields[] = 'group_concat(distinct user_uid) as "userUid"';
