@@ -9,6 +9,12 @@ use OCP\AppFramework\Db\Mapper;
 class TagMapper extends Mapper {
 
     public function __construct(IDBConnection $db) {
+        $this->dbengine = 'MYSQL';
+        if (strpos(get_class($db->getDatabasePlatform()),'PostgreSQL') !== FALSE){
+            $this->dbengine = 'POSTGRES';
+        } else if (strpos(get_class($db->getDatabasePlatform()),'Sqlite') !== FALSE){
+            $this->dbengine = 'SQLITE';
+        }
         parent::__construct($db, 'timetracker_tag');
     }
 
@@ -61,9 +67,11 @@ class TagMapper extends Mapper {
             if (empty($t))
                 continue;
             if ($this->dbengine == 'MYSQL'){
-                $sql = 'insert into `*PREFIX*timetracker_lpa_tags` (project_id, tag_id, created_at) values(?,?,UNIX_TIMESTAMP(now()))  ';
-            } else {
-                $sql = 'insert into `*PREFIX*timetracker_lpa_tags` (project_id, tag_id, created_at) values(?,?,extract(epoch from now()))  ';
+                $sql = "insert into `*PREFIX*timetracker_lpa_tags` (project_id, tag_id, created_at) values(?,?,UNIX_TIMESTAMP(now()))";
+            } else if ($this->dbengine == 'POSTGRES'){
+                $sql = "insert into `*PREFIX*timetracker_lpa_tags` (project_id, tag_id, created_at) values(?,?,extract(epoch from now()))";
+            } else if ($this->dbengine == 'SQLITE'){
+                $sql = "insert into `*PREFIX*timetracker_lpa_tags` (project_id, tag_id, created_at) values(?,?,strftime('%s', 'now'))";
             }
             $this->execute($sql, [$id, $t]);
         }
