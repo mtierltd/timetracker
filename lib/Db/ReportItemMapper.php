@@ -245,7 +245,7 @@ class ReportItemMapper extends Mapper {
         if (empty($limit)){
             $limit = 10000;
         }
-        $sql = 'SELECT '.$selectItems.' where '.implode(" and ",$filters).' '.$group. ' order by time desc';
+        $sql = 'SELECT '.$selectItems.' where '.implode(" and ",$filters).' '.$group. ' order by start desc';
         //var_dump($sql);
         // var_dump($params);
         return $this->findEntities($sql, $params, $limit, $start);
