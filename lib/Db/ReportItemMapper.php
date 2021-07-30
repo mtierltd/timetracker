@@ -37,7 +37,6 @@ class ReportItemMapper extends Mapper {
         
         $selectFields = ['min(wi.id) as id', 'sum(duration) as "totalDuration"'];
         
-        $pg = 0;
         $aggregation = true;
         if(empty($groupOn1) && empty($groupOn2) && empty($timegroup)) {
             $selectFields[] = 'min(wi.details) as "details"';
@@ -60,37 +59,10 @@ class ReportItemMapper extends Mapper {
             } else {
                 $selectFields[]= "min(start) as time";
             }
-        } elseif ($timegroup == 'day') {
+        } else {
             $selectFields[]= "start as time";
         }
 
-        if ($this->dbengine == 'POSTGRES') {
-            $pg = 1;
-            if ($timegroup == 'week') {
-                $selectFields[]= "concat(date_part('year', to_timestamp(start)), 'W', to_char(to_timestamp(start), 'IW')) as time";
-            }elseif ($timegroup == 'year') {
-                $selectFields[]= "date_part('year', to_timestamp(start)) as time";
-            }elseif ($timegroup == 'month') {
-                $selectFields[]= "to_char(to_timestamp(start), 'YYYY-MM') as time";
-            }
-        } else if ($this->dbengine == 'SQLITE') {
-            if ($timegroup == 'week') {
-                $selectFields[]= "strftime('%YW%W', datetime(start, 'unixepoch')) as time";
-            }elseif ($timegroup == 'year') {
-                $selectFields[]= "strftime('%Y', datetime(start, 'unixepoch')) as time";
-            }elseif ($timegroup == 'month') {
-                $selectFields[]= "strftime('%Y-%m', datetime(start, 'unixepoch')) as time";
-            }
-        } else {
-            if ($timegroup == 'week') {
-                $selectFields[]= "CONCAT(YEAR(FROM_UNIXTIME(start)), 'W', WEEK(FROM_UNIXTIME(start))) as time";
-            }elseif ($timegroup == 'year') {
-                $selectFields[]= "YEAR(FROM_UNIXTIME(start)) as time";
-            }elseif ($timegroup == 'month') {
-                $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(start),'%Y-%m') as time";
-            }
-
-        }
         if ($aggregation){
             if($groupOn1 != 'name'){
                 if ($this->dbengine != 'MYSQL') {
@@ -213,7 +185,7 @@ class ReportItemMapper extends Mapper {
                if ($groupOn1 == 'name'){
                 $groups[] = 'wi.name';
                } else {
-                if($pg) { // postgres needs quotes on names
+                if ($this->dbengine == 'POSTGRES') { // postgres needs quotes on names
                     $groups[] = '"'.$groupOn1.'"';
                 } else {
                     $groups[] = $groupOn1;
@@ -225,8 +197,8 @@ class ReportItemMapper extends Mapper {
                 if ($groupOn2 == 'name'){
                     $groups[] = 'wi.name';
                     } else {
-                    if($pg) {
-                        $groups[] = '"'.$groupOn2.'"';// postgres needs quotes on names
+                    if ($this->dbengine == 'POSTGRES') { // postgres needs quotes on names
+                        $groups[] = '"'.$groupOn2.'"';
                     } else {
                         $groups[] = $groupOn2;
                     }
