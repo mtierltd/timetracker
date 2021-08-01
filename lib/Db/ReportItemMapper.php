@@ -56,11 +56,40 @@ class ReportItemMapper extends Mapper {
         if(empty($timegroup)){
             if (!$aggregation) {
                 $selectFields[]= "start as time";
+                $selectFields[]= "start as ftime";
             } else {
                 $selectFields[]= "min(start) as time";
+                $selectFields[]= "min(start) as ftime";
             }
         } else {
             $selectFields[]= "start as time";
+            $selectFields[]= "start as ftime";
+        }
+
+        if ($this->dbengine == 'POSTGRES') {
+            if ($timegroup == 'week') {
+                $selectFields[]= "concat(date_part('year', to_timestamp(start)), 'W', to_char(to_timestamp(start), 'IW')) as ftime";
+            }elseif ($timegroup == 'year') {
+                $selectFields[]= "date_part('year', to_timestamp(start)) as ftime";
+            }elseif ($timegroup == 'month') {
+                $selectFields[]= "to_char(to_timestamp(start), 'YYYY-MM') as ftime";
+            }
+        } else if ($this->dbengine == 'SQLITE') {
+            if ($timegroup == 'week') {
+                $selectFields[]= "strftime('%YW%W', datetime(start, 'unixepoch')) as ftime";
+            }elseif ($timegroup == 'year') {
+                $selectFields[]= "strftime('%Y', datetime(start, 'unixepoch')) as ftime";
+            }elseif ($timegroup == 'month') {
+                $selectFields[]= "strftime('%Y-%m', datetime(start, 'unixepoch')) as ftime";
+            }
+        } else {
+            if ($timegroup == 'week') {
+                $selectFields[]= "CONCAT(YEAR(FROM_UNIXTIME(start)), 'W', WEEK(FROM_UNIXTIME(start))) as ftime";
+            }elseif ($timegroup == 'year') {
+                $selectFields[]= "YEAR(FROM_UNIXTIME(start)) as ftime";
+            }elseif ($timegroup == 'month') {
+                $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(start),'%Y-%m') as ftime";
+            }
         }
 
         if ($aggregation){
@@ -176,7 +205,7 @@ class ReportItemMapper extends Mapper {
             // } elseif ($timegroup == 'year') {
             //     $groups[] = "YEAR(start)";
             // }
-            $groups[] = 'time';
+            $groups[] = 'ftime';
         }
         
         if (!empty($groupOn1)){
