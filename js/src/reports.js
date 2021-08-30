@@ -174,49 +174,47 @@ var dtf = require("./dateformat.js");
                 n = n + '';
                 return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
               }
+              var endedAccessor = function(value, data, type, params, column){
+                if (group1 != '' || group2 != '' || group3 != ''){
+                  return '*';
+                }
+		return moment(data.time, dtf.dtformat()).add(moment.duration(data.totalDuration)).format(dtf.dtformat());
+              }
+              var totalDurationAccessor = function(value, data, type, params, column){
+                var s = Math.floor( (data.totalDuration) % 60 );
+                var m = Math.floor( (data.totalDuration/60) % 60 );
+                var h = Math.floor( (data.totalDuration/(60*60)));
+                return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
+              }
+              var whenAccessor = function(value, data, type, params, column){
+                switch(group3) {
+                case 'day':
+                  return moment.unix(value).format(dtf.dformat());
+                case 'month':
+                  return moment.unix(value).format(dtf.mformat());
+                case 'week':
+                  return moment.unix(value).format('YYYY[W]W');
+                case 'year':
+                  return moment.unix(value).format('YYYY');
+                default:
+                  return moment.unix(value).format(dtf.dtformat());
+                }
+              }
+              var nullCheckAccessor = function(value, data, type, params, column){
+                return value ? value : '';
+              }
               var table = new Tabulator("#report", {
                 ajaxURL:baseUrl,
                 layout:"fitColumns",
-                downloadDataFormatter:function(data){
-                  //data - active table data array
-                  data.forEach(function(row){
-
-                      var time = row.time;
-                      var duration = row.totalDuration;
-                      if (group1 != '' || group2 != '' || group3 != ''){
-                        row.ended = '*';
-                      } else {
-                        var ended = moment(time, dtf.dtformat()).add(duration,"seconds").format(dtf.dtformat());
-                        row.ended = ended;
-                        
-                      }
-
-                      var s = Math.floor( (duration) % 60 );
-                      var m = Math.floor( (duration/60) % 60 );
-                      var h = Math.floor( (duration/(60*60)));
-                    
-                      row.totalDuration = pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
-
-                      if (row.project == null){
-                        row.project = '';
-                      }
-                      if (row.client == null){
-                        row.client = '';
-                      }
-
-                  });
-          
-                  return data;
-                },
                 columns:[
                   //{title:"Id", field:"id", width:100}, //column has a fixed width of 100px;
-                  {title:"#", field:"", formatter:"rownum"},
+                  {title:"#", field:"id", formatter:"rownum"},
                   {title:"Name", field:"name", widthGrow:1}, //column will be allocated 1/5 of the remaining space
                   {title:"Details", field:"details", widthGrow:1}, //column will be allocated 1/5 of the remaining space
                   {title:"User", field:"userUid", widthGrow:1}, //column will be allocated 1/5 of the remaining space
-                  {title:"Project", field:"project", widthGrow:1}, //column will be allocated 1/5 of the remaining space
-                  {title:"Client", field:"client", widthGrow:1}, //column will be allocated 1/5 of the remaining space
-                  {title:"When", field:"time", widthGrow:1, formatter:function(cell, formatterParams, onRendered){
+                  {title:"Project", field:"project",accessorDownload:nullCheckAccessor, widthGrow:1}, //column will be allocated 1/5 of the remaining space
+                  {title:"Client", field:"client",accessorDownload:nullCheckAccessor, widthGrow:1}, //column will be allocated 1/5 of the remaining space
+                  {title:"When", field:"time", widthGrow:1,accessorDownload:whenAccessor,formatter:function(cell, formatterParams, onRendered){
                     var t = cell.getValue();
                     switch(group3) {
                     case 'day':
@@ -231,7 +229,7 @@ var dtf = require("./dateformat.js");
                       return moment.unix(t).format(dtf.dtformat());
                     }
                   }},
-                  {title:"Total Duration", field:"totalDuration",formatter:function(cell, formatterParams, onRendered){
+                  {title:"Total Duration", field:"totalDuration",accessorDownload:totalDurationAccessor,formatter:function(cell, formatterParams, onRendered){
                     //cell - the cell component
                     //formatterParams - parameters set for the column
                     //onRendered - function to call when the formatter has been rendered
@@ -239,7 +237,6 @@ var dtf = require("./dateformat.js");
                     var s = Math.floor( (duration) % 60 );
                     var m = Math.floor( (duration/60) % 60 );
                     var h = Math.floor( (duration/(60*60)));
-                    
                     return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
                     
                   },bottomCalc:"sum", bottomCalcParams:{
@@ -256,7 +253,7 @@ var dtf = require("./dateformat.js");
                       return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
 
                     }}, //column will be allocated 1/5 of the remaining space
-                    {title:"Ended", field:"ended",visible:false, formatter:function(cell, formatterParams, onRendered){
+                    {title:"Ended", field:"ended",visible:false,accessorDownload:endedAccessor,formatter:function(cell, formatterParams, onRendered){
                       //cell - the cell component
                       //formatterParams - parameters set for the column
                       //onRendered - function to call when the formatter has been rendered
@@ -265,8 +262,7 @@ var dtf = require("./dateformat.js");
                       }
                       var time = cell.getRow().getData().time;
                       var duration = cell.getRow().getData().totalDuration;
-                      var ended = moment(time, dtf.dtformat()).add(duration,"seconds").format(dtf.dtformat());
-                      return ended;
+                      return moment.unix(parseInt(time) + parseInt(duration)).format(dtf.dtformat());
                       
                     }},
               ],

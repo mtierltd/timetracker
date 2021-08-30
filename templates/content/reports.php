@@ -42,7 +42,7 @@
       <select id="group2" style="width: 200px;">
           <option value="">None</option>  
           <option value="name">Time Entry</option>
-          <option value="userUid" selected >User</option>
+          <option value="userUid" selected>User</option>
           <option value="project">Project</option>
       </select>
   </label>
