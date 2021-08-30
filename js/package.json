@@ -25,6 +25,6 @@
     "jqueryui": "^1.11.1",
     "moment": "^2.29.1",
     "select2": "^4.0.13",
-    "tabulator-tables": "^4.9.1"
+    "tabulator-tables": "^4.9.3"
   }
 }
