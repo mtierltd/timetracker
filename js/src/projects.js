@@ -216,7 +216,7 @@ require('../../css/piklor.css');
                     "requesttoken" : oc_requesttoken,
                    
                   },
-                  url:  '/ocs/v2.php/cloud/users/details?offset=0&search=',
+                  url:  OC.generateUrl('/ocs/v2.php/cloud/users/details?offset=0&search='),
                   formatNoMatches: function() {
                     return '';
                 },
