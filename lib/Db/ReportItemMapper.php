@@ -65,8 +65,8 @@ class ReportItemMapper extends Mapper {
                 $selectFields[]= "date_part('year', to_timestamp(start)) as ftime";
             }elseif ($timegroup == 'month') {
                 $selectFields[]= "to_char(to_timestamp(start), 'YYYY-MM') as ftime";
-            } else if (!empty($timegroup)){
-                    $selectFields[]= "start as ftime";
+            }elseif ($timegroup == 'day') {
+                $selectFields[]= "to_char(to_timestamp(start), 'YYYY-MM-DD') as ftime";
             }
         } else if ($this->dbengine == 'SQLITE') {
             if ($timegroup == 'week') {
@@ -75,8 +75,8 @@ class ReportItemMapper extends Mapper {
                 $selectFields[]= "strftime('%Y', datetime(start, 'unixepoch')) as ftime";
             }elseif ($timegroup == 'month') {
                 $selectFields[]= "strftime('%Y-%m', datetime(start, 'unixepoch')) as ftime";
-            } else if (!empty($timegroup)){
-                    $selectFields[]= "start as ftime";
+            }elseif ($timegroup == 'day') {
+                $selectFields[]= "strftime('%Y-%m-%d', datetime(start, 'unixepoch')) as ftime";
             }
         } else {
             if ($timegroup == 'week') {
@@ -85,8 +85,8 @@ class ReportItemMapper extends Mapper {
                 $selectFields[]= "YEAR(FROM_UNIXTIME(start)) as ftime";
             }elseif ($timegroup == 'month') {
                 $selectFields[]= "DATE_FORMAT(FROM_UNIXTIME(start),'%Y-%m') as ftime";
-            } else if (!empty($timegroup)){
-                    $selectFields[]= "start as ftime";
+            }elseif ($timegroup == 'day') {
+                $selectFields[]= "DATE(FROM_UNIXTIME(start)) as ftime";
             }
         }
 
