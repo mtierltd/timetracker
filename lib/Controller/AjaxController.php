@@ -1180,6 +1180,7 @@ class AjaxController extends Controller {
 		$weeknumber = $date->format("W");
 		$year = $date->format("Y");
 		$weekstartdt = new \DateTime();
+		$weekstartdt->setTime(0, 0, 0, 0);
 		$weekstartdt->setISODate($year, $weeknumber);
 
 		return $weekstartdt;
@@ -1187,6 +1188,7 @@ class AjaxController extends Controller {
 	public function getStartOfMonth($timestamp){
 		$date = new \DateTime('@'.$timestamp);
 		$date->modify('first day of this month');
+		$date->setTime(0, 0, 0, 0);
 
 		return $date;
 	}
