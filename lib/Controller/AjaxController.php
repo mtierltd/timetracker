@@ -1199,7 +1199,7 @@ class AjaxController extends Controller {
 		$oneWeek = \DateInterval::createFromDateString('1 week');
 		$currentWeek = $start;
 		$weeks = [];
-		while ($currentWeek <= $end){
+		while ($currentWeek < $end){
 			$weeks[] = $currentWeek->format("Y-m-d");
 			$currentWeek->add($oneWeek);
 		}
@@ -1211,7 +1211,7 @@ class AjaxController extends Controller {
 		$oneMonth = \DateInterval::createFromDateString('1 month');
 		$currentMonth = $start;
 		$months = [];
-		while ($currentMonth <= $end){
+		while ($currentMonth < $end){
 			$months[] = $currentMonth->format("Y-m");
 			$currentMonth->add($oneMonth);
 		}
