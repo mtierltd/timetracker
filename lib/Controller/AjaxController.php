@@ -1243,19 +1243,18 @@ class AjaxController extends Controller {
 			}
 			$workedSecondsCurrentPeriod = 0;
 			$debtSeconds = 0;
-			array_pop($intervals);
 			foreach($intervals as $interval){
 				$workedInInterval = 0;
 				foreach($repItems as $repItem) {
 
 					if ($goal->interval == 'Weekly'){
 						if ($interval == $this->getStartOfWeek($repItem->time)->format('Y-m-d')) {
-							$workedInInterval = $repItem->totalDuration;
+							$workedInInterval += $repItem->totalDuration;
 							break;	
 						} 
 					} elseif ($goal->interval == 'Monthly'){
 						if ($interval == $this->getStartOfMonth($repItem->time)->format('Y-m')) {
-							$workedInInterval = $repItem->totalDuration;
+							$workedInInterval += $repItem->totalDuration;
 							break;	
 						} 
 					}
