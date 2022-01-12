@@ -1180,6 +1180,7 @@ class AjaxController extends Controller {
 		$weeknumber = $date->format("W");
 		$year = $date->format("Y");
 		$weekstartdt = new \DateTime();
+		$weekstartdt->setTime(0, 0, 0, 0);
 		$weekstartdt->setISODate($year, $weeknumber);
 
 		return $weekstartdt;
@@ -1187,6 +1188,7 @@ class AjaxController extends Controller {
 	public function getStartOfMonth($timestamp){
 		$date = new \DateTime('@'.$timestamp);
 		$date->modify('first day of this month');
+		$date->setTime(0, 0, 0, 0);
 
 		return $date;
 	}
@@ -1241,22 +1243,29 @@ class AjaxController extends Controller {
 			}
 			$workedSecondsCurrentPeriod = 0;
 			$debtSeconds = 0;
-			array_pop($intervals);
 			foreach($intervals as $interval){
 				$workedInInterval = 0;
 				foreach($repItems as $repItem) {
-					if ($interval == $repItem->time) {					
-						$workedInInterval = $repItem->totalDuration;
-						break;	
-					} 
+
+					if ($goal->interval == 'Weekly'){
+						if ($interval == $this->getStartOfWeek($repItem->time)->format('Y-m-d')) {
+							$workedInInterval += $repItem->totalDuration;
+							break;	
+						} 
+					} elseif ($goal->interval == 'Monthly'){
+						if ($interval == $this->getStartOfMonth($repItem->time)->format('Y-m')) {
+							$workedInInterval += $repItem->totalDuration;
+							break;	
+						} 
+					}
 				}
 				$debtSeconds += ($goal->hours*3600 - $workedInInterval);
 			}
 
 			foreach($repItems as $period){
-				if ($goal->interval == 'Weekly' && $period->time == $weekStart){
+				if ($goal->interval == 'Weekly' && $this->getStartOfWeek($period->time)->format('Y-m-d') == $weekStart){
 					$workedSecondsCurrentPeriod += $period->totalDuration;
-				} elseif ($goal->interval == 'Monthly' && $period->time == $monthStart){
+				} elseif ($goal->interval == 'Monthly' && $this->getStartOfMonth($period->time)->format('Y-m') == $monthStart){
 					$workedSecondsCurrentPeriod += $period->totalDuration;
 				}
 			}
