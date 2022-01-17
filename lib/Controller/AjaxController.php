@@ -1250,12 +1250,10 @@ class AjaxController extends Controller {
 					if ($goal->interval == 'Weekly'){
 						if ($interval == $this->getStartOfWeek($repItem->time)->format('Y-m-d')) {
 							$workedInInterval += $repItem->totalDuration;
-							break;	
 						} 
 					} elseif ($goal->interval == 'Monthly'){
 						if ($interval == $this->getStartOfMonth($repItem->time)->format('Y-m')) {
 							$workedInInterval += $repItem->totalDuration;
-							break;	
 						} 
 					}
 				}
