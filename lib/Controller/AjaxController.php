@@ -258,6 +258,8 @@ class AjaxController extends Controller {
 	public function deleteWorkInterval($id) {
 		$wi = $this->workIntervalMapper->find($id);
 		$this->workIntervalMapper->delete($wi);
+
+		$running = $this->workIntervalMapper->findAllRunning($this->userId);
 		
 		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
 	}
