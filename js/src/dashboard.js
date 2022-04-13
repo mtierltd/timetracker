@@ -58,6 +58,7 @@ var dtf = require("./dateformat.js");
               showCustomRangeLabel: false,
               ranges: {
                   'Today': [moment().startOf('day'), moment().endOf('day')],
+                  'This week': [moment().startOf('week'), moment().endOf('week')],
                   'Last 7 Days': [moment().startOf('day').subtract(6, 'days'), moment().endOf('day')],
                   'Last 30 Days': [moment().startOf('day').subtract(29, 'days'), moment().endOf('day')],
                   'Last 90 Days': [moment().startOf('day').subtract(89, 'days'), moment().endOf('day')],
