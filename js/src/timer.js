@@ -558,12 +558,12 @@ function() {
                 stopTimer(startTimer, [projectId, tags]);
                 return;
             }
-            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/start-timer');
             var workName = $('#work-input').val();
             if (workName == ''){
                 workName = 'no description';
             }
-            var jqxhr = $.post( "ajax/start-timer/"+encodeURIComponent(encodeURIComponent(workName)), { projectId: projectId, tags: tags}, function() {
+            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/start-timer/'+encodeURIComponent(encodeURIComponent(workName)));
+            var jqxhr = $.post(baseUrl, { projectId: projectId, tags: tags}, function() {
                })
                .done(function(data, status, jqXHR) {
                 var response = data;
@@ -587,7 +587,8 @@ function() {
             if (workName == ''){
                 workName = 'no description';
             }
-            var jqxhr = $.post( "ajax/stop-timer/"+encodeURIComponent(encodeURIComponent(workName)), function() { // encode twice so we can pass / character
+            var baseUrl = OC.generateUrl('/apps/timetracker/ajax/stop-timer/'+encodeURIComponent(encodeURIComponent(workName)));
+            var jqxhr = $.post(baseUrl, function() { // encode twice so we can pass / character
                })
                .done(function(data, status, jqXHR) {
                 var response = data;
