@@ -1,5 +1,6 @@
 <?php
 namespace OCA\TimeTracker\Controller;
+use OCP\AppFramework\Http;
 use OCP\IRequest;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
@@ -51,7 +52,7 @@ class AjaxController extends Controller {
 
 	public function __construct($AppName, IRequest $request, IUserSession $userSession, IL10N $l10n,
 							WorkIntervalMapper $workIntervalMapper, ClientMapper $clientMapper, UserToClientMapper $userToClientMapper,
-							ProjectMapper $projectMapper, UserToProjectMapper $userToProjectMapper, TagMapper $tagMapper, WorkIntervalToTagMapper $workIntervalToTagMapper, ReportItemMapper $reportItemMapper, 
+							ProjectMapper $projectMapper, UserToProjectMapper $userToProjectMapper, TagMapper $tagMapper, WorkIntervalToTagMapper $workIntervalToTagMapper, ReportItemMapper $reportItemMapper,
 							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper, $UserId){
 		parent::__construct($AppName, $request);
 		$this->userId = $UserId;
@@ -102,7 +103,7 @@ class AjaxController extends Controller {
 			if ($wi->projectId != null){
 				$project = $this->projectMapper->find($wi->projectId);
 			}
-			
+
 			$tags = [];
 			$wiToTags = $this->workIntervalToTagMapper->findAllForWorkInterval($wi->id);
 			foreach($wiToTags as $wiToTag){
@@ -110,7 +111,7 @@ class AjaxController extends Controller {
 				if ($t != null)
 					$tags[] = $t;
 			}
-			
+
 			$wa = ['duration' => $wi->duration,
 					'id' => $wi->id,
 					'name' =>  $wi->name,
@@ -120,19 +121,20 @@ class AjaxController extends Controller {
 					'start' => $wi->start,
 					'tags' => $tags,
 					'userUid' => $wi->userUid,
+                    'cost' => $wi->cost,
 					'projectName' => ($project === null)?null:$project->name,
 					'projectColor' =>  ($project === null)?null:$project->color,
 			];
 			$days[$dt][$wi->name]['children'][] = $wa;
 			$days[$dt][$wi->name]['totalTime'] += $wa['duration'];
 		}
-		
+
 
 		$running = $this->workIntervalMapper->findAllRunning($this->userId);
 		return new JSONResponse(["WorkIntervals" => $l, "running" => $running, 'days' => $days, 'now' => time()]);
 	}
 
-	
+
 	public function isThisAdminUser(){
 		return \OC_User::isAdminUser(\OC_User::getUser());
 	}
@@ -147,8 +149,30 @@ class AjaxController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function index() {
-		
+
 	}
+
+	public function addCost($id)
+    {
+        $wi = $this->workIntervalMapper->find($id);
+        $cost = $this->request->cost;
+
+        if (!is_numeric($cost)) {
+            return new JSONResponse(['error' => 'Non numeric value'], Http::STATUS_BAD_REQUEST);
+        }
+
+        $costInCents = $cost * 100;
+
+        $wi->setCost($costInCents);
+
+        try {
+            $this->workIntervalMapper->update($wi);
+        } catch (\Exception $e) {
+            return new JSONResponse(['error' => true, 'message' => $e->getMessage()]);
+        }
+
+        return new JSONResponse(['success' => true, 'test' => $cost ?? 't']);
+    }
 
 	/**
 	 *
@@ -176,11 +200,11 @@ class AjaxController extends Controller {
 		$winterval->setRunning(1);
 		$winterval->setName($name);
 		$winterval->setUserUid($this->userId);
-		
+
 		// first get tags and project ids from the last work item with the same name
 		$lwinterval = $this->workIntervalMapper->findLatestByName($this->userId, $name);
 		if ($projectId == null && $lwinterval != null){
-			
+
 			$winterval->setProjectId($lwinterval->projectId);
 		}
 
@@ -200,7 +224,7 @@ class AjaxController extends Controller {
 			}
 
 		}
-		
+
 		if ($tags != null){
 			$tagsArray  = explode(",", $tags);
 			foreach($tagsArray as $t){
@@ -213,12 +237,12 @@ class AjaxController extends Controller {
 
 		}
 
-		
-		
-		
+
+
+
 		//echo json_encode((array)$winterval);
 		return new JSONResponse(["WorkIntervals" => $winterval, "running" => 1]);
-		
+
 	}
 
 
@@ -237,7 +261,7 @@ class AjaxController extends Controller {
 		}
 
 		$running = $this->workIntervalMapper->findAllRunning($this->userId);
-		
+
 		$now = time();
 		foreach($running as $r){
 			$r->setRunning(0);
@@ -260,7 +284,7 @@ class AjaxController extends Controller {
 		$this->workIntervalMapper->delete($wi);
 
 		$running = $this->workIntervalMapper->findAllRunning($this->userId);
-		
+
 		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
 	}
 
@@ -270,9 +294,9 @@ class AjaxController extends Controller {
 	 */
 
 	public function updateWorkInterval($id) {
-		
+
 		$wi = $this->workIntervalMapper->find($id);
-		
+
 		if (isset($this->request->name)) {
 			if (strlen($this->request->name) > 255){
 				return new JSONResponse(["Error" => "Name too long"]);
@@ -306,14 +330,14 @@ class AjaxController extends Controller {
 						$newWiToTag->setTagId($tag);
 						$newWiToTag->setCreatedAt(time());
 						$this->workIntervalToTagMapper->insert($newWiToTag);
-		
+
 					}
-		
+
 				}
 
 			}
 		}
-		
+
 		 if (isset($this->request->tagId)) {
 			 if (is_array($this->request->tagId)){
 				$tags = $this->request->tagId;
@@ -324,7 +348,7 @@ class AjaxController extends Controller {
 			$this->workIntervalToTagMapper->deleteAllForWorkInterval($id);
 			$project = null;
 			$locked = 0;
-			
+
 
 			foreach($tags as $tag){
 				if (empty($tag))
@@ -365,10 +389,10 @@ class AjaxController extends Controller {
 			 $de->setTimeZone(new \DateTimeZone('UTC'));
 			 $wi->setDuration($de->getTimestamp() - $dt->getTimestamp());
 		 }
-		 
+
 		$this->workIntervalMapper->update($wi);
 		$running = $this->workIntervalMapper->findAllRunning($this->userId);
-		
+
 		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
 	}
 
@@ -379,11 +403,11 @@ class AjaxController extends Controller {
 	 */
 
 	public function addWorkInterval() {
-		
+
 		$wi = new WorkInterval();
 		$wi->setUserUid($this->userId);
 		$wi->setRunning(0);
-		
+
 		if (isset($this->request->name)) {
 			$wi->setName(urldecode($this->request->name));
 		}
@@ -414,9 +438,9 @@ class AjaxController extends Controller {
 						$newWiToTag->setTagId($tag);
 						$newWiToTag->setCreatedAt(time());
 						$this->workIntervalToTagMapper->insert($newWiToTag);
-		
+
 					}
-		
+
 				}
 
 			}
@@ -426,7 +450,7 @@ class AjaxController extends Controller {
 			$this->workIntervalToTagMapper->deleteAllForWorkInterval($id);
 			$project = null;
 			$locked = 0;
-			
+
 
 			foreach($tags as $tag){
 				if (empty($tag))
@@ -456,7 +480,7 @@ class AjaxController extends Controller {
 		 }
 
 		$this->workIntervalMapper->insert($wi);
-		
+
 		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
 	}
 
@@ -524,7 +548,7 @@ class AjaxController extends Controller {
 		$utoc = $this->userToClientMapper->findForUserAndClient($this->userId, $c);
 
 		if ($utoc != null){
-			
+
 			$this->userToClientMapper->delete($utoc);
 		}
 		return $this->getClients();
@@ -541,7 +565,7 @@ class AjaxController extends Controller {
 		return new JSONResponse(["Clients" => json_decode(json_encode($clients), true)]);
 	}
 
-	
+
 
 
 	/**
@@ -639,10 +663,10 @@ class AjaxController extends Controller {
 				$this->userToProjectMapper->insert($up);
 			}
 		}
-		
+
 		if (isset($this->request->archived) && $p->getArchived() != $this->request->archived){
 			if (($this->isThisAdminUser() || $p->createdByUserUid == $this->userId) ){
-				
+
 				$archived = $this->request->archived;
 				$p->setArchived($archived);
 			} else {
@@ -651,7 +675,7 @@ class AjaxController extends Controller {
 		}
 
 		$this->projectMapper->update($p);
-		
+
 		return $this->getProjects();
 	}
 	/**
@@ -665,7 +689,7 @@ class AjaxController extends Controller {
 		$utop = $this->userToProjectMapper->findForUserAndProject($this->userId, $p);
 
 		if ($utop != null){
-			
+
 			$this->userToProjectMapper->delete($utop);
 		}
 		return $this->getProjects();
@@ -686,11 +710,11 @@ class AjaxController extends Controller {
 		$this->tagMapper->allowedTags($id,[]);
 		$this->projectMapper->delete($id);
 
-		
+
 		return $this->getProjects();
 	}
 
-		
+
 	/**
 	 *
 	 * @NoAdminRequired
@@ -744,7 +768,7 @@ class AjaxController extends Controller {
 					$out['clientId'] = $client->id;
 				}
 			}
-			
+
 			$outProjects[] = $out;
 		}
 
@@ -770,7 +794,7 @@ class AjaxController extends Controller {
 			return new JSONResponse(["Error" => "This tag name already exists"]);
 		}
 
-		
+
 		return $this->getTags();
 	}
 	/**
@@ -793,7 +817,7 @@ class AjaxController extends Controller {
 		}
 		$c->setName($name);
 		$this->tagMapper->update($c);
-		
+
 		return $this->getTags();
 	}
 	/**
@@ -823,7 +847,7 @@ class AjaxController extends Controller {
 			$wi = $this->workIntervalMapper->find($workItem);
 			if ($wi->projectId != null){
 				$project = $this->projectMapper->find($wi->projectId);
-				
+
 			}
 		}
 		if($project != null && $project->locked){
@@ -869,7 +893,7 @@ class AjaxController extends Controller {
 			$name = $this->userId;
 		}
 
-		
+
 		if(!$this->isThisAdminUser()){
 			$allowedClients =  $this->clientMapper->findAll($this->userId);
 			$allowedClientsId = array_map(function($client){ return $client->id;}, $allowedClients );
@@ -889,7 +913,7 @@ class AjaxController extends Controller {
 			}
 
 		}
-		
+
 		$filterTagId = [];
 		$groupOn1 = $this->request->group1;
 		$groupOn2 = $this->request->group2;
@@ -923,7 +947,7 @@ class AjaxController extends Controller {
 			$name = $this->userId;
 		}
 
-		
+
 		if(!$this->isThisAdminUser()){
 			$allowedClients =  $this->clientMapper->findAll($this->userId);
 			$allowedClientsId = array_map(function($client){ return $client->id;}, $allowedClients );
@@ -943,12 +967,12 @@ class AjaxController extends Controller {
 			}
 
 		}
-		
+
 		$filterTagId = [];
 		$groupOn1 = $this->request->group1;
 		$groupOn2 = $this->request->group2;
 		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, 1000);
-		
+
 		$timeline = new Timeline();
 		$timeline->setUserUid($this->userId);
 		$timeline->setGroup1($this->request->group1);
@@ -976,6 +1000,7 @@ class AjaxController extends Controller {
 			$te->setTimeInterval($i->time);
 			$te->setTotalDuration($i->totalDuration);
 			$te->setCreatedAt(time());
+			$te->setCost($i->cost);
 			$this->timelineEntryMapper->insert($te);
 
 		}
@@ -1015,7 +1040,7 @@ class AjaxController extends Controller {
 		$timeFormat = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
 		return $timeFormat;
 	}
-	
+
 	/**
 	 *
 	 * @NoAdminRequired
@@ -1040,7 +1065,7 @@ class AjaxController extends Controller {
 		fputcsv($output, array('id', 'User Uid', 'Name', 'Project Name', 'Client Name', 'Time Interval', 'Total Duration'));
 		$totalDuration = 0;
 		foreach($te as $t){
-			
+
 				fputcsv($output, [$t->id, $t->userUid, $t->name, $t->projectName, $t->clientName, $t->timeInterval, $this->secondsToTime($t->totalDuration)]);
 				$totalDuration += $t->totalDuration;
 		}
@@ -1092,7 +1117,7 @@ class AjaxController extends Controller {
 		$emails = explode(';',$email);
 		$subject = $this->request->subject;
 		$content = $this->request->content;
-		
+
 		// output headers so that the file is downloaded rather than displayed
 		header('Content-Type: text/csv; charset=utf-8');
 		header('Content-Disposition: attachment; filename=timeline-'.$user.'-'.$id.'.csv');
@@ -1106,14 +1131,14 @@ class AjaxController extends Controller {
 		fputcsv($output, array('id', 'User Uid', 'Name', 'Project Name', 'Client Name', 'Time Interval', 'Total Duration'));
 		$totalDuration = 0;
 		foreach($te as $t){
-			
+
 				fputcsv($output, [$t->id, $t->userUid, $t->name, $t->projectName, $t->clientName, $t->timeInterval, $this->secondsToTime($t->totalDuration)]);
 				$totalDuration += $t->totalDuration;
 		}
 		fputcsv($output, ['TOTAL', '', '', '', '', '', $this->secondsToTime($totalDuration)]);
-		
-		
-		
+
+
+
 		$mailer = \OC::$server->getMailer();
 		$message = $mailer->createMessage();
 		$attach = $mailer->createAttachmentFromPath($path);
@@ -1124,7 +1149,7 @@ class AjaxController extends Controller {
 		//$message->setHtmlBody($content);
 		$message->attach($attach);
 		$mailer->send($message);
-		
+
 		fclose($output);
 		unlink($path);
 		return new JSONResponse([]);
@@ -1157,10 +1182,10 @@ class AjaxController extends Controller {
 			return new JSONResponse(["Error" => "There can be only one goal per project"]);
 		}
 
-		
+
 		return $this->getGoals();
 	}
-	
+
 	/**
 	 *
 	 * @NoAdminRequired
@@ -1229,7 +1254,7 @@ class AjaxController extends Controller {
 		$goals = $this->goalMapper->findAll($this->userId);
 		$weekStart = $this->getStartOfWeek(time())->format('Y-m-d');
 		$monthStart = $this->getStartOfMonth(time())->format('Y-m');
-		
+
 		$ret = [];
 		foreach($goals as $goal){
 			$rgoal = [];
@@ -1252,11 +1277,11 @@ class AjaxController extends Controller {
 					if ($goal->interval == 'Weekly'){
 						if ($interval == $this->getStartOfWeek($repItem->time)->format('Y-m-d')) {
 							$workedInInterval += $repItem->totalDuration;
-						} 
+						}
 					} elseif ($goal->interval == 'Monthly'){
 						if ($interval == $this->getStartOfMonth($repItem->time)->format('Y-m')) {
 							$workedInInterval += $repItem->totalDuration;
-						} 
+						}
 					}
 				}
 				$debtSeconds += ($goal->hours*3600 - $workedInInterval);

@@ -17,12 +17,13 @@ class ReportItem extends Entity {
     public $project;
     public $clientId;
     public $client;
+    public $cost;
 
 
 
     public function __construct() {
         // add types in constructor
-        
+
         $this->addType('id', 'integer');
         $this->addType('name', 'string');
         $this->addType('details', 'string');
@@ -32,5 +33,6 @@ class ReportItem extends Entity {
         $this->addType('ftime', 'string');
         $this->addType('totalDuration', 'integer');
         $this->addType('project', 'string');
+        $this->addType('cost', 'integer');
     }
 }
