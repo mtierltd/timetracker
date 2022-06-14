@@ -8,7 +8,7 @@
  * it's instantiated in there
  */
 
- 
+
 return [
     'routes' => [
        ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
@@ -18,9 +18,9 @@ return [
        ['name' => 'dashboard#index', 'url' => '/dashboard', 'verb' => 'GET'],
        ['name' => 'reports#index', 'url' => '/reports', 'verb' => 'GET'],
        ['name' => 'timelines#index', 'url' => '/timelines', 'verb' => 'GET'],
-       
+
        ['name' => 'timelinesAdmin#index', 'url' => '/timelines-admin', 'verb' => 'GET'],
-       
+
        ['name' => 'tags#index', 'url' => '/tags', 'verb' => 'GET'],
        ['name' => 'goals#index', 'url' => '/goals', 'verb' => 'GET'],
 
@@ -31,8 +31,10 @@ return [
        ['name' => 'ajax#update_work_interval', 'url' => '/ajax/update-work-interval/{id}', 'verb' => 'POST'],
        ['name' => 'ajax#add_work_interval', 'url' => '/ajax/add-work-interval/{name}', 'verb' => 'POST'],
        ['name' => 'ajax#delete_work_interval', 'url' => '/ajax/delete-work-interval/{id}', 'verb' => 'POST'],
+       ['name' => 'ajax#add_cost', 'url' => '/ajax/add-cost/{id}', 'verb' => 'POST'],
 
-       ['name' => 'ajax#get_clients', 'url' => '/ajax/clients', 'verb' => 'GET'],
+
+        ['name' => 'ajax#get_clients', 'url' => '/ajax/clients', 'verb' => 'GET'],
        ['name' => 'ajax#add_client', 'url' => '/ajax/add-client/{name}', 'verb' => 'POST'],
        ['name' => 'ajax#edit_client', 'url' => '/ajax/edit-client/{id}', 'verb' => 'POST'],
        ['name' => 'ajax#delete_client', 'url' => '/ajax/delete-client/{id}', 'verb' => 'POST'],

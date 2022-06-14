@@ -216,7 +216,7 @@ require('../../css/piklor.css');
                     "requesttoken" : oc_requesttoken,
                    
                   },
-                  url:  OC.generateUrl('/ocs/v2.php/cloud/users/details?offset=0&search='),
+                  url: OC.generateUrl('/ocs/v2.php/cloud/users/details'),
                   formatNoMatches: function() {
                     return '';
                 },
@@ -434,7 +434,7 @@ require('../../css/piklor.css');
                     
                   });
 
-                  $.ajax('/ocs/v2.php/cloud/users/details?offset=0&search=', {
+                  $.ajax(OC.generateUrl('/ocs/v2.php/cloud/users/details'), {
                     dataType: "json",
                     headers: {
                       "requesttoken" : oc_requesttoken,

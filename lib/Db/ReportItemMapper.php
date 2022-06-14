@@ -32,11 +32,17 @@ class ReportItemMapper extends Mapper {
     public $client;
 */
 
-   
+
     public function report($user, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $admin, $start, $limit ){
-        
+
         $selectFields = ['min(wi.id) as id', 'sum(duration) as "totalDuration"'];
-        
+
+        if ($timegroup !== null) {
+            $selectFields[]= "SUM(wi.cost) as cost";
+        } else {
+            $selectFields[] = 'wi.cost as cost';
+        }
+
         $aggregation = true;
         if(empty($groupOn1) && empty($groupOn2) && empty($timegroup)) {
             $selectFields[] = 'min(wi.details) as "details"';
@@ -103,7 +109,7 @@ class ReportItemMapper extends Mapper {
             }
         }
 
-        
+
         if ($aggregation){
             if(($groupOn1 != 'project') && ($groupOn2 != 'project')){
                 $selectFields[] = '\'*\' as "projectId"';
@@ -113,12 +119,12 @@ class ReportItemMapper extends Mapper {
                     $selectFields[] = 'group_concat(distinct p.name) as project';
                 }
             } else {
-                
+
                 $selectFields[] = '\'*\' as "projectId"';
                 $selectFields[] = 'p.name as project';
             }
-            
-            
+
+
             if(($groupOn1 != 'client') && ($groupOn2 != 'client')){
                 $selectFields[] = '\'*\' as "clientId"';
                 if ($this->dbengine == 'POSTGRES') {
@@ -126,23 +132,23 @@ class ReportItemMapper extends Mapper {
                 } else {
                     $selectFields[] = 'group_concat(distinct c.name) as client';
                 }
-                
+
             } else {
                 $selectFields[] = '\'*\' as "clientId"';
                 $selectFields[] = 'c.name as client';
             }
-            
+
             if(($groupOn1 != 'userUid') && ($groupOn2 != 'userUid') && $aggregation){
                 if ($this->dbengine == 'POSTGRES') {
                     $selectFields[] = 'string_agg(distinct user_uid, \',\') as "userUid"';
                 } else {
                     $selectFields[] = 'group_concat(distinct user_uid) as "userUid"';
                 }
-                
+
             } else {
                 $selectFields[] = 'user_uid as "userUid"';
             }
-            
+
         }
 
         $selectItems = implode(", ",$selectFields).
@@ -167,7 +173,7 @@ class ReportItemMapper extends Mapper {
             foreach($filterProjectId as $f){
                 $qm[] = '?';
                 $params[] = $f;
-                
+
                 if($f == null) {
                     $append = ' or wi.project_id is null ';
                 }
@@ -205,7 +211,7 @@ class ReportItemMapper extends Mapper {
             // }
             $groups[] = 'ftime';
         }
-        
+
         if (!empty($groupOn1)){
             if ($groupOn1 == "project" || $groupOn1 == "client" || $groupOn1 == "name" || $groupOn1 == "userUid")
                // $groups[] = $groupOn1;
@@ -250,6 +256,6 @@ class ReportItemMapper extends Mapper {
         return $this->findEntities($sql, $params, $limit, $start);
     }
 
-    
+
 
 }

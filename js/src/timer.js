@@ -13,10 +13,10 @@ require('../../css/style.css');
 var dtf = require("./dateformat.js");
 
 (
-  
+
 
 function() {
-  
+
     $.ajaxSetup({
       headers: { 'RequestToken': OC.requestToken }
     });
@@ -70,7 +70,7 @@ function() {
         '`': '&#x60;',
         '=': '&#x3D;'
       };
-      
+
       function escapeHtml (string) {
         return String(string).replace(/[&<>"'`=\/]/g, function (s) {
           return entityMap[s];
@@ -116,10 +116,10 @@ function() {
 
             validateManualEntryFields();
         });
-        
+
         $("#dialog-manual-entry").dialog({
             autoOpen: false,
-            buttons : 
+            buttons :
               [ {
                   id: 'confirm-button',
                   text: "Confirm",
@@ -183,7 +183,7 @@ function() {
               alert( "error" );
             })
             .always(function() {
-              
+
             });
 
       }
@@ -223,7 +223,7 @@ function() {
               //contentType: "application/json; charset=utf-8"
           });
             $.getJSON( baseUrl, function( data ) {
-                
+
                 if (data.running.length > 0){
                     localStorage.setItem('isTimerStarted', true);
                     localStorage.setItem('timerStartTime', data.running[0].start);
@@ -246,16 +246,18 @@ function() {
                     $('#timer').html(secondsToTimer(0));
                     $('#start-tracking > span').addClass("play-button").removeClass("stop-button");
                 }
-                
+
 
                 var days = [];
                 $.each( data.days, function( dayName, dayMap ) {
-                  
+
                     var dayItems = [];
                     $.each(dayMap, function (dayItemName, workItem){
                         var children = [];
-                        
+
                         $.each(workItem.children, function (ckey, child){
+                            var cost = ''
+                            if (child.cost !== 0) { var cost = (child.cost / 100).toFixed(2) }
                             children.push(
                               "<li>"+
                                 "<div class='wi-child'>"+
@@ -270,6 +272,7 @@ function() {
                                     "<select class='set-tag' multiple=\"multiple\" data-myid="+child.id+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' data-tagnames='"+child.tags.map(function(tag) {return tag.name}).join(',')+"'>"+
                                       child.tags.map(function(tag) {return "<option selected='selected' value='"+tag.id+"' text='"+tag.name+"' >"+tag.name+"</option>";}).join(' ')+
                                     "</select>"+
+                                    "<div class='wi-child-cost'><input class='cost' placeholder='Cost' type='text' data-myid='" + child.id + "' value='" + cost + "'></div>"+
                                     "<div class='wi-child-hours' data-myid="+child.id+" data-start-date='"+child.start+"' data-end-date='"+(child.start+child.duration)+"'>"+
                                       tsToHour(child.start)+"&nbsp;-&nbsp;"+((child.running == 1)?'':tsToHour(child.start+child.duration))+
                                     "</div>"+
@@ -302,8 +305,8 @@ function() {
                     days.push(  "<div class='day-work-intervals'>"+
                                   "<ul>"+
                                     "<li class='day-list-item'>" +
-                                      "<div class='day-name'>" + dayName +"</div>"+ 
-                                      dayItems.join("") + 
+                                      "<div class='day-name'>" + dayName +"</div>"+
+                                      dayItems.join("") +
                                     "</li>"+
                                   "</ul>"+
                                 "</div>" );
@@ -314,6 +317,27 @@ function() {
                       html: days.join( "" )
                     }));
 
+               $(".cost").focusout(function(e) {
+                   e.preventDefault();
+                   var input = $(this);
+                   var cost = $(this).val();
+                   var id = $(e.target).data('myid');
+                   var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-cost/' + id);
+                   if (cost !== undefined) {
+                       $.post(baseUrl, {cost: cost}, 'json').done(function (e) {
+                           input.css('border', 'solid 1px green');
+                           setTimeout(function () {
+                               input.css('border', '');
+                           }, 3000);
+                       }).fail(function (xhr, status, error) {
+                           var errorMessage = JSON.parse(xhr.responseText);
+                           if (errorMessage.error !== undefined) {
+                               alert(errorMessage.error);
+                           }
+                           input.css('border', 'solid 1px red');
+                       });
+                   }
+               });
 
                 $(".wi-child-hours").each(function(){
                     $(this).daterangepicker({
@@ -348,7 +372,7 @@ function() {
                 $('.wi-child-name').click(function(e) {
                     e.preventDefault();
                     dialogWorkItemEditForm.target = e.target;
-                    
+
                     var form = dialogWorkItemEditForm.find( "form" )
                     form.find("#name").val($(e.target).data("name"));
                     form.find("#details").val($(e.target).data("details"));
@@ -425,11 +449,11 @@ function() {
                         },
                         ajax: {
                             url: projectsAjaxUrl,
-                            
+
                             dataType: 'json',
                             delay: 250,
                             processResults: function (data) { //json parse
-                                return { 
+                                return {
                                     results: $.map(data.Projects,function(val, i){
                                         return { id: val.id, text:val.name, color: val.color};
                                         }),
@@ -439,35 +463,35 @@ function() {
                                 };
                             },
                             cache: false,
-                            
+
                         },
                     });
                     $(this).data('myid',id);
-                    
+
                     $(this).val(projectId).trigger('change');
                     //clearInterval(interval);
                   //}.bind(this),0);
                 });
-                
+
                 var tagsAjaxUrl = OC.generateUrl('/apps/timetracker/ajax/tags');
                 $(".set-tag").each(function(){
                   //var interval = setInterval( function() {
-                      
+
 
                     $(this).select2({
                       tags: true,
                       containerCssClass:'tags-select',
                       placeholder: "Select tags...",
                       allowClear: true,
-          
-                      ajax: { 
+
+                      ajax: {
                           url:  function () { return tagsAjaxUrl+'?workItem='+$(this).data('myid');},
                           data: function (params){
                             var query = {
                               q: params.term,
                               type: 'public'
                             }
-                      
+
                             // Query parameters will be ?search=[term]&type=public
                             return query;
                           },
@@ -478,7 +502,7 @@ function() {
                           dataType: 'json',
                           delay: 250,
                           processResults: function (data) { //json parse
-                            return { 
+                            return {
                               results: $.map(data.Tags,function(val, i){
                                 return { id: val.id, text:val.name};
                               }),
@@ -501,8 +525,8 @@ function() {
                         var myid = $(e.target).data('myid');
                         var selectedId = $(e.target).val();
                         var jqxhr = $.post( "ajax/update-work-interval/"+myid,{projectId:selectedId}, function() {
-                            
-                            
+
+
                            })
                            .done(function(data, status, jqXHR) {
                                 var response = data;
@@ -524,7 +548,7 @@ function() {
                       }, 0);
                     });
 
-                    $(".set-tag").on("change", function (e) { 
+                    $(".set-tag").on("change", function (e) {
                         var myid = $(e.target).data('myid');
                         var selectedTag = $(e.target).val();
                         var jqxhr = $.post( "ajax/update-work-interval/"+myid,{tagId:selectedTag.join(",")}, function() {
@@ -579,10 +603,10 @@ function() {
                }).always(function() {
                 getWorkItems();
               });
-            
+
         }
         function stopTimer(onStopped = null, args = []){
-            
+
             var workName = $('#work-input').val();
             if (workName == ''){
                 workName = 'no description';
@@ -608,7 +632,7 @@ function() {
                   alert( "error" );
                 })
                 .always(function() {
-                  
+
                 });
         }
 
@@ -616,7 +640,7 @@ function() {
 
         $( "#datepicker-from" ).datepicker();
         $( "#datepicker-to" ).datepicker();
-        
+
         if(localStorage.getItem('isTimerStarted') === 'true'){
             $('#start-tracking > span').addClass("stop-button").removeClass("play-button");
         } else {
@@ -631,5 +655,5 @@ function() {
             return false;
           });
       } );
-      
+
 }());
