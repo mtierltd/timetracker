@@ -720,7 +720,13 @@ class AjaxController extends Controller {
 	 * @NoAdminRequired
 	 */
 	public function getProjects(){
-		$projects = $this->projectMapper->findAll($this->userId);
+	    $projectName = $this->request->term ?? null;
+
+	    if ($projectName) {
+	        $projects = $this->projectMapper->searchByName($this->userId, $projectName);
+        } else {
+            $projects = $this->projectMapper->findAll($this->userId);
+        }
 		$parray = json_decode(json_encode($projects), true);
 		foreach($parray as $pi => $pv){
 			if (isset($pv->id)) {
