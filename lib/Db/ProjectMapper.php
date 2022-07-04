@@ -16,14 +16,21 @@ class ProjectMapper extends Mapper {
     public function findByName($name) {
         $sql = 'SELECT * FROM `*PREFIX*timetracker_project` ' .
             'WHERE upper(`name`) = ?';
-            
+
             try {
                 $e = $this->findEntity($sql, [strtoupper($name)]);
                 return $e;
             } catch (\OCP\AppFramework\Db\DoesNotExistException $e){
                 return null;
             }
-        
+
+    }
+
+    public function searchByName($user, string $name) {
+        $name = strtoupper($name);
+        $sql = 'SELECT tp.* FROM `*PREFIX*timetracker_project` tp LEFT JOIN `*PREFIX*timetracker_user_to_project` up ON up.project_id = tp.id WHERE up.`user_uid` = ? AND upper(tp.`name`) LIKE ? ORDER BY tp.`name`';
+
+        return $this->findEntities($sql, [$user, $name ."%"]);
     }
 
     /**
@@ -59,17 +66,17 @@ class ProjectMapper extends Mapper {
     public function delete($project_id) {
         $sql = 'delete FROM `*PREFIX*timetracker_project` ' .
             ' where id = ?';
-            
+
             try {
                 $this->execute($sql, [$project_id]);
                 return;
             } catch (\OCP\AppFramework\Db\DoesNotExistException $e){
                 return;
             }
-        
+
     }
 
 
 
-   
+
 }
