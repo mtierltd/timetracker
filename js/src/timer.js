@@ -13,10 +13,10 @@ require('../../css/style.css');
 var dtf = require("./dateformat.js");
 
 (
-  
+
 
 function() {
-  
+
     $.ajaxSetup({
       headers: { 'RequestToken': OC.requestToken }
     });
@@ -25,6 +25,10 @@ function() {
 
 
     $( function() {
+        $('#work-input-form').on('submit', function(e) {
+            e.preventDefault();
+            createWorkItem();
+        });
         var days='30';
         var start = moment().startOf('day').subtract(29, 'days');
         var end = moment().endOf('day');
@@ -70,7 +74,7 @@ function() {
         '`': '&#x60;',
         '=': '&#x3D;'
       };
-      
+
       function escapeHtml (string) {
         return String(string).replace(/[&<>"'`=\/]/g, function (s) {
           return entityMap[s];
@@ -116,10 +120,10 @@ function() {
 
             validateManualEntryFields();
         });
-        
+
         $("#dialog-manual-entry").dialog({
             autoOpen: false,
-            buttons : 
+            buttons :
               [ {
                   id: 'confirm-button',
                   text: "Confirm",
@@ -183,7 +187,7 @@ function() {
               alert( "error" );
             })
             .always(function() {
-              
+
             });
 
       }
@@ -223,7 +227,7 @@ function() {
               //contentType: "application/json; charset=utf-8"
           });
             $.getJSON( baseUrl, function( data ) {
-                
+
                 if (data.running.length > 0){
                     localStorage.setItem('isTimerStarted', true);
                     localStorage.setItem('timerStartTime', data.running[0].start);
@@ -246,15 +250,15 @@ function() {
                     $('#timer').html(secondsToTimer(0));
                     $('#start-tracking > span').addClass("play-button").removeClass("stop-button");
                 }
-                
+
 
                 var days = [];
                 $.each( data.days, function( dayName, dayMap ) {
-                  
+
                     var dayItems = [];
                     $.each(dayMap, function (dayItemName, workItem){
                         var children = [];
-                        
+
                         $.each(workItem.children, function (ckey, child){
                             children.push(
                               "<li>"+
@@ -302,8 +306,8 @@ function() {
                     days.push(  "<div class='day-work-intervals'>"+
                                   "<ul>"+
                                     "<li class='day-list-item'>" +
-                                      "<div class='day-name'>" + dayName +"</div>"+ 
-                                      dayItems.join("") + 
+                                      "<div class='day-name'>" + dayName +"</div>"+
+                                      dayItems.join("") +
                                     "</li>"+
                                   "</ul>"+
                                 "</div>" );
@@ -348,7 +352,7 @@ function() {
                 $('.wi-child-name').click(function(e) {
                     e.preventDefault();
                     dialogWorkItemEditForm.target = e.target;
-                    
+
                     var form = dialogWorkItemEditForm.find( "form" )
                     form.find("#name").val($(e.target).data("name"));
                     form.find("#details").val($(e.target).data("details"));
@@ -358,9 +362,7 @@ function() {
                 })
                 $('.wi-play').click(function(e) {
                     e.preventDefault();
-                    $('#work-input').val($(this).data('work-name'));
-                    startTimer($(this).data('projectid'), $(this).data('tagids'));
-                    return false;
+                    createWorkItem();
                 })
                 $('.wi-trash').click(function(e) {
                     $("#dialog-confirm").dialog({
@@ -425,11 +427,11 @@ function() {
                         },
                         ajax: {
                             url: projectsAjaxUrl,
-                            
+
                             dataType: 'json',
                             delay: 250,
                             processResults: function (data) { //json parse
-                                return { 
+                                return {
                                     results: $.map(data.Projects,function(val, i){
                                         return { id: val.id, text:val.name, color: val.color};
                                         }),
@@ -439,35 +441,35 @@ function() {
                                 };
                             },
                             cache: false,
-                            
+
                         },
                     });
                     $(this).data('myid',id);
-                    
+
                     $(this).val(projectId).trigger('change');
                     //clearInterval(interval);
                   //}.bind(this),0);
                 });
-                
+
                 var tagsAjaxUrl = OC.generateUrl('/apps/timetracker/ajax/tags');
                 $(".set-tag").each(function(){
                   //var interval = setInterval( function() {
-                      
+
 
                     $(this).select2({
                       tags: true,
                       containerCssClass:'tags-select',
                       placeholder: "Select tags...",
                       allowClear: true,
-          
-                      ajax: { 
+
+                      ajax: {
                           url:  function () { return tagsAjaxUrl+'?workItem='+$(this).data('myid');},
                           data: function (params){
                             var query = {
                               q: params.term,
                               type: 'public'
                             }
-                      
+
                             // Query parameters will be ?search=[term]&type=public
                             return query;
                           },
@@ -478,7 +480,7 @@ function() {
                           dataType: 'json',
                           delay: 250,
                           processResults: function (data) { //json parse
-                            return { 
+                            return {
                               results: $.map(data.Tags,function(val, i){
                                 return { id: val.id, text:val.name};
                               }),
@@ -501,8 +503,8 @@ function() {
                         var myid = $(e.target).data('myid');
                         var selectedId = $(e.target).val();
                         var jqxhr = $.post( "ajax/update-work-interval/"+myid,{projectId:selectedId}, function() {
-                            
-                            
+
+
                            })
                            .done(function(data, status, jqXHR) {
                                 var response = data;
@@ -524,7 +526,7 @@ function() {
                       }, 0);
                     });
 
-                    $(".set-tag").on("change", function (e) { 
+                    $(".set-tag").on("change", function (e) {
                         var myid = $(e.target).data('myid');
                         var selectedTag = $(e.target).val();
                         var jqxhr = $.post( "ajax/update-work-interval/"+myid,{tagId:selectedTag.join(",")}, function() {
@@ -553,6 +555,12 @@ function() {
               });
         }
 
+        function createWorkItem() {
+            $('#work-input').val($(this).data('work-name'));
+            startTimer($(this).data('projectid'), $(this).data('tagids'));
+            return false;
+        }
+
         function startTimer(projectId = null, tags = ""){
             if(localStorage.getItem('isTimerStarted') === 'true'){
                 stopTimer(startTimer, [projectId, tags]);
@@ -579,10 +587,10 @@ function() {
                }).always(function() {
                 getWorkItems();
               });
-            
+
         }
         function stopTimer(onStopped = null, args = []){
-            
+
             var workName = $('#work-input').val();
             if (workName == ''){
                 workName = 'no description';
@@ -608,7 +616,7 @@ function() {
                   alert( "error" );
                 })
                 .always(function() {
-                  
+
                 });
         }
 
@@ -616,7 +624,7 @@ function() {
 
         $( "#datepicker-from" ).datepicker();
         $( "#datepicker-to" ).datepicker();
-        
+
         if(localStorage.getItem('isTimerStarted') === 'true'){
             $('#start-tracking > span').addClass("stop-button").removeClass("play-button");
         } else {
@@ -631,5 +639,5 @@ function() {
             return false;
           });
       } );
-      
+
 }());

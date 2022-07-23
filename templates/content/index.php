@@ -1,7 +1,7 @@
 <div id="timetracker-content">
     <div id="top-work-bar">
         <div id="work-input-container">
-            <form>
+            <form id="work-input-form">
                 <input tabindex="1" type="text" spellcheck="false" autocomplete="off" class="" value="" placeholder="What have you done?" id="work-input">
             </form>
         </div>
