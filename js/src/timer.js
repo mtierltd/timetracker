@@ -260,6 +260,8 @@ function() {
                         var children = [];
 
                         $.each(workItem.children, function (ckey, child){
+                            var cost = ''
+                            if (child.cost !== 0) { var cost = (child.cost / 100).toFixed(2) }
                             children.push(
                               "<li>"+
                                 "<div class='wi-child'>"+
@@ -274,6 +276,7 @@ function() {
                                     "<select class='set-tag' multiple=\"multiple\" data-myid="+child.id+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' data-tagnames='"+child.tags.map(function(tag) {return tag.name}).join(',')+"'>"+
                                       child.tags.map(function(tag) {return "<option selected='selected' value='"+tag.id+"' text='"+tag.name+"' >"+tag.name+"</option>";}).join(' ')+
                                     "</select>"+
+                                    "<div class='wi-child-cost'><input class='cost' placeholder='Cost' type='text' data-myid='" + child.id + "' value='" + cost + "'></div>"+
                                     "<div class='wi-child-hours' data-myid="+child.id+" data-start-date='"+child.start+"' data-end-date='"+(child.start+child.duration)+"'>"+
                                       tsToHour(child.start)+"&nbsp;-&nbsp;"+((child.running == 1)?'':tsToHour(child.start+child.duration))+
                                     "</div>"+
@@ -318,6 +321,27 @@ function() {
                       html: days.join( "" )
                     }));
 
+               $(".cost").focusout(function(e) {
+                   e.preventDefault();
+                   var input = $(this);
+                   var cost = $(this).val();
+                   var id = $(e.target).data('myid');
+                   var baseUrl = OC.generateUrl('/apps/timetracker/ajax/add-cost/' + id);
+                   if (cost !== undefined) {
+                       $.post(baseUrl, {cost: cost}, 'json').done(function (e) {
+                           input.css('border', 'solid 1px green');
+                           setTimeout(function () {
+                               input.css('border', '');
+                           }, 3000);
+                       }).fail(function (xhr, status, error) {
+                           var errorMessage = JSON.parse(xhr.responseText);
+                           if (errorMessage.error !== undefined) {
+                               alert(errorMessage.error);
+                           }
+                           input.css('border', 'solid 1px red');
+                       });
+                   }
+               });
 
                 $(".wi-child-hours").each(function(){
                     $(this).daterangepicker({
