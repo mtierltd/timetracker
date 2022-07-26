@@ -152,6 +152,9 @@ class AjaxController extends Controller {
 
 	}
 
+    /**
+     * @NoAdminRequired
+     */
 	public function addCost($id)
     {
         $wi = $this->workIntervalMapper->find($id);
@@ -561,12 +564,16 @@ class AjaxController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function getClients(){
-		$clients = $this->clientMapper->findAll($this->userId);
+        $clientName = $this->request->term ?? null;
+
+        if ($clientName) {
+            $clients = $this->clientMapper->searchByName($this->userId, $clientName);
+        } else {
+            $clients = $this->clientMapper->findAll($this->userId);
+        }
+
 		return new JSONResponse(["Clients" => json_decode(json_encode($clients), true)]);
 	}
-
-
-
 
 	/**
 	 *

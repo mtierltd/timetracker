@@ -30,7 +30,7 @@ class ProjectMapper extends Mapper {
         $name = strtoupper($name);
         $sql = 'SELECT tp.* FROM `*PREFIX*timetracker_project` tp LEFT JOIN `*PREFIX*timetracker_user_to_project` up ON up.project_id = tp.id WHERE up.`user_uid` = ? AND upper(tp.`name`) LIKE ? ORDER BY tp.`name`';
 
-        return $this->findEntities($sql, [$user, $name ."%"]);
+        return $this->findEntities($sql, [$user,"%" . $name ."%"]);
     }
 
     /**
@@ -75,8 +75,4 @@ class ProjectMapper extends Mapper {
             }
 
     }
-
-
-
-
 }
