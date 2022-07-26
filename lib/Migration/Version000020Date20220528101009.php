@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 /**
- * @copyright Copyright (c) 2022 Your name <your@email.com>
+ * @copyright Copyright (c) 2022 Harm Akkerman <harmakkerman94@gmail.com>
  *
- * @author Your name <your@email.com>
+ * @author Harm Akkerman <harmakkerman94@gmail.com>
  *
  * @license GNU AGPL version 3 or any later version
  *
