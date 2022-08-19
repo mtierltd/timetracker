@@ -485,6 +485,8 @@ class AjaxController extends Controller {
 
 		$this->workIntervalMapper->insert($wi);
 
+		$running = $this->workIntervalMapper->findAllRunning($this->userId);
+
 		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
 	}
 
