@@ -159,6 +159,7 @@ class AjaxController extends Controller {
     {
         $wi = $this->workIntervalMapper->find($id);
         $cost = $this->request->cost;
+        $cost = str_replace(',', '.', $cost);
 
         if (!is_numeric($cost)) {
             return new JSONResponse(['error' => 'Non numeric value'], Http::STATUS_BAD_REQUEST);
