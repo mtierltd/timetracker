@@ -580,17 +580,20 @@ function() {
         }
 
         function createWorkItem() {
-            $('#work-input').val($(this).data('work-name'));
-            startTimer($(this).data('projectid'), $(this).data('tagids'));
+            var wiPlay = $('.wi-play');
+            var workName = $('#work-input').val();
+
+            $('#work-input').val(wiPlay.data('work-name'));
+            startTimer(wiPlay.data('projectid'), wiPlay.data('tagids'), workName);
             return false;
         }
 
-        function startTimer(projectId = null, tags = ""){
+        function startTimer(projectId = null, tags = "", inputWorkName = null){
             if(localStorage.getItem('isTimerStarted') === 'true'){
-                stopTimer(startTimer, [projectId, tags]);
+                stopTimer(startTimer, [projectId, tags, inputWorkName]);
                 return;
             }
-            var workName = $('#work-input').val();
+            var workName = inputWorkName ?? $('#work-input').val();
             if (workName == ''){
                 workName = 'no description';
             }
@@ -630,7 +633,7 @@ function() {
                   localStorage.setItem('isTimerStarted', false);
                   $('#start-tracking > span').addClass("play-button").removeClass("stop-button");
                   if (onStopped != null){
-                    onStopped(args[0], args[1]);
+                    onStopped(...args);
                   } else {
                     getWorkItems();
                   }
