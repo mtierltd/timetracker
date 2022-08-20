@@ -25,6 +25,10 @@ function() {
 
 
     $( function() {
+        $('#work-input-form').on('submit', function(e) {
+            e.preventDefault();
+            createWorkItem();
+        });
         var days='30';
         var start = moment().startOf('day').subtract(29, 'days');
         var end = moment().endOf('day');
@@ -382,9 +386,7 @@ function() {
                 })
                 $('.wi-play').click(function(e) {
                     e.preventDefault();
-                    $('#work-input').val($(this).data('work-name'));
-                    startTimer($(this).data('projectid'), $(this).data('tagids'));
-                    return false;
+                    createWorkItem();
                 })
                 $('.wi-trash').click(function(e) {
                     $("#dialog-confirm").dialog({
@@ -575,6 +577,12 @@ function() {
               }).fail(function() {
                 alert( "error getting work items" );
               });
+        }
+
+        function createWorkItem() {
+            $('#work-input').val($(this).data('work-name'));
+            startTimer($(this).data('projectid'), $(this).data('tagids'));
+            return false;
         }
 
         function startTimer(projectId = null, tags = ""){
