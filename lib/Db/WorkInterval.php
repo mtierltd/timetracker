@@ -14,11 +14,12 @@ class WorkInterval extends Entity {
     public $start;
     public $duration;
     public $running;
+    public $cost;
 
 
     public function __construct() {
         // add types in constructor
-        
+
         $this->addType('id', 'integer');
         $this->addType('name', 'string');
         $this->addType('details', 'string');
@@ -27,5 +28,6 @@ class WorkInterval extends Entity {
         $this->addType('start', 'integer');
         $this->addType('duration', 'integer');
         $this->addType('running', 'integer');
+        $this->addType('cost', 'integer');
     }
 }

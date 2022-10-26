@@ -52,7 +52,7 @@ var dtf = require("./dateformat.js");
               'The Month Before Last': [moment().subtract(2, 'month').startOf('month'), moment().subtract(2, 'month').endOf('month')],
               'This Year': [moment().startOf('year'), moment().endOf('year')],
               'Last Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')],
-              
+
             },
             locale: {
                 format: dtf.dformat(),
@@ -68,15 +68,15 @@ var dtf = require("./dateformat.js");
           $("#group1").select2();
           $("#group2").select2();
           $("#group3").select2();
-          $('#group1').on("select2:select select2:unselect", function(e) { 
+          $('#group1').on("select2:select select2:unselect", function(e) {
             group1 = e.params.data.id;
             getReport();
           });
-          $('#group2').on("select2:select select2:unselect", function(e) { 
+          $('#group2').on("select2:select select2:unselect", function(e) {
             group2 = e.params.data.id;
             getReport();
           });
-          $('#group3').on("select2:select select2:unselect", function(e) { 
+          $('#group3').on("select2:select select2:unselect", function(e) {
             group3 = e.params.data.id;
             getReport();
           });
@@ -96,15 +96,15 @@ var dtf = require("./dateformat.js");
               );
               return $state;
             },
-            ajax: { 
+            ajax: {
               tags: true,
                 url:  OC.generateUrl('/apps/timetracker/ajax/projects'),
-                
+
                 dataType: 'json',
                 delay: 250,
-                
+
                 processResults: function (data, page) { //json parse
-                    return { 
+                    return {
                         results: $.map(data.Projects,function(val, i){
                         return { id: val.id, text:val.name, color: val.color};
                         }),
@@ -114,13 +114,13 @@ var dtf = require("./dateformat.js");
                     };
                 },
                 cache: false,
-                
+
             },
         });
 
-        $('#filter-project').on("select2:select select2:unselect", function(e) { 
-         
-          
+        $('#filter-project').on("select2:select select2:unselect", function(e) {
+
+
           filterProjectId = ($(e.target).val() != null)? $(e.target).val() : "";
           getReport();
         });
@@ -133,14 +133,14 @@ var dtf = require("./dateformat.js");
           escapeMarkup : function(markup) { return markup; },
           placeholder: "Select client",
           allowClear: true,
-          ajax: { 
+          ajax: {
             tags: true,
               url:  OC.generateUrl('/apps/timetracker/ajax/clients'),
-              
+
               dataType: 'json',
               delay: 250,
               processResults: function (data, page) { //json parse
-                  return { 
+                  return {
                       results: $.map(data.Clients,function(val, i){
                         return { id: val.id, text:val.name};
                       }),
@@ -150,14 +150,14 @@ var dtf = require("./dateformat.js");
                   };
               },
               cache: false,
-              
+
           },
       });
 
-      
-      $('#filter-client').on("select2:select select2:unselect", function(e) { 
-       
-        
+
+      $('#filter-client').on("select2:select select2:unselect", function(e) {
+
+
         filterClientId = ($(e.target).val() != null)? $(e.target).val() : "";
         getReport();
       });
@@ -165,8 +165,8 @@ var dtf = require("./dateformat.js");
 
         $('input.select2-input').attr('autocomplete', "xxxxxxxxxxx");
 
-        
-       
+
+
           function getReport(){
               var baseUrl = OC.generateUrl('/apps/timetracker/ajax/report?name=&from='+start.unix()+'&to='+end.unix()+'&group1='+group1+'&group2='+group2+'&timegroup='+group3+'&filterProjectId='+filterProjectId+'&filterClientId='+filterClientId);
               function pad(n, width, z) {
@@ -203,6 +203,10 @@ var dtf = require("./dateformat.js");
               var nullCheckAccessor = function(value, data, type, params, column){
                 return value ? value : '';
               }
+
+              var money = function(value, data, type, params, component) {
+                return value / 100;
+              }
               var table = new Tabulator("#report", {
                 ajaxURL:baseUrl,
                 layout:"fitColumns",
@@ -229,6 +233,7 @@ var dtf = require("./dateformat.js");
                       return moment.unix(t).format(dtf.dtformat());
                     }
                   }},
+                  {title:"Cost", field:"cost", mutator:money, accessorDownload: nullCheckAccessor, widthGrow:1, bottomCalc: "sum", formatter: "money", bottomCalcFormatter: "money"}, //column will be allocated 1/5 of the remaining space
                   {title:"Total Duration", field:"totalDuration",accessorDownload:totalDurationAccessor,formatter:function(cell, formatterParams, onRendered){
                     //cell - the cell component
                     //formatterParams - parameters set for the column
@@ -238,7 +243,7 @@ var dtf = require("./dateformat.js");
                     var m = Math.floor( (duration/60) % 60 );
                     var h = Math.floor( (duration/(60*60)));
                     return pad(h,2) + ':' + pad(m,2) + ':' + pad(s,2);
-                    
+
                   },bottomCalc:"sum", bottomCalcParams:{
     			          precision:1,
 		                },bottomCalcFormatter:function(cell, formatterParams, onRendered){
@@ -263,11 +268,11 @@ var dtf = require("./dateformat.js");
                       var time = cell.getRow().getData().time;
                       var duration = cell.getRow().getData().totalDuration;
                       return moment.unix(parseInt(time) + parseInt(duration)).format(dtf.dtformat());
-                      
+
                     }},
               ],
                 ajaxResponse:function(url, params, response){
-          
+
                   return response.items; //return the tableData property of a response json object
               },
               });

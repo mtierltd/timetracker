@@ -15,6 +15,7 @@
                 </div>
             </div>
             <canvas id="myChart" width="400" height="400"></canvas>
+            <canvas id="costChart" width="400" height="400"></canvas>
             <div id='summary'></div>
         </div>
     </div>

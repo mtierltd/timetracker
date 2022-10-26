@@ -1,5 +1,6 @@
 <?php
 namespace OCA\TimeTracker\Controller;
+use OCP\AppFramework\Http;
 use OCP\IRequest;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
@@ -120,6 +121,7 @@ class AjaxController extends Controller {
 					'start' => $wi->start,
 					'tags' => $tags,
 					'userUid' => $wi->userUid,
+                    'cost' => $wi->cost,
 					'projectName' => ($project === null)?null:$project->name,
 					'projectColor' =>  ($project === null)?null:$project->color,
 			];
@@ -149,6 +151,32 @@ class AjaxController extends Controller {
 	public function index() {
 
 	}
+
+    /**
+     * @NoAdminRequired
+     */
+	public function addCost($id)
+    {
+        $wi = $this->workIntervalMapper->find($id);
+        $cost = $this->request->cost;
+        $cost = str_replace(',', '.', $cost);
+
+        if (!is_numeric($cost)) {
+            return new JSONResponse(['error' => 'Non numeric value'], Http::STATUS_BAD_REQUEST);
+        }
+
+        $costInCents = $cost * 100;
+
+        $wi->setCost($costInCents);
+
+        try {
+            $this->workIntervalMapper->update($wi);
+        } catch (\Exception $e) {
+            return new JSONResponse(['error' => true, 'message' => $e->getMessage()]);
+        }
+
+        return new JSONResponse(['success' => true, 'test' => $cost ?? 't']);
+    }
 
 	/**
 	 *
@@ -456,6 +484,7 @@ class AjaxController extends Controller {
 		 }
 
 		$this->workIntervalMapper->insert($wi);
+
 		$running = $this->workIntervalMapper->findAllRunning($this->userId);
 
 		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
@@ -538,12 +567,16 @@ class AjaxController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function getClients(){
-		$clients = $this->clientMapper->findAll($this->userId);
+        $clientName = $this->request->term ?? null;
+
+        if ($clientName) {
+            $clients = $this->clientMapper->searchByName($this->userId, $clientName);
+        } else {
+            $clients = $this->clientMapper->findAll($this->userId);
+        }
+
 		return new JSONResponse(["Clients" => json_decode(json_encode($clients), true)]);
 	}
-
-
-
 
 	/**
 	 *
@@ -983,6 +1016,7 @@ class AjaxController extends Controller {
 			$te->setTimeInterval($i->time);
 			$te->setTotalDuration($i->totalDuration);
 			$te->setCreatedAt(time());
+			$te->setCost($i->cost);
 			$this->timelineEntryMapper->insert($te);
 
 		}
