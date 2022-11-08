@@ -592,8 +592,6 @@ function() {
         }
 
         function resumeWorkItem(wiResume) {
-            console.log('Resuming');
-            console.log(wiResume);
             startTimer(wiResume.data('projectid'), wiResume.data('tagids'), wiResume.data('work-name'));
             return false;
         }
@@ -668,7 +666,6 @@ function() {
             $('#start-tracking > span').addClass("play-button").removeClass("stop-button");
         }
         $( "#start-tracking" ).click(function() {
-            console.log("Start tracking test" + $(this).data('work-name'));
             if(localStorage.getItem('isTimerStarted') === 'true'){
                 stopTimer();
             } else {
