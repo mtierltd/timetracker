@@ -382,10 +382,13 @@ function() {
                 })
                 $('.wi-play').click(function(e) {
                     e.preventDefault();
-                    $('#work-input').val($(this).data('work-name'));
-                    startTimer($(this).data('projectid'), $(this).data('tagids'));
-                    return false;
-                })
+                    createWorkItem($(this));
+                });
+
+                $('.wi-resume').click(function(e) {
+                    e.preventDefault();
+                    resumeWorkItem($(this));
+                });
                 $('.wi-trash').click(function(e) {
                     $("#dialog-confirm").dialog({
                         buttons : {
@@ -575,6 +578,20 @@ function() {
               }).fail(function() {
                 alert( "error getting work items" );
               });
+        }
+
+        function createWorkItem(wiPlay) {
+            var workName = $('#work-input').val();
+            $('#work-input').val(wiPlay.data('work-name'));
+            startTimer(wiPlay.data('projectid'), wiPlay.data('tagids'), workName);
+            return false;
+        }
+
+        function resumeWorkItem(wiResume) {
+            console.log('Resuming');
+            console.log(wiResume);
+            startTimer(wiResume.data('projectid'), wiResume.data('tagids'), wiResume.data('work-name'));
+            return false;
         }
 
         function startTimer(projectId = null, tags = ""){
