@@ -152,10 +152,14 @@ class AjaxController extends Controller {
 
 	}
 
+    /**
+     * @NoAdminRequired
+     */
 	public function addCost($id)
     {
         $wi = $this->workIntervalMapper->find($id);
         $cost = $this->request->cost;
+        $cost = str_replace(',', '.', $cost);
 
         if (!is_numeric($cost)) {
             return new JSONResponse(['error' => 'Non numeric value'], Http::STATUS_BAD_REQUEST);
@@ -481,6 +485,8 @@ class AjaxController extends Controller {
 
 		$this->workIntervalMapper->insert($wi);
 
+		$running = $this->workIntervalMapper->findAllRunning($this->userId);
+
 		return new JSONResponse(["WorkIntervals" => json_decode(json_encode($running), true)]);
 	}
 
@@ -561,12 +567,16 @@ class AjaxController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function getClients(){
-		$clients = $this->clientMapper->findAll($this->userId);
+        $clientName = $this->request->term ?? null;
+
+        if ($clientName) {
+            $clients = $this->clientMapper->searchByName($this->userId, $clientName);
+        } else {
+            $clients = $this->clientMapper->findAll($this->userId);
+        }
+
 		return new JSONResponse(["Clients" => json_decode(json_encode($clients), true)]);
 	}
-
-
-
 
 	/**
 	 *
