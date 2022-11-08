@@ -25,6 +25,10 @@ function() {
 
 
     $( function() {
+        $('#work-input-form').on('submit', function(e) {
+            e.preventDefault();
+            createWorkItem($(this));
+        });
         var days='30';
         var start = moment().startOf('day').subtract(29, 'days');
         var end = moment().endOf('day');
@@ -278,7 +282,7 @@ function() {
                                     "</div>"+
                                     "<div class='wi-child-duration'>"+((child.running == 1)?'running...':secondsToTimer(child.duration))+"</div>"+
                                     "<div class='wi-play-space'>"+
-                                      "<span class='fas clickable fa-play wi-play' id="+child.id+" data-work-name='"+child.name+"' data-projectid="+child.projectId+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' ></span>"+
+                                      "<span class='fas clickable fa-play wi-resume' id="+child.id+" data-work-name='"+child.name+"' data-projectid="+child.projectId+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' ></span>"+
                                     "</div>"+
                                   "</div>"+
                                 "</div>"+
@@ -594,19 +598,19 @@ function() {
             return false;
         }
 
-        function startTimer(projectId = null, tags = ""){
+        function startTimer(projectId = null, tags = "", inputWorkName = null){
             if(localStorage.getItem('isTimerStarted') === 'true'){
-                stopTimer(startTimer, [projectId, tags]);
+                stopTimer(startTimer, [projectId, tags, inputWorkName]);
                 return;
             }
-            var workName = $('#work-input').val();
+            var workName = inputWorkName ?? $('#work-input').val();
             if (workName == ''){
                 workName = 'no description';
             }
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/start-timer/'+encodeURIComponent(encodeURIComponent(workName)));
             var jqxhr = $.post(baseUrl, { projectId: projectId, tags: tags}, function() {
                })
-               .done(function(data, status, jqXHR) {
+               .done(function(data, status, jqxhr) {
                 var response = data;
                 if ('Error' in response){
                   alert(response.Error);
@@ -639,7 +643,7 @@ function() {
                   localStorage.setItem('isTimerStarted', false);
                   $('#start-tracking > span').addClass("play-button").removeClass("stop-button");
                   if (onStopped != null){
-                    onStopped(args[0], args[1]);
+                    onStopped(...args);
                   } else {
                     getWorkItems();
                   }
@@ -664,6 +668,7 @@ function() {
             $('#start-tracking > span').addClass("play-button").removeClass("stop-button");
         }
         $( "#start-tracking" ).click(function() {
+            console.log("Start tracking test" + $(this).data('work-name'));
             if(localStorage.getItem('isTimerStarted') === 'true'){
                 stopTimer();
             } else {
