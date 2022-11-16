@@ -27,7 +27,7 @@ function() {
     $( function() {
         $('#work-input-form').on('submit', function(e) {
             e.preventDefault();
-            createWorkItem();
+            createWorkItem($(this));
         });
         var days='30';
         var start = moment().startOf('day').subtract(29, 'days');
@@ -282,7 +282,7 @@ function() {
                                     "</div>"+
                                     "<div class='wi-child-duration'>"+((child.running == 1)?'running...':secondsToTimer(child.duration))+"</div>"+
                                     "<div class='wi-play-space'>"+
-                                      "<span class='fas clickable fa-play wi-play' id="+child.id+" data-work-name='"+child.name+"' data-projectid="+child.projectId+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' ></span>"+
+                                      "<span class='fas clickable fa-play wi-resume' id="+child.id+" data-work-name='"+child.name+"' data-projectid="+child.projectId+" data-tagids='"+child.tags.map(function(tag) {return tag.id}).join(',')+"' ></span>"+
                                     "</div>"+
                                   "</div>"+
                                 "</div>"+
@@ -386,8 +386,13 @@ function() {
                 })
                 $('.wi-play').click(function(e) {
                     e.preventDefault();
-                    createWorkItem();
-                })
+                    createWorkItem($(this));
+                });
+
+                $('.wi-resume').click(function(e) {
+                    e.preventDefault();
+                    resumeWorkItem($(this));
+                });
                 $('.wi-trash').click(function(e) {
                     $("#dialog-confirm").dialog({
                         buttons : {
@@ -579,12 +584,15 @@ function() {
               });
         }
 
-        function createWorkItem() {
-            var wiPlay = $('.wi-play');
+        function createWorkItem(wiPlay) {
             var workName = $('#work-input').val();
-
             $('#work-input').val(wiPlay.data('work-name'));
             startTimer(wiPlay.data('projectid'), wiPlay.data('tagids'), workName);
+            return false;
+        }
+
+        function resumeWorkItem(wiResume) {
+            startTimer(wiResume.data('projectid'), wiResume.data('tagids'), wiResume.data('work-name'));
             return false;
         }
 
@@ -600,7 +608,7 @@ function() {
             var baseUrl = OC.generateUrl('/apps/timetracker/ajax/start-timer/'+encodeURIComponent(encodeURIComponent(workName)));
             var jqxhr = $.post(baseUrl, { projectId: projectId, tags: tags}, function() {
                })
-               .done(function(data, status, jqXHR) {
+               .done(function(data, status, jqxhr) {
                 var response = data;
                 if ('Error' in response){
                   alert(response.Error);
