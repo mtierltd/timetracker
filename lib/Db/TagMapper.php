@@ -4,9 +4,8 @@
 namespace OCA\TimeTracker\Db;
 
 use OCP\IDBConnection;
-use OCP\AppFramework\Db\Mapper;
 
-class TagMapper extends Mapper {
+class TagMapper extends CompatibleMapper {
 
     public function __construct(IDBConnection $db) {
         $this->dbengine = 'MYSQL';

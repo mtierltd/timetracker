@@ -4,9 +4,8 @@
 namespace OCA\TimeTracker\Db;
 
 use OCP\IDBConnection;
-use OCP\AppFramework\Db\Mapper;
 
-class ReportItemMapper extends Mapper {
+class ReportItemMapper extends CompatibleMapper {
 
 
     private $dbengine;

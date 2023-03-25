@@ -4,9 +4,8 @@
 namespace OCA\TimeTracker\Db;
 
 use OCP\IDBConnection;
-use OCP\AppFramework\Db\Mapper;
 
-class WorkIntervalMapper extends Mapper {
+class WorkIntervalMapper extends CompatibleMapper {
 
     private $dbengine;
     public function __construct(IDBConnection $db) {

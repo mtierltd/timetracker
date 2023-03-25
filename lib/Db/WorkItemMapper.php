@@ -4,9 +4,8 @@
 namespace OCA\TimeTracker\Db;
 
 use OCP\IDBConnection;
-use OCP\AppFramework\Db\Mapper;
 
-class WorkItemMapper extends Mapper {
+class WorkItemMapper extends CompatibleMapper {
 
     public function __construct(IDBConnection $db) {
         parent::__construct($db, 'timetracker_work_item');
