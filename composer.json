@@ -10,6 +10,6 @@
     ],
     "require": {},
     "require-dev": {
-        "christophwurst/nextcloud": "^23.0"
+        "christophwurst/nextcloud": "^24.0"
     }
 }

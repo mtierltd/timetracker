@@ -47,7 +47,9 @@ appstore_build_directory=$(CURDIR)/build/artifacts/appstore
 appstore_package_name=$(appstore_build_directory)/$(app_name)
 npm=$(shell which npm 2> /dev/null)
 composer=$(shell which composer 2> /dev/null)
-php=$(shell which php-8.0 2> /dev/null) -dallow_url_fopen=On
+php=$(shell which php-8.1 2> /dev/null) -dallow_url_fopen=On
+
+COMPOSER_ARGS=--prefer-dist --no-dev
 
 all: build
 
@@ -75,11 +77,11 @@ ifeq (, $(composer))
 	mkdir -p $(build_tools_directory)
 	curl -sS https://getcomposer.org/installer | $(php)
 	mv composer.phar $(build_tools_directory)
-	$(php) $(build_tools_directory)/composer.phar install --prefer-dist
-	$(php) $(build_tools_directory)/composer.phar update --prefer-dist
+	$(php) $(build_tools_directory)/composer.phar install $(COMPOSER_ARGS)
+	$(php) $(build_tools_directory)/composer.phar update $(COMPOSER_ARGS)
 else
-	composer install --prefer-dist
-	composer update --prefer-dist
+	composer install $(COMPOSER_ARGS)
+	composer update $(COMPOSER_ARGS)
 endif
 
 # Installs npm dependencies
