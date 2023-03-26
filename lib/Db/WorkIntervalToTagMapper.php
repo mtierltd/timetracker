@@ -5,6 +5,8 @@ namespace OCA\TimeTracker\Db;
 
 use OCP\IDBConnection;
 
+use OCA\TimeTracker\AppFramework\Db\CompatibleMapper;
+
 class WorkIntervalToTagMapper extends CompatibleMapper {
 
     public function __construct(IDBConnection $db) {
