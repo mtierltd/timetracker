@@ -35,7 +35,7 @@ Mit dem integrierten Dashboard lässt sich anhand eines Kuchen-/Donut-Diagramms 
 
 Diese App wird aktuell noch weiterentwickelt, also: Augen offen halten für neue Features! Und falls Dir irgendwelche Verbesserungsvorschläge, Probleme oder neue Features einfallen, schau mal auf unserem [GitHub Projekt](https://github.com/mtierltd/timetracker) vorbei, vielleicht wird Dein Thema bereits diskutiert! Und falls nicht, starte gerne eine neue Diskussion, wir freuen uns auf Dein Feedback!
     </description>
-    <version>0.0.79</version>
+    <version>0.0.80</version>
     <licence>agpl</licence>
     <author mail="info@mtier.org" >MTier Ltd.</author>
     <namespace>TimeTracker</namespace>
@@ -53,7 +53,7 @@ Diese App wird aktuell noch weiterentwickelt, also: Augen offen halten für neue
     <screenshot>https://abload.de/img/bildschirmfotoam2021-vuk8t.png</screenshot>
     <screenshot>https://abload.de/img/bildschirmfotoam2021-03kxw.png</screenshot>
     <dependencies>
-        <nextcloud min-version="20" max-version="26"/>
+        <nextcloud min-version="20" max-version="27"/>
     </dependencies>
     <navigations>
         <navigation>
