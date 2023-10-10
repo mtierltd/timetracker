@@ -104,6 +104,7 @@ function() {
           var picker = $("#hours-manual-entry").daterangepicker({
             timePicker: true,
             timePicker24Hour: true,
+            timePickerIncrement: 15,
             locale: {
                 format: dtf.dtformat(),
                 firstDay: firstDay
