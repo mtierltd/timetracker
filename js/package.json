@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@nextcloud/browserslist-config": "^3.0.1",
     "css-loader": "^5.0.1",
     "file-loader": "^6.2.0",
     "style-loader": "^2.0.0",
