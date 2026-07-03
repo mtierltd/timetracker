@@ -1,0 +1,45 @@
+# Unit tests only, against the nextcloud/ocp stub package — no live
+# Nextcloud server or database is booted, which keeps this job fast and free
+# of external services. tests/Integration (real server + DB) is intentionally
+# not run here; see the linked GitHub issue for the multi-database follow-up.
+name: PHPUnit
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phpunit-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-versions: ['8.2', '8.3']
+
+    name: unit-tests (PHP ${{ matrix.php-versions }})
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up php ${{ matrix.php-versions }}
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ matrix.php-versions }}
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: PHPUnit
+        run: composer run test:unit
