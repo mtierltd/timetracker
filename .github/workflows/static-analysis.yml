@@ -1,0 +1,41 @@
+# Static analysis with PHPStan. Existing findings are frozen in
+# phpstan-baseline.neon (mostly missing Doctrine DBAL type stubs and a
+# runtime class_alias() static analysis can't see through) so this starts
+# green; only newly introduced issues fail the build.
+name: Static analysis
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phpstan-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  phpstan:
+    runs-on: ubuntu-latest
+
+    name: static-phpstan-analysis
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Set up php
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: PHPStan
+        run: composer run phpstan

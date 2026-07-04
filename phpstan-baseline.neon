@@ -1,0 +1,426 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$content\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$cost\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$email\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$end\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$from\\.$#"
+			count: 3
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$group1\\.$#"
+			count: 3
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$group2\\.$#"
+			count: 3
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$hours\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$interval\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$name\\.$#"
+			count: 4
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$projectId\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$q\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$status\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$subject\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$timegroup\\.$#"
+			count: 3
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$to\\.$#"
+			count: 3
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$workItem\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Access to static property \\$server on an unknown class OC\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Client\\:\\:setCreatedAt\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Client\\:\\:setName\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Goal\\:\\:setCreatedAt\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Goal\\:\\:setHours\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Goal\\:\\:setInterval\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Goal\\:\\:setProjectId\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Goal\\:\\:setUserUid\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Project\\:\\:setClientId\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Project\\:\\:setColor\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Project\\:\\:setCreatedAt\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Project\\:\\:setCreatedByUserUid\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Project\\:\\:setName\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Tag\\:\\:setCreatedAt\\(\\)\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Tag\\:\\:setName\\(\\)\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Tag\\:\\:setUserUid\\(\\)\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setCreatedAt\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setFilterClients\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setFilterProjects\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setGroup1\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setGroup2\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setStatus\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setTimeGroup\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setTimeInterval\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setTotalDuration\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setUserUid\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setClientName\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setCost\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setCreatedAt\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setName\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setProjectName\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setTimeInterval\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setTimelineId\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setTotalDuration\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setUserUid\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToClient\\:\\:setAdmin\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToClient\\:\\:setClientId\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToClient\\:\\:setCreatedAt\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToClient\\:\\:setUserUid\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToProject\\:\\:setAccess\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToProject\\:\\:setAdmin\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToProject\\:\\:setCreatedAt\\(\\)\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToProject\\:\\:setProjectId\\(\\)\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToProject\\:\\:setUserUid\\(\\)\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setDetails\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setDuration\\(\\)\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setName\\(\\)\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setProjectId\\(\\)\\.$#"
+			count: 3
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setRunning\\(\\)\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setStart\\(\\)\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setUserUid\\(\\)\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkIntervalToTag\\:\\:setCreatedAt\\(\\)\\.$#"
+			count: 6
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkIntervalToTag\\:\\:setTagId\\(\\)\\.$#"
+			count: 6
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkIntervalToTag\\:\\:setWorkIntervalId\\(\\)\\.$#"
+			count: 6
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to static method getUser\\(\\) on an unknown class OC_User\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Call to static method isAdminUser\\(\\) on an unknown class OC_User\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Undefined variable\\: \\$id$#"
+			count: 5
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Variable \\$cost on left side of \\?\\? always exists and is not nullable\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Variable \\$intervals might not be defined\\.$#"
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Variable \\$repItems might not be defined\\.$#"
+			count: 2
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: "#^Method OCA\\\\TimeTracker\\\\Db\\\\ProjectMapper\\:\\:delete\\(\\) should return OCP\\\\AppFramework\\\\Db\\\\Entity but empty return statement found\\.$#"
+			count: 2
+			path: lib/Db/ProjectMapper.php
+
+		-
+			message: "#^Access to an undefined property OCA\\\\TimeTracker\\\\Db\\\\TagMapper\\:\\:\\$dbengine\\.$#"
+			count: 4
+			path: lib/Db/TagMapper.php
+
+		-
+			message: "#^Call to an undefined method OCP\\\\DB\\\\QueryBuilder\\\\IQueryBuilder\\:\\:execute\\(\\)\\.$#"
+			count: 6
+			path: lib/Migration/Version000000Date20210719124731.php
+
+		-
+			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			count: 69
+			path: lib/Migration/Version000000Date20210719124731.php
+
+		-
+			message: "#^Call to method setPrimaryKey\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			count: 11
+			path: lib/Migration/Version000000Date20210719124731.php
+
+		-
+			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			count: 17
+			path: lib/Migration/Version000001Date20210719192031.php
+
+		-
+			message: "#^Call to method hasColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			count: 2
+			path: lib/Migration/Version000001Date20210719192031.php
+
+		-
+			message: "#^Call to method setPrimaryKey\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			count: 2
+			path: lib/Migration/Version000001Date20210719192031.php
