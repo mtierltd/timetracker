@@ -11,4 +11,5 @@
 	<li><a href="<?php p($urlGenerator->linkToRoute('timetracker.projects.index'));?>" class='nav-icon-projects svg'>Projects</a></li>
 	<li><a href="<?php p($urlGenerator->linkToRoute('timetracker.clients.index'));?>" class='nav-icon-clients svg'>Clients</a></li>
 	<li><a href="<?php p($urlGenerator->linkToRoute('timetracker.tags.index'));?>" class='nav-icon-tags svg'>Tags</a></li>
+	<li><a href="<?php p($urlGenerator->linkToRoute('timetracker.page.spa'));?>" class='nav-icon-settings svg'>SPA Preview (WIP)</a></li>
 </ul>

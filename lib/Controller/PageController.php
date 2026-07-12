@@ -29,5 +29,14 @@ class PageController extends Controller {
 		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/index', 'script' => 'dist/timer']);  // templates/index.php
 	}
 
+	/**
+	 *
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function spa($path = '') {
+		return new TemplateResponse('timetracker', 'spa', ['script' => 'dist/app']);  // templates/spa.php
+	}
+
 
 }
