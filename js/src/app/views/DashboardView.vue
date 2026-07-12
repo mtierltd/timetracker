@@ -4,6 +4,10 @@
 			<h1 class="page-title">Dashboard</h1>
 
 			<div class="date-range">
+				<select class="native-select" @change="applyPreset($event.target.value); $event.target.value = ''">
+					<option value="" disabled selected>Quick range...</option>
+					<option v-for="p in presets" :key="p.key" :value="p.key">{{ p.label }}</option>
+				</select>
 				<NcDateTimePicker v-model="rangeFrom" type="date" :clearable="false" />
 				<span>to</span>
 				<NcDateTimePicker v-model="rangeTo" type="date" :clearable="false" />
@@ -38,6 +42,7 @@ import NcAppContent from '@nextcloud/vue/components/NcAppContent'
 import NcButton from '@nextcloud/vue/components/NcButton'
 import NcDateTimePicker from '@nextcloud/vue/components/NcDateTimePicker'
 import { apiGet } from '../api.js'
+import { DATE_RANGE_PRESETS, getPresetRange } from '../dateRangePresets.js'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
 
@@ -54,6 +59,7 @@ export default {
 		return {
 			rangeFrom: from,
 			rangeTo: now,
+			presets: DATE_RANGE_PRESETS,
 			items: [],
 		}
 	},
@@ -127,6 +133,13 @@ export default {
 			const m = Math.floor((seconds % 3600) / 60)
 			return `${h} hours ${m} minutes`
 		},
+		applyPreset(key) {
+			const range = getPresetRange(key)
+			if (!range) return
+			this.rangeFrom = range.from
+			this.rangeTo = range.to
+			this.loadReport()
+		},
 		async loadReport() {
 			const data = await apiGet('/report', {
 				name: '',
@@ -153,6 +166,9 @@ export default {
 	align-items: center;
 	gap: 8px;
 	padding-bottom: 16px;
+}
+.native-select {
+	height: 34px;
 }
 .summary {
 	font-weight: bold;
