@@ -93,13 +93,13 @@
 			</div>
 		</NcModal>
 
-		<NcModal v-if="manualEntryVisible" @close="manualEntryVisible = false">
+		<NcModal v-if="manualEntryVisible" size="normal" @close="manualEntryVisible = false">
 			<div class="edit-form">
 				<h2>Manual entry</h2>
 				<NcTextField v-model="manualForm.name" label="Name" />
 				<NcTextField v-model="manualForm.details" label="Details" />
-				<NcDateTimePicker v-model="manualForm.start" type="datetime" label="Start" />
-				<NcDateTimePicker v-model="manualForm.end" type="datetime" label="End" />
+				<NcDateTimePicker v-model="manualForm.start" type="datetime" label="Start" append-to-body />
+				<NcDateTimePicker v-model="manualForm.end" type="datetime" label="End" append-to-body />
 				<NcButton type="primary" @click="saveManualEntry">Add entry</NcButton>
 			</div>
 		</NcModal>
