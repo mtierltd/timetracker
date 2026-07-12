@@ -23,6 +23,10 @@
 			</div>
 
 			<div class="date-range">
+				<select class="native-select" @change="applyPreset($event.target.value); $event.target.value = ''">
+					<option value="" disabled selected>Quick range...</option>
+					<option v-for="p in presets" :key="p.key" :value="p.key">{{ p.label }}</option>
+				</select>
 				<NcDateTimePicker v-model="rangeFrom" type="date" :clearable="false" @update:model-value="loadReport" />
 				<span>to</span>
 				<NcDateTimePicker v-model="rangeTo" type="date" :clearable="false" @update:model-value="loadReport" />
@@ -124,6 +128,7 @@ import NcModal from '@nextcloud/vue/components/NcModal'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import { apiGet, apiPost } from '../api.js'
+import { DATE_RANGE_PRESETS, getPresetRange } from '../dateRangePresets.js'
 
 function pad(n) {
 	return String(n).padStart(2, '0')
@@ -155,6 +160,7 @@ export default {
 			timegroup: 'day',
 			rangeFrom: from,
 			rangeTo: now,
+			presets: DATE_RANGE_PRESETS,
 			emailing: null,
 			emailForm: { email: '', subject: '', content: '' },
 			confirmVisible: false,
@@ -197,6 +203,13 @@ export default {
 		async loadReport() {
 			const data = await apiGet('/report', this.reportParams())
 			this.items = data.items || []
+		},
+		applyPreset(key) {
+			const range = getPresetRange(key)
+			if (!range) return
+			this.rangeFrom = range.from
+			this.rangeTo = range.to
+			this.loadReport()
 		},
 		async exportTimeline() {
 			try {

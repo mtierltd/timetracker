@@ -11,6 +11,10 @@
 			</form>
 
 			<div class="date-range">
+				<select class="native-select" @change="applyPreset($event.target.value); $event.target.value = ''">
+					<option value="" disabled selected>Quick range...</option>
+					<option v-for="p in presets" :key="p.key" :value="p.key">{{ p.label }}</option>
+				</select>
 				<NcDateTimePicker v-model="rangeFrom" type="date" :clearable="false" />
 				<span>to</span>
 				<NcDateTimePicker v-model="rangeTo" type="date" :clearable="false" />
@@ -116,6 +120,7 @@ import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcModal from '@nextcloud/vue/components/NcModal'
 import { showError } from '@nextcloud/dialogs'
 import { apiGet, apiPost } from '../api.js'
+import { DATE_RANGE_PRESETS, getPresetRange } from '../dateRangePresets.js'
 
 function pad(n) {
 	return String(n).padStart(2, '0')
@@ -143,6 +148,7 @@ export default {
 			tags: [],
 			rangeFrom: from,
 			rangeTo: now,
+			presets: DATE_RANGE_PRESETS,
 			liveTimerText: '00:00:00',
 			liveTimerInterval: null,
 			editingItem: null,
@@ -189,6 +195,13 @@ export default {
 		async loadTags() {
 			const data = await apiGet('/tags')
 			this.tags = data.Tags || []
+		},
+		applyPreset(key) {
+			const range = getPresetRange(key)
+			if (!range) return
+			this.rangeFrom = range.from
+			this.rangeTo = range.to
+			this.loadWorkIntervals()
 		},
 		async loadWorkIntervals() {
 			const data = await apiGet('/work-intervals', {
@@ -359,6 +372,9 @@ export default {
 	align-items: center;
 	gap: 8px;
 	padding-bottom: 20px;
+}
+.native-select {
+	height: 34px;
 }
 .day-group {
 	margin-bottom: 24px;

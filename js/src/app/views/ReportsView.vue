@@ -28,6 +28,10 @@
 			</div>
 
 			<div class="date-range">
+				<select class="native-select" @change="applyPreset($event.target.value); $event.target.value = ''">
+					<option value="" disabled selected>Quick range...</option>
+					<option v-for="p in presets" :key="p.key" :value="p.key">{{ p.label }}</option>
+				</select>
 				<NcDateTimePicker v-model="rangeFrom" type="date" :clearable="false" @update:model-value="loadReport" />
 				<span>to</span>
 				<NcDateTimePicker v-model="rangeTo" type="date" :clearable="false" @update:model-value="loadReport" />
@@ -80,6 +84,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcDateTimePicker from '@nextcloud/vue/components/NcDateTimePicker'
 import { apiGet } from '../api.js'
+import { DATE_RANGE_PRESETS, getPresetRange } from '../dateRangePresets.js'
 
 function pad(n) {
 	return String(n).padStart(2, '0')
@@ -110,6 +115,7 @@ export default {
 			timegroup: 'day',
 			rangeFrom: from,
 			rangeTo: now,
+			presets: DATE_RANGE_PRESETS,
 		}
 	},
 	computed: {
@@ -137,6 +143,13 @@ export default {
 		async loadClients() {
 			const data = await apiGet('/clients')
 			this.clients = data.Clients || []
+		},
+		applyPreset(key) {
+			const range = getPresetRange(key)
+			if (!range) return
+			this.rangeFrom = range.from
+			this.rangeTo = range.to
+			this.loadReport()
 		},
 		async loadReport() {
 			const data = await apiGet('/report', {
