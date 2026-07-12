@@ -95,7 +95,7 @@ require('../../css/style.css');
           var baseUrl = OC.generateUrl('/apps/timetracker/ajax/goals');
 
           var editIcon = function(cell, formatterParams){ //plain text value
-            return "<i class='fa fa-edit'></i>";
+            return "<i class='icon-rename'></i>";
         };
         
         

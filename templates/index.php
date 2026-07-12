@@ -2,7 +2,6 @@
 
 $nextcloudMajorVersion = \OCP\Util::getVersion()[0];
 
-style('timetracker', 'all');
 style('timetracker', 'style');
 
 if (intval($nextcloudMajorVersion) >= 28) {
