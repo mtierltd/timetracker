@@ -13,7 +13,6 @@ return [
     'routes' => [
        ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
        ['name' => 'page#do_echo', 'url' => '/echo', 'verb' => 'POST'],
-       ['name' => 'page#spa', 'url' => '/spa/{path}', 'verb' => 'GET', 'requirements' => ['path' => '.*'], 'defaults' => ['path' => '']],
        ['name' => 'clients#index', 'url' => '/clients', 'verb' => 'GET'],
        ['name' => 'projects#index', 'url' => '/projects', 'verb' => 'GET'],
        ['name' => 'dashboard#index', 'url' => '/dashboard', 'verb' => 'GET'],
