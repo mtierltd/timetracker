@@ -94,7 +94,7 @@ require('../../css/style.css');
           function getTimelines(){
 
             var editIcon = function(cell, formatterParams){ //plain text value
-                return "<i class='fa fa-edit'></i>";
+                return "<i class='icon-rename'></i>";
             };
             function pad(n, width, z) {
                 z = z || '0';

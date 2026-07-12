@@ -432,7 +432,7 @@ function() {
                     $(this).select2({
                         containerCssClass:'project-select',
                         escapeMarkup : function(markup) { return markup; },
-                        placeholder: "<span class='fas fa-folder'></span>",
+                        placeholder: "<span class='icon-folder'></span>",
                         allowClear: true,
                         templateResult: function formatState (project) {
                           var color = '#ffffff';
