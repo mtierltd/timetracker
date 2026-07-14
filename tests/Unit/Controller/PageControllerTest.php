@@ -2,30 +2,34 @@
 
 namespace OCA\TimeTracker\Tests\Unit\Controller;
 
-use PHPUnit_Framework_TestCase;
-
 use OCP\AppFramework\Http\TemplateResponse;
-
+use OCP\IRequest;
+use OCP\IUser;
+use OCP\IUserSession;
 use OCA\TimeTracker\Controller\PageController;
+use PHPUnit\Framework\TestCase;
 
-
-class PageControllerTest extends PHPUnit_Framework_TestCase {
+class PageControllerTest extends TestCase {
 	private $controller;
 	private $userId = 'john';
 
-	public function setUp() {
-		$request = $this->getMockBuilder('OCP\IRequest')->getMock();
+	public function setUp(): void {
+		$request = $this->createMock(IRequest::class);
+		$user = $this->createMock(IUser::class);
+		$user->method('getUID')->willReturn($this->userId);
+		$userSession = $this->createMock(IUserSession::class);
+		$userSession->method('getUser')->willReturn($user);
 
 		$this->controller = new PageController(
-			'timetracker', $request, $this->userId
+			'timetracker', $request, $userSession
 		);
 	}
 
-	public function testIndex() {
+	public function testIndex(): void {
 		$result = $this->controller->index();
 
-		$this->assertEquals('index', $result->getTemplateName());
-		$this->assertTrue($result instanceof TemplateResponse);
+		$this->assertEquals('spa', $result->getTemplateName());
+		$this->assertInstanceOf(TemplateResponse::class, $result);
 	}
 
 }

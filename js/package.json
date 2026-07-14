@@ -15,17 +15,19 @@
     "css-loader": "^5.0.1",
     "file-loader": "^6.2.0",
     "style-loader": "^2.0.0",
+    "vue-loader": "^17.4.2",
     "webpack": "^5.105.0",
     "webpack-cli": "^4.2.0"
   },
   "dependencies": {
-    "chart.js": "^2.9.4",
-    "daterangepicker": "^3.1.0",
-    "jquery": "^3.5.1",
-    "jquery-migrate": "^3.3.2",
-    "jqueryui": "^1.11.1",
-    "moment": "^2.29.4",
-    "select2": "^4.0.13",
-    "tabulator-tables": "^4.9.3"
+    "@nextcloud/auth": "^2.6.0",
+    "@nextcloud/axios": "^2.6.0",
+    "@nextcloud/dialogs": "^7.4.0",
+    "@nextcloud/router": "^3.1.0",
+    "@nextcloud/vue": "^9.8.2",
+    "chart.js": "^4.4.9",
+    "vue": "^3.5.39",
+    "vue-chartjs": "^5.3.2",
+    "vue-router": "^4.6.4"
   }
 }

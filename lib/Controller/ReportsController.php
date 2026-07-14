@@ -25,7 +25,7 @@ class ReportsController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function index() {
-		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/reports', 'script' => 'dist/reports']);  // templates/index.php
+		return new TemplateResponse('timetracker', 'spa', ['script' => 'dist/app']);  // templates/spa.php
 	}
 
 
