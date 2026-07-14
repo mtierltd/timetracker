@@ -63,7 +63,7 @@
 									style="min-width: 160px;"
 									@update:model-value="(t) => updateTags(item, t)" />
 							</td>
-							<td>{{ formatDuration(item.duration) }}</td>
+							<td class="editable" @click="openEditTime(item)">{{ formatDuration(item.duration) }}</td>
 							<td>
 								<NcTextField :model-value="(item.cost / 100).toFixed(2)"
 									style="width: 90px;"
@@ -94,6 +94,15 @@
 				<NcTextField v-model="editForm.name" label="Name" />
 				<NcTextField v-model="editForm.details" label="Details" />
 				<NcButton type="primary" @click="saveNameDetails">Save</NcButton>
+			</div>
+		</NcModal>
+
+		<NcModal v-if="editingTimeItem" size="normal" @close="editingTimeItem = null">
+			<div class="edit-form">
+				<h2>Edit time</h2>
+				<NcDateTimePicker v-model="timeForm.start" type="datetime" label="Start" append-to-body />
+				<NcDateTimePicker v-model="timeForm.end" type="datetime" label="End" append-to-body />
+				<NcButton type="primary" @click="saveEditTime">Save</NcButton>
 			</div>
 		</NcModal>
 
@@ -132,6 +141,14 @@ function formatDuration(seconds) {
 	const s = seconds % 60
 	return `${pad(h)}:${pad(m)}:${pad(s)}`
 }
+function formatForApi(d) {
+	const dd = String(d.getDate()).padStart(2, '0')
+	const mm = String(d.getMonth() + 1).padStart(2, '0')
+	const yy = String(d.getFullYear()).slice(-2)
+	const h = String(d.getHours()).padStart(2, '0')
+	const mi = String(d.getMinutes()).padStart(2, '0')
+	return `${dd}/${mm}/${yy} ${h}:${mi}`
+}
 
 export default {
 	name: 'TimerView',
@@ -153,6 +170,8 @@ export default {
 			liveTimerInterval: null,
 			editingItem: null,
 			editForm: { name: '', details: '' },
+			editingTimeItem: null,
+			timeForm: { start: null, end: null },
 			manualEntryVisible: false,
 			manualForm: { name: '', details: '', start: null, end: null },
 			confirmVisible: false,
@@ -303,19 +322,31 @@ export default {
 			this.manualForm = { name: '', details: '', start: now, end: now }
 			this.manualEntryVisible = true
 		},
-		async saveManualEntry() {
-			const fmt = (d) => {
-				const dd = String(d.getDate()).padStart(2, '0')
-				const mm = String(d.getMonth() + 1).padStart(2, '0')
-				const yy = String(d.getFullYear()).slice(-2)
-				const h = String(d.getHours()).padStart(2, '0')
-				const mi = String(d.getMinutes()).padStart(2, '0')
-				return `${dd}/${mm}/${yy} ${h}:${mi}`
+		openEditTime(item) {
+			this.editingTimeItem = item
+			this.timeForm = {
+				start: new Date(item.start * 1000),
+				end: new Date((item.start + item.duration) * 1000),
 			}
+		},
+		async saveEditTime() {
+			try {
+				await apiPost(`/update-work-interval/${this.editingTimeItem.id}`, {
+					start: formatForApi(this.timeForm.start),
+					end: formatForApi(this.timeForm.end),
+					tzoffset: new Date().getTimezoneOffset(),
+				})
+				this.editingTimeItem = null
+				await this.loadWorkIntervals()
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		async saveManualEntry() {
 			try {
 				await apiPost(`/add-work-interval/${encodeURIComponent(encodeURIComponent(this.manualForm.name))}`, {
-					start: fmt(this.manualForm.start),
-					end: fmt(this.manualForm.end),
+					start: formatForApi(this.manualForm.start),
+					end: formatForApi(this.manualForm.end),
 					tzoffset: new Date().getTimezoneOffset(),
 					details: this.manualForm.details,
 				})
