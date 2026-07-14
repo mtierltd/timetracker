@@ -59,15 +59,20 @@
 									:options="tags"
 									label="name"
 									multiple
+									taggable
+									push-tags
 									placeholder="Tags"
 									style="min-width: 160px;"
 									@update:model-value="(t) => updateTags(item, t)" />
 							</td>
 							<td class="editable" @click="openEditTime(item)">{{ formatDuration(item.duration) }}</td>
 							<td>
-								<NcTextField :model-value="(item.cost / 100).toFixed(2)"
+								<NcTextField :model-value="costDraft(item)"
+									:success="costStatus[item.id] === 'success'"
+									:error="costStatus[item.id] === 'error'"
 									style="width: 90px;"
-									@update:model-value="(v) => updateCost(item, v)" />
+									@update:model-value="(v) => (costDrafts[item.id] = v)"
+									@blur="commitCost(item)" />
 							</td>
 							<td>
 								<NcButton type="tertiary" aria-label="Delete" @click="removeInterval(item)">
@@ -174,6 +179,8 @@ export default {
 			timeForm: { start: null, end: null },
 			manualEntryVisible: false,
 			manualForm: { name: '', details: '', start: null, end: null },
+			costDrafts: {},
+			costStatus: {},
 			confirmVisible: false,
 			confirmMessage: '',
 			confirmResolver: null,
@@ -304,16 +311,25 @@ export default {
 		},
 		async updateTags(item, tags) {
 			try {
-				await apiPost(`/update-work-interval/${item.id}`, { tagId: tags.map((t) => t.id).join(',') })
+				await apiPost(`/update-work-interval/${item.id}`, { tagId: tags.map((t) => t.id ?? t.name).join(',') })
 				await this.loadWorkIntervals()
 			} catch (e) {
 				showError(e.message)
 			}
 		},
-		async updateCost(item, value) {
+		costDraft(item) {
+			return this.costDrafts[item.id] ?? (item.cost / 100).toFixed(2)
+		},
+		async commitCost(item) {
+			const value = this.costDrafts[item.id]
+			if (value === undefined) return
 			try {
 				await apiPost(`/add-cost/${item.id}`, { cost: value })
+				this.costStatus[item.id] = 'success'
+				setTimeout(() => { this.costStatus[item.id] = null }, 3000)
+				await this.loadWorkIntervals()
 			} catch (e) {
+				this.costStatus[item.id] = 'error'
 				showError(e.message)
 			}
 		},

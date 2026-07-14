@@ -21,12 +21,12 @@
 
 			<div class="charts">
 				<div class="chart-box">
-					<h2>Time by project</h2>
+					<h2>Time by client / project</h2>
 					<Doughnut v-if="timeChartData.labels.length" :data="timeChartData" :options="timeChartOptions" />
 					<p v-else>No data to display</p>
 				</div>
 				<div class="chart-box">
-					<h2>Cost by project</h2>
+					<h2>Cost by client / project</h2>
 					<Doughnut v-if="costChartData.labels.length" :data="costChartData" :options="costChartOptions" />
 					<p v-else>No data to display</p>
 				</div>
@@ -70,10 +70,12 @@ export default {
 		totalCost() {
 			return this.items.reduce((sum, i) => sum + (i.cost || 0), 0)
 		},
-		byProject() {
+		byClientProject() {
 			const map = new Map()
 			for (const item of this.items) {
-				const key = item.project || 'Project Not Set'
+				const client = item.client || 'Client Not Set'
+				const project = item.project || 'Project Not Set'
+				const key = `${client} / ${project}`
 				if (!map.has(key)) map.set(key, { duration: 0, cost: 0 })
 				const entry = map.get(key)
 				entry.duration += item.totalDuration || 0
@@ -82,21 +84,21 @@ export default {
 			return map
 		},
 		timeChartData() {
-			const labels = [...this.byProject.keys()]
+			const labels = [...this.byClientProject.keys()]
 			return {
 				labels,
 				datasets: [{
-					data: labels.map((l) => this.byProject.get(l).duration),
+					data: labels.map((l) => this.byClientProject.get(l).duration),
 					backgroundColor: labels.map((_, i) => COLORS[i % COLORS.length]),
 				}],
 			}
 		},
 		costChartData() {
-			const labels = [...this.byProject.keys()]
+			const labels = [...this.byClientProject.keys()]
 			return {
 				labels,
 				datasets: [{
-					data: labels.map((l) => this.byProject.get(l).cost),
+					data: labels.map((l) => this.byClientProject.get(l).cost),
 					backgroundColor: labels.map((_, i) => COLORS[i % COLORS.length]),
 				}],
 			}
