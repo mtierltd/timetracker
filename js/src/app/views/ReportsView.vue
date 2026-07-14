@@ -164,11 +164,16 @@ export default {
 			})
 			this.items = data.items || []
 		},
+		ended(item) {
+			if (this.group1 || this.group2 || this.timegroup) return '*'
+			if (!item.time) return ''
+			return new Date((item.time + (item.totalDuration || 0)) * 1000).toLocaleString()
+		},
 		toCsv() {
-			const header = ['Name', 'Details', 'User', 'Project', 'Client', 'When', 'Cost', 'Total Duration']
+			const header = ['Name', 'Details', 'User', 'Project', 'Client', 'When', 'Cost', 'Total Duration', 'Ended']
 			const rows = this.items.map((i) => [
-				i.name, i.details, i.userUid, i.project, i.client, i.time,
-				((i.cost || 0) / 100).toFixed(2), formatDuration(i.totalDuration),
+				i.name, i.details, i.userUid, i.project, i.client, this.formatWhen(i),
+				((i.cost || 0) / 100).toFixed(2), formatDuration(i.totalDuration), this.ended(i),
 			])
 			return [header, ...rows].map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
 		},
