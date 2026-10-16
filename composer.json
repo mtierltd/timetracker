@@ -10,6 +10,28 @@
     ],
     "require": {},
     "require-dev": {
-        "christophwurst/nextcloud": "^24.0"
+        "nextcloud/ocp": "^34.0",
+        "phpunit/phpunit": "^10.5",
+        "phpstan/phpstan": "^1.11"
+    },
+    "autoload": {
+        "psr-4": {
+            "OCA\\TimeTracker\\": "lib/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OCA\\TimeTracker\\Tests\\": "tests/",
+            "OCP\\": "vendor/nextcloud/ocp/OCP/",
+            "NCU\\": "vendor/nextcloud/ocp/NCU/"
+        }
+    },
+    "scripts": {
+        "lint": "find . -name '*.php' -not -path './vendor/*' -not -path './build/*' -not -path './js/*' -print0 | xargs -0 -n1 php -l",
+        "phpstan": "phpstan analyse --no-progress",
+        "test:unit": "phpunit -c phpunit.xml"
+    },
+    "config": {
+        "sort-packages": true
     }
 }

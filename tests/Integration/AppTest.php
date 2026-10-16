@@ -15,13 +15,13 @@ class AppTest extends TestCase {
 
     private $container;
 
-    public function setUp() {
+    public function setUp(): void {
         parent::setUp();
         $app = new App('timetracker');
         $this->container = $app->getContainer();
     }
 
-    public function testAppInstalled() {
+    public function testAppInstalled(): void {
         $appManager = $this->container->query('OCP\App\IAppManager');
         $this->assertTrue($appManager->isInstalled('timetracker'));
     }
