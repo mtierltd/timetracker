@@ -10,9 +10,9 @@
     ],
     "require": {},
     "require-dev": {
-        "nextcloud/ocp": "^34.0",
+        "nextcloud/ocp": "^35.0",
         "phpunit/phpunit": "^10.5",
-        "phpstan/phpstan": "^1.11"
+        "phpstan/phpstan": "^2.2"
     },
     "autoload": {
         "psr-4": {
