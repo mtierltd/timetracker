@@ -400,27 +400,3 @@ parameters:
 			count: 6
 			path: lib/Migration/Version000000Date20210719124731.php
 
-		-
-			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
-			count: 69
-			path: lib/Migration/Version000000Date20210719124731.php
-
-		-
-			message: "#^Call to method setPrimaryKey\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
-			count: 11
-			path: lib/Migration/Version000000Date20210719124731.php
-
-		-
-			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
-			count: 17
-			path: lib/Migration/Version000001Date20210719192031.php
-
-		-
-			message: "#^Call to method hasColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
-			count: 2
-			path: lib/Migration/Version000001Date20210719192031.php
-
-		-
-			message: "#^Call to method setPrimaryKey\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
-			count: 2
-			path: lib/Migration/Version000001Date20210719192031.php
