@@ -1,2 +1,4 @@
 js/dist/
 js/node_modules/
+vendor/
+.phpunit.result.cache

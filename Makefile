@@ -159,7 +159,22 @@ appstore:
 	--exclude="$(app_name)/js/.*" \
 	 -czf $(appstore_package_name).tar.gz ../$(app_name) 
 
+# Installs composer dependencies including require-dev (phpunit, phpstan,
+# nextcloud/ocp stubs). Separate from the `composer` target above, which
+# passes --no-dev for production/appstore builds.
+.PHONY: composer-dev
+composer-dev:
+	composer install --prefer-dist
+
+# Runs the unit test suite, which only needs the nextcloud/ocp stub package
+# (no live Nextcloud instance required) — this is what CI runs.
 .PHONY: test
-test: composer
+test: composer-dev
 	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
+
+# Runs the integration test suite. Requires this app to be checked out inside
+# a real Nextcloud server's apps/ directory with a working install — not run
+# by CI yet (see the linked GitHub issue for the multi-database CI follow-up).
+.PHONY: test-integration
+test-integration: composer-dev
 	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml

@@ -1,0 +1,12 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 3
+    paths:
+        - lib
+        - appinfo
+    phpVersion: 80200
+    bootstrapFiles:
+        - vendor/autoload.php
+        - tests/phpstan-bootstrap.php
