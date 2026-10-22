@@ -28,7 +28,7 @@ class PageControllerTest extends TestCase {
 	public function testIndex(): void {
 		$result = $this->controller->index();
 
-		$this->assertEquals('index', $result->getTemplateName());
+		$this->assertEquals('spa', $result->getTemplateName());
 		$this->assertInstanceOf(TemplateResponse::class, $result);
 	}
 

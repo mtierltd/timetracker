@@ -25,7 +25,7 @@ class GoalsController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function index() {
-		return new TemplateResponse('timetracker', 'index',['appPage' => 'content/goals', 'script' => 'dist/goals']);  // templates/index.php
+		return new TemplateResponse('timetracker', 'spa', ['script' => 'dist/app']);  // templates/spa.php
 	}
 
 
