@@ -5,6 +5,7 @@ use OCP\IRequest;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
+use OCP\IDBConnection;
 use OCP\IGroupManager;
 use OCP\IL10N;
 use OCP\IUserSession;
@@ -53,12 +54,13 @@ class AjaxController extends Controller {
 	protected $l10n;
 	protected $groupManager;
 	protected $mailer;
+	protected $db;
 
 	public function __construct($AppName, IRequest $request, IUserSession $userSession, IL10N $l10n,
 							WorkIntervalMapper $workIntervalMapper, ClientMapper $clientMapper, UserToClientMapper $userToClientMapper,
 							ProjectMapper $projectMapper, UserToProjectMapper $userToProjectMapper, TagMapper $tagMapper, WorkIntervalToTagMapper $workIntervalToTagMapper, ReportItemMapper $reportItemMapper,
 							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper,
-							IGroupManager $groupManager, IMailer $mailer, $userId){
+							IGroupManager $groupManager, IMailer $mailer, IDBConnection $db, $userId){
 		parent::__construct($AppName, $request);
 		$this->userId = $userId;
 		$this->userSession = $userSession;
@@ -82,6 +84,7 @@ class AjaxController extends Controller {
 		$this->l10n = $l10n;
 		$this->groupManager = $groupManager;
 		$this->mailer = $mailer;
+		$this->db = $db;
 	}
 
 	/**
@@ -1012,20 +1015,28 @@ class AjaxController extends Controller {
 		$timeline->setTotalDuration($totalDuration);
 		$timeline->setCreatedAt(time());
 		$timeline->setStatus('pending');
-		$this->timelineMapper->insert($timeline);
-		foreach($items as $i){
-			$te = new TimelineEntry();
-			$te->setTimelineId($timeline->id);
-			$te->setUserUid($timeline->userUid);
-			$te->setName($i->name);
-			$te->setProjectName($i->project ? $i->project : "");
-			$te->setClientName($i->client ? $i->client : "");
-			$te->setTimeInterval($i->time);
-			$te->setTotalDuration($i->totalDuration);
-			$te->setCreatedAt(time());
-			$te->setCost($i->cost);
-			$this->timelineEntryMapper->insert($te);
-
+		// Create the timeline and all its entries together, so a failing entry
+		// doesn't leave an empty timeline behind.
+		$this->db->beginTransaction();
+		try {
+			$this->timelineMapper->insert($timeline);
+			foreach($items as $i){
+				$te = new TimelineEntry();
+				$te->setTimelineId($timeline->id);
+				$te->setUserUid($timeline->userUid);
+				$te->setName($i->name);
+				$te->setProjectName($i->project ? $i->project : "");
+				$te->setClientName($i->client ? $i->client : "");
+				$te->setTimeInterval($i->time);
+				$te->setTotalDuration($i->totalDuration);
+				$te->setCreatedAt(time());
+				$te->setCost($i->cost);
+				$this->timelineEntryMapper->insert($te);
+			}
+			$this->db->commit();
+		} catch (\Throwable $e) {
+			$this->db->rollBack();
+			throw $e;
 		}
 		return new JSONResponse(["Timeline" => json_decode(json_encode($timeline), true)]);
 	}
@@ -1065,6 +1076,16 @@ class AjaxController extends Controller {
 	}
 
 	/**
+	 * Costs are stored in cents; empty when an entry has no cost.
+	 */
+	private function formatCost($cents){
+		if ($cents === null || $cents === '') {
+			return '';
+		}
+		return number_format(((int)$cents) / 100, 2, '.', '');
+	}
+
+	/**
 	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
@@ -1085,14 +1106,16 @@ class AjaxController extends Controller {
 		$output = fopen('php://output', 'w');
 
 		// output the column headings
-		fputcsv($output, array('id', 'User Uid', 'Name', 'Project Name', 'Client Name', 'Time Interval', 'Total Duration'));
+		fputcsv($output, array('id', 'User Uid', 'Name', 'Project Name', 'Client Name', 'Time Interval', 'Total Duration', 'Cost'));
 		$totalDuration = 0;
+		$totalCost = 0;
 		foreach($te as $t){
 
-				fputcsv($output, [$t->id, $t->userUid, $t->name, $t->projectName, $t->clientName, $t->timeInterval, $this->secondsToTime($t->totalDuration)]);
+				fputcsv($output, [$t->id, $t->userUid, $t->name, $t->projectName, $t->clientName, $t->timeInterval, $this->secondsToTime($t->totalDuration), $this->formatCost($t->cost)]);
 				$totalDuration += $t->totalDuration;
+				$totalCost += (int)$t->cost;
 		}
-		fputcsv($output, ['TOTAL', '', '', '', '', '', $this->secondsToTime($totalDuration)]);
+		fputcsv($output, ['TOTAL', '', '', '', '', '', $this->secondsToTime($totalDuration), $this->formatCost($totalCost)]);
 		fclose($output);
 		exit(0);
 	}
@@ -1151,14 +1174,16 @@ class AjaxController extends Controller {
 		$output = fopen($path, "w");
 		//$path = stream_get_meta_data($output)['uri'];
 		// output the column headings
-		fputcsv($output, array('id', 'User Uid', 'Name', 'Project Name', 'Client Name', 'Time Interval', 'Total Duration'));
+		fputcsv($output, array('id', 'User Uid', 'Name', 'Project Name', 'Client Name', 'Time Interval', 'Total Duration', 'Cost'));
 		$totalDuration = 0;
+		$totalCost = 0;
 		foreach($te as $t){
 
-				fputcsv($output, [$t->id, $t->userUid, $t->name, $t->projectName, $t->clientName, $t->timeInterval, $this->secondsToTime($t->totalDuration)]);
+				fputcsv($output, [$t->id, $t->userUid, $t->name, $t->projectName, $t->clientName, $t->timeInterval, $this->secondsToTime($t->totalDuration), $this->formatCost($t->cost)]);
 				$totalDuration += $t->totalDuration;
+				$totalCost += (int)$t->cost;
 		}
-		fputcsv($output, ['TOTAL', '', '', '', '', '', $this->secondsToTime($totalDuration)]);
+		fputcsv($output, ['TOTAL', '', '', '', '', '', $this->secondsToTime($totalDuration), $this->formatCost($totalCost)]);
 
 
 
