@@ -264,9 +264,14 @@ export default {
 			this.loadWorkIntervals()
 		},
 		async loadWorkIntervals() {
+			// The end date picker gives a moment on that day (page load time, or
+			// midnight when picked), so include the whole day: otherwise entries
+			// started later that day, like a timer started just now, are missing.
+			const to = new Date(this.rangeTo)
+			to.setHours(23, 59, 59, 999)
 			const data = await apiGet('/work-intervals', {
 				from: Math.floor(this.rangeFrom.getTime() / 1000),
-				to: Math.floor(this.rangeTo.getTime() / 1000),
+				to: Math.floor(to.getTime() / 1000),
 				tzoffset: new Date().getTimezoneOffset(),
 			})
 			this.days = data.days || {}
