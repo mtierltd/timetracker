@@ -413,7 +413,7 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
                 $query = $this->connection->getQueryBuilder();
                 $query->select('*')
                         ->from('timetracker_workint_to_tag');
-                $result = $query->execute();
+                $result = $query->executeQuery();
                 if ($result->fetch()) {
                         $result->closeCursor();
                         return;
@@ -422,7 +422,7 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
                 $query = $this->connection->getQueryBuilder();
                 $query->select('*')
                         ->from('timetracker_workinterval_to_tag');
-                $result = $query->execute();
+                $result = $query->executeQuery();
 
                 while ($row = $result->fetch()) {
                         $insert
@@ -431,7 +431,7 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
                                 ->setParameter('tag_id', (int) $row['tag_id'], IQueryBuilder::PARAM_INT)
                                 ->setParameter('created_at', (int) $row['created_at'], IQueryBuilder::PARAM_INT)
 			;
-                        $insert->execute();
+                        $insert->executeStatement();
                 }
                 $result->closeCursor();
         }
@@ -454,7 +454,7 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
                 $query = $this->connection->getQueryBuilder();
                 $query->select('*')
                         ->from('timetracker_lpa_tags');
-                $result = $query->execute();
+                $result = $query->executeQuery();
                 if ($result->fetch()) {
                         $result->closeCursor();
                         return;
@@ -463,7 +463,7 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
                 $query = $this->connection->getQueryBuilder();
                 $query->select('*')
                         ->from('timetracker_locked_project_allowed_tag');
-                $result = $query->execute();
+                $result = $query->executeQuery();
 
                 while ($row = $result->fetch()) {
                         $insert
@@ -472,7 +472,7 @@ class Version000000Date20210719124731 extends SimpleMigrationStep {
                                 ->setParameter('tag_id', (int) $row['tag_id'], IQueryBuilder::PARAM_INT)
                                 ->setParameter('created_at', (int) $row['created_at'], IQueryBuilder::PARAM_INT)
 			;
-                        $insert->execute();
+                        $insert->executeStatement();
                 }
                 $result->closeCursor();
         }

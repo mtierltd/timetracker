@@ -5,8 +5,10 @@ use OCP\IRequest;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
+use OCP\IGroupManager;
 use OCP\IL10N;
 use OCP\IUserSession;
+use OCP\Mail\IMailer;
 use OCA\TimeTracker\Db\WorkIntervalMapper;
 use OCA\TimeTracker\Db\WorkInterval;
 use OCP\AppFramework\Http\JSONResponse;
@@ -49,13 +51,16 @@ class AjaxController extends Controller {
 	protected $timelineMapper;
 	protected $timelineEntryMapper;
 	protected $l10n;
+	protected $groupManager;
+	protected $mailer;
 
 	public function __construct($AppName, IRequest $request, IUserSession $userSession, IL10N $l10n,
 							WorkIntervalMapper $workIntervalMapper, ClientMapper $clientMapper, UserToClientMapper $userToClientMapper,
 							ProjectMapper $projectMapper, UserToProjectMapper $userToProjectMapper, TagMapper $tagMapper, WorkIntervalToTagMapper $workIntervalToTagMapper, ReportItemMapper $reportItemMapper,
-							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper, $UserId){
+							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper,
+							IGroupManager $groupManager, IMailer $mailer, $userId){
 		parent::__construct($AppName, $request);
-		$this->userId = $UserId;
+		$this->userId = $userId;
 		$this->userSession = $userSession;
 		$this->workIntervalMapper = $workIntervalMapper;
 		$this->clientMapper = $clientMapper;
@@ -75,6 +80,8 @@ class AjaxController extends Controller {
 
 		$this->request =  $request;
 		$this->l10n = $l10n;
+		$this->groupManager = $groupManager;
+		$this->mailer = $mailer;
 	}
 
 	/**
@@ -136,11 +143,11 @@ class AjaxController extends Controller {
 
 
 	public function isThisAdminUser(){
-		return \OC_User::isAdminUser(\OC_User::getUser());
+		return $this->userId !== null && $this->groupManager->isAdmin($this->userId);
 	}
 
 	public function isUserAdmin($user){
-		return \OC_User::isAdminUser($user);
+		return $this->groupManager->isAdmin($user);
 	}
 
 	/**
@@ -1155,7 +1162,7 @@ class AjaxController extends Controller {
 
 
 
-		$mailer = \OC::$server->getMailer();
+		$mailer = $this->mailer;
 		$message = $mailer->createMessage();
 		$attach = $mailer->createAttachmentFromPath($path);
 		$message->setSubject($subject);

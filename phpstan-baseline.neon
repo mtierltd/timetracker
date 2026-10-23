@@ -356,16 +356,6 @@ parameters:
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to static method getUser\\(\\) on an unknown class OC_User\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to static method isAdminUser\\(\\) on an unknown class OC_User\\.$#"
-			count: 2
-			path: lib/Controller/AjaxController.php
-
-		-
 			message: "#^Undefined variable\\: \\$id$#"
 			count: 5
 			path: lib/Controller/AjaxController.php
@@ -394,11 +384,6 @@ parameters:
 			message: "#^Access to an undefined property OCA\\\\TimeTracker\\\\Db\\\\TagMapper\\:\\:\\$dbengine\\.$#"
 			count: 4
 			path: lib/Db/TagMapper.php
-
-		-
-			message: "#^Call to an undefined method OCP\\\\DB\\\\QueryBuilder\\\\IQueryBuilder\\:\\:execute\\(\\)\\.$#"
-			count: 6
-			path: lib/Migration/Version000000Date20210719124731.php
 
 		-
 			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
