@@ -2,6 +2,10 @@
 # phpstan-baseline.neon (mostly missing Doctrine DBAL type stubs and a
 # runtime class_alias() static analysis can't see through) so this starts
 # green; only newly introduced issues fail the build.
+#
+# Runs against the OCP stubs of the oldest and the newest Nextcloud version in
+# appinfo/info.xml, so APIs that are missing on either end are caught. Keep the
+# matrix in sync with the <nextcloud min-version max-version> range.
 name: Static analysis
 
 on:
@@ -19,8 +23,12 @@ concurrency:
 jobs:
   phpstan:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ocp-version: ['dev-stable31', 'dev-stable35']
 
-    name: static-phpstan-analysis
+    name: static-phpstan-analysis (${{ matrix.ocp-version }})
 
     steps:
       - name: Checkout
@@ -36,6 +44,9 @@ jobs:
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
+
+      - name: Install OCP stubs ${{ matrix.ocp-version }}
+        run: composer require --dev --no-progress --with-all-dependencies "nextcloud/ocp:${{ matrix.ocp-version }}"
 
       - name: PHPStan
         run: composer run phpstan
