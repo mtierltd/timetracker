@@ -5,6 +5,23 @@
 
 			<form class="top-bar" @submit.prevent="onSubmitWorkInput">
 				<NcTextField v-model="workInput" style="width: 320px;" label="What have you done?" placeholder="What have you done?" />
+				<NcSelect v-model="startProject"
+					:options="projects"
+					label="name"
+					placeholder="Project"
+					aria-label-combobox="Project for the new timer"
+					:disabled="isRunning"
+					style="min-width: 180px;"
+					@update:model-value="startSelectionTouched = true" />
+				<NcSelect v-model="startTags"
+					:options="tags"
+					label="name"
+					multiple
+					placeholder="Tags"
+					aria-label-combobox="Tags for the new timer"
+					:disabled="isRunning"
+					style="min-width: 180px;"
+					@update:model-value="startSelectionTouched = true" />
 				<NcButton type="primary" native-type="submit">{{ isRunning ? 'Stop' : 'Start' }}</NcButton>
 				<span v-if="isRunning" class="live-timer">{{ liveTimerText }}</span>
 				<NcButton type="secondary" @click="openManualEntry">Manual entry</NcButton>
@@ -164,6 +181,11 @@ export default {
 		from.setDate(from.getDate() - 30)
 		return {
 			workInput: '',
+			// Project and tags for the next timer. Pre-filled by
+			// suggestStartSelection() until the user changes them.
+			startProject: null,
+			startTags: [],
+			startSelectionTouched: false,
 			days: {},
 			running: [],
 			projects: [],
@@ -202,9 +224,21 @@ export default {
 			}
 			return result
 		},
+		// All loaded entries, newest first
+		recentEntries() {
+			return Object.values(this.flattenedDays)
+				.flatMap((day) => day.children)
+				.sort((a, b) => b.start - a.start)
+		},
+	},
+	watch: {
+		workInput() {
+			this.suggestStartSelection()
+		},
 	},
 	async mounted() {
 		await Promise.all([this.loadWorkIntervals(), this.loadProjects(), this.loadTags()])
+		this.suggestStartSelection()
 	},
 	beforeUnmount() {
 		clearInterval(this.liveTimerInterval)
@@ -238,6 +272,28 @@ export default {
 			this.days = data.days || {}
 			this.running = data.running || []
 			this.setupLiveTimer(data.now)
+			this.suggestStartSelection()
+		},
+		/**
+		 * Pre-fill project and tags for the next timer, unless the user
+		 * already changed them:
+		 * - an earlier entry with the same name: its project and tags, which
+		 *   is what the server would copy anyway
+		 * - otherwise: the project of the latest entry that has one
+		 */
+		suggestStartSelection() {
+			if (this.startSelectionTouched) return
+			const name = this.workInput.trim()
+			const sameName = name ? this.recentEntries.find((e) => e.name === name) : null
+			if (sameName) {
+				this.startProject = this.projectFor(sameName)
+				const tagIds = (sameName.tags || []).map((t) => t.id)
+				this.startTags = this.tags.filter((t) => tagIds.includes(t.id))
+				return
+			}
+			const lastWithProject = this.recentEntries.find((e) => e.projectId)
+			this.startProject = lastWithProject ? this.projectFor(lastWithProject) : null
+			this.startTags = []
 		},
 		setupLiveTimer(serverNow) {
 			clearInterval(this.liveTimerInterval)
@@ -255,7 +311,15 @@ export default {
 			if (this.isRunning) {
 				await this.stopTimer()
 			} else {
-				await this.startTimer(this.workInput.trim() || 'no description')
+				const started = await this.startTimer(
+					this.workInput.trim() || 'no description',
+					this.startProject?.id,
+					this.startTags.map((t) => t.id).join(','),
+				)
+				if (started) {
+					this.startSelectionTouched = false
+					this.suggestStartSelection()
+				}
 			}
 		},
 		async startTimer(name, projectId, tagIds) {
@@ -266,8 +330,10 @@ export default {
 				})
 				this.workInput = ''
 				await this.loadWorkIntervals()
+				return true
 			} catch (e) {
 				showError(e.message)
+				return false
 			}
 		},
 		async stopTimer() {
