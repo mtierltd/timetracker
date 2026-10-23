@@ -2,7 +2,7 @@
 
 namespace OCA\TimeTracker\AppInfo;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+# require_once __DIR__ . '/../../vendor/autoload.php';
 
 use \OCP\AppFramework\App;
 use \OCP\AppFramework\IAppContainer;
