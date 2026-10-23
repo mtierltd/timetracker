@@ -7,6 +7,9 @@ parameters:
         - lib
         - appinfo
     phpVersion: 80200
+    # CI analyses against the OCP stubs of the oldest and the newest supported
+    # Nextcloud version, and some baseline entries only apply to one of them.
+    reportUnmatchedIgnoredErrors: false
     bootstrapFiles:
         - vendor/autoload.php
         - tests/phpstan-bootstrap.php

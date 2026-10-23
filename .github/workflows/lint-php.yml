@@ -1,8 +1,9 @@
 # Cheap, high-value check: php -l syntax linting + composer.json validation.
 # Adapted from Nextcloud's reusable workflow templates (nextcloud/.github),
-# simplified to a fixed PHP matrix instead of deriving one from appinfo/info.xml
-# (this app's declared min-version="20" predates PHP 8, which isn't a
-# realistic target — see the linked issue for the follow-up on tightening that).
+# simplified to a fixed PHP matrix instead of deriving one from appinfo/info.xml.
+# The matrix covers the PHP versions of the supported Nextcloud range
+# (Nextcloud 31: PHP 8.1–8.4, Nextcloud 35: PHP 8.3–8.5). PHP 8.1 is left out
+# because the locked nextcloud/ocp dev dependency needs PHP 8.2+.
 name: Lint PHP
 
 on:
@@ -23,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php-versions: ['8.2', '8.3']
+        php-versions: ['8.2', '8.3', '8.4', '8.5']
 
     name: php-lint (PHP ${{ matrix.php-versions }})
 
