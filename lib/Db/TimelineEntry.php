@@ -15,6 +15,7 @@ class TimelineEntry extends Entity {
     public $timeInterval;
     public $totalDuration;
     public $createdAt;
+    public $cost;
 
 
     public function __construct() {
@@ -29,5 +30,6 @@ class TimelineEntry extends Entity {
         $this->addType('timeInterval', 'string');
         $this->addType('totalDuration', 'string');
         $this->addType('createdAt', 'integer');
+        $this->addType('cost', 'integer');
     }
 }
