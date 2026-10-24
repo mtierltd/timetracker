@@ -65,8 +65,11 @@
 					@update:model-value="startSelectionTouched = true" />
 				<NcButton type="primary" native-type="submit">{{ isRunning ? 'Stop' : 'Start' }}</NcButton>
 				<span v-if="isRunning" class="live-timer">{{ liveTimerText }}</span>
-				<NcButton type="secondary" @click="openManualEntry">Manual entry</NcButton>
 			</form>
+
+			<div class="manual-entry-bar">
+				<NcButton type="secondary" @click="openManualEntry">Manual entry</NcButton>
+			</div>
 
 			<div class="date-range">
 				<select class="native-select" @change="applyPreset($event.target.value); $event.target.value = ''">
@@ -733,6 +736,10 @@ export default {
 	gap: 12px;
 	padding-bottom: 12px;
 	flex-wrap: wrap;
+}
+.manual-entry-bar {
+	display: flex;
+	padding-bottom: 12px;
 }
 .top-bar :deep(button) {
 	flex-shrink: 0;
