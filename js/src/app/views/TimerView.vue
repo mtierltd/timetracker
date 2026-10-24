@@ -3,6 +3,47 @@
 		<div class="view-page">
 			<h1 class="page-title">Timer</h1>
 
+			<div v-if="pins.length" class="pinned-row" role="list" aria-label="Pinned timers">
+				<div v-for="(pin, index) in pins"
+					:key="pin.id"
+					role="listitem"
+					class="pin"
+					:class="{ 'pin--active': isPinRunning(pin), 'pin--drop-target': dropIndex === index && dragId !== pin.id }"
+					draggable="true"
+					@dragstart="onPinDragStart($event, pin)"
+					@dragover.prevent="dropIndex = index"
+					@drop.prevent="onPinDrop(index)"
+					@dragend="dragId = null; dropIndex = null">
+					<button type="button"
+						class="pin__start"
+						:aria-pressed="isPinRunning(pin) ? 'true' : 'false'"
+						:title="pinTitle(pin)"
+						@click="onPinClick(pin)">
+						<span class="pin__color" :style="{ background: pinColor(pin) }" />
+						<span class="pin__name">{{ pin.name }}</span>
+						<span v-if="pinProject(pin)" class="pin__project">{{ pinProject(pin).name }}</span>
+					</button>
+					<NcActions :aria-label="`Actions for ${pin.name}`">
+						<NcActionButton close-after-click @click="openEditPin(pin)">
+							<template #icon><NcIconSvgWrapper :path="icons.mdiPencil" /></template>
+							Edit
+						</NcActionButton>
+						<NcActionButton :disabled="index === 0" @click="movePin(index, -1)">
+							<template #icon><NcIconSvgWrapper :path="icons.mdiChevronLeft" /></template>
+							Move left
+						</NcActionButton>
+						<NcActionButton :disabled="index === pins.length - 1" @click="movePin(index, 1)">
+							<template #icon><NcIconSvgWrapper :path="icons.mdiChevronRight" /></template>
+							Move right
+						</NcActionButton>
+						<NcActionButton close-after-click @click="unpin(pin)">
+							<template #icon><NcIconSvgWrapper :path="icons.mdiPinOff" /></template>
+							Unpin
+						</NcActionButton>
+					</NcActions>
+				</div>
+			</div>
+
 			<form class="top-bar" @submit.prevent="onSubmitWorkInput">
 				<NcTextField v-model="workInput" style="width: 320px;" label="What have you done?" placeholder="What have you done?" />
 				<NcSelect v-model="startProject"
@@ -54,9 +95,16 @@
 					</thead>
 					<tbody>
 						<tr v-for="item in dayGroup.children" :key="item.id">
-							<td>
+							<td class="entry-actions">
 								<NcButton type="tertiary" aria-label="Resume" @click="resume(item)">
 									<template #icon><span class="icon-play" /></template>
+								</NcButton>
+								<NcButton type="tertiary"
+									:aria-label="isPinned(item) ? 'Already pinned' : 'Pin'"
+									:title="isPinned(item) ? 'Already pinned' : 'Pin for one-click start'"
+									:disabled="isPinned(item)"
+									@click="pinEntry(item)">
+									<template #icon><NcIconSvgWrapper :path="isPinned(item) ? icons.mdiPin : icons.mdiPinOutline" /></template>
 								</NcButton>
 							</td>
 							<td class="editable" @click="openEditNameDetails(item)">
@@ -128,6 +176,25 @@
 			</div>
 		</NcModal>
 
+		<NcModal v-if="editingPin" size="normal" @close="editingPin = null">
+			<div class="edit-form">
+				<h2>Edit pinned timer</h2>
+				<NcTextField v-model="pinForm.name" label="Name" />
+				<NcSelect v-model="pinForm.project"
+					:options="projects"
+					label="name"
+					input-label="Project"
+					placeholder="No project" />
+				<NcSelect v-model="pinForm.tags"
+					:options="tags"
+					label="name"
+					multiple
+					input-label="Tags"
+					placeholder="No tags" />
+				<NcButton type="primary" @click="savePin">Save</NcButton>
+			</div>
+		</NcModal>
+
 		<NcModal v-if="manualEntryVisible" size="normal" @close="manualEntryVisible = false">
 			<div class="edit-form">
 				<h2>Manual entry</h2>
@@ -149,6 +216,10 @@ import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcDateTimePicker from '@nextcloud/vue/components/NcDateTimePicker'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcModal from '@nextcloud/vue/components/NcModal'
+import NcActions from '@nextcloud/vue/components/NcActions'
+import NcActionButton from '@nextcloud/vue/components/NcActionButton'
+import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
+import { mdiChevronLeft, mdiChevronRight, mdiPencil, mdiPin, mdiPinOff, mdiPinOutline } from '@mdi/js'
 import { showError } from '@nextcloud/dialogs'
 import { apiGet, apiPost } from '../api.js'
 import { DATE_RANGE_PRESETS, getPresetRange } from '../dateRangePresets.js'
@@ -174,7 +245,7 @@ function formatForApi(d) {
 
 export default {
 	name: 'TimerView',
-	components: { NcAppContent, NcButton, NcTextField, NcSelect, NcDateTimePicker, NcDialog, NcModal },
+	components: { NcAppContent, NcButton, NcTextField, NcSelect, NcDateTimePicker, NcDialog, NcModal, NcActions, NcActionButton, NcIconSvgWrapper },
 	data() {
 		const now = new Date()
 		const from = new Date(now)
@@ -186,6 +257,13 @@ export default {
 			startProject: null,
 			startTags: [],
 			startSelectionTouched: false,
+			// Pinned timers, in display order
+			pins: [],
+			editingPin: null,
+			pinForm: { name: '', project: null, tags: [] },
+			dragId: null,
+			dropIndex: null,
+			icons: { mdiChevronLeft, mdiChevronRight, mdiPencil, mdiPin, mdiPinOff, mdiPinOutline },
 			days: {},
 			running: [],
 			projects: [],
@@ -237,7 +315,7 @@ export default {
 		},
 	},
 	async mounted() {
-		await Promise.all([this.loadWorkIntervals(), this.loadProjects(), this.loadTags()])
+		await Promise.all([this.loadWorkIntervals(), this.loadProjects(), this.loadTags(), this.loadPins()])
 		this.suggestStartSelection()
 	},
 	beforeUnmount() {
@@ -443,6 +521,131 @@ export default {
 				showError(e.message)
 			}
 		},
+		// --- Pinned timers ---
+		async loadPins() {
+			try {
+				const data = await apiGet('/pinned-timers')
+				this.pins = data.PinnedTimers || []
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		pinProject(pin) {
+			return this.projects.find((p) => p.id === pin.projectId) || null
+		},
+		pinColor(pin) {
+			return this.pinProject(pin)?.color || 'var(--color-border-maxcontrast)'
+		},
+		pinTitle(pin) {
+			const parts = [`${this.isPinRunning(pin) ? 'Stop' : 'Start'} "${pin.name}"`]
+			const project = this.pinProject(pin)
+			if (project) parts.push(`Project: ${project.name}`)
+			const tagNames = this.tags.filter((t) => pin.tagIds.includes(t.id)).map((t) => t.name)
+			if (tagNames.length) parts.push(`Tags: ${tagNames.join(', ')}`)
+			return parts.join('\n')
+		},
+		sameIds(a, b) {
+			const x = [...a].sort((m, n) => m - n)
+			const y = [...b].sort((m, n) => m - n)
+			return x.length === y.length && x.every((v, i) => v === y[i])
+		},
+		isPinned(item) {
+			const tagIds = (item.tags || []).map((t) => t.id)
+			return this.pins.some((pin) => pin.name === item.name
+				&& (pin.projectId ?? null) === (item.projectId ?? null)
+				&& this.sameIds(pin.tagIds, tagIds))
+		},
+		isPinRunning(pin) {
+			const running = this.running[0]
+			return !!running && running.name === pin.name
+				&& (running.projectId ?? null) === (pin.projectId ?? null)
+		},
+		async onPinClick(pin) {
+			// A pin of the running timer stops it; any other pin switches to it
+			if (this.isPinRunning(pin)) {
+				await this.stopTimer()
+				return
+			}
+			if (this.isRunning) {
+				await this.stopTimer()
+			}
+			await this.startTimer(pin.name, pin.projectId, pin.tagIds.join(','))
+		},
+		async pinEntry(item) {
+			try {
+				const data = await apiPost('/add-pinned-timer', {
+					name: item.name,
+					projectId: item.projectId ?? '',
+					tagIds: (item.tags || []).map((t) => t.id).join(','),
+				})
+				this.pins = data.PinnedTimers || []
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		openEditPin(pin) {
+			this.editingPin = pin
+			this.pinForm = {
+				name: pin.name,
+				project: this.pinProject(pin),
+				tags: this.tags.filter((t) => pin.tagIds.includes(t.id)),
+			}
+		},
+		async savePin() {
+			try {
+				const data = await apiPost(`/edit-pinned-timer/${this.editingPin.id}`, {
+					name: this.pinForm.name,
+					projectId: this.pinForm.project?.id ?? '',
+					tagIds: this.pinForm.tags.map((t) => t.id).join(','),
+				})
+				this.pins = data.PinnedTimers || []
+				this.editingPin = null
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		async unpin(pin) {
+			try {
+				const data = await apiPost(`/delete-pinned-timer/${pin.id}`)
+				this.pins = data.PinnedTimers || []
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		onPinDragStart(event, pin) {
+			this.dragId = pin.id
+			event.dataTransfer.effectAllowed = 'move'
+			// Firefox only starts dragging when some data is set
+			event.dataTransfer.setData('text/plain', String(pin.id))
+		},
+		onPinDrop(index) {
+			const from = this.pins.findIndex((p) => p.id === this.dragId)
+			this.dragId = null
+			this.dropIndex = null
+			if (from < 0 || from === index) return
+			const pins = [...this.pins]
+			const [moved] = pins.splice(from, 1)
+			pins.splice(index, 0, moved)
+			this.savePinOrder(pins)
+		},
+		movePin(index, delta) {
+			const target = index + delta
+			if (target < 0 || target >= this.pins.length) return
+			const pins = [...this.pins]
+			const [moved] = pins.splice(index, 1)
+			pins.splice(target, 0, moved)
+			this.savePinOrder(pins)
+		},
+		async savePinOrder(pins) {
+			this.pins = pins // show the new order right away
+			try {
+				const data = await apiPost('/reorder-pinned-timers', { ids: pins.map((p) => p.id).join(',') })
+				this.pins = data.PinnedTimers || []
+			} catch (e) {
+				showError(e.message)
+				await this.loadPins()
+			}
+		},
 		confirm(message) {
 			this.confirmMessage = message
 			this.confirmVisible = true
@@ -470,6 +673,59 @@ export default {
 <style scoped>
 .view-page {
 	padding: 50px 20px 20px;
+}
+.pinned-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	padding-bottom: 12px;
+}
+.pin {
+	display: flex;
+	align-items: center;
+	border: 1px solid var(--color-border-dark);
+	border-radius: var(--border-radius-element, var(--border-radius-large));
+	background-color: var(--color-main-background);
+	cursor: grab;
+}
+.pin--active {
+	border-color: var(--color-primary-element);
+	background-color: var(--color-primary-element-light);
+}
+.pin--drop-target {
+	outline: 2px dashed var(--color-primary-element);
+	outline-offset: 2px;
+}
+.pin__start {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	padding: 0 4px 0 12px;
+	min-height: var(--default-clickable-area);
+	border: none;
+	background: transparent;
+	color: var(--color-main-text);
+	font: inherit;
+	cursor: pointer;
+}
+.pin__color {
+	flex-shrink: 0;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+}
+.pin__name {
+	font-weight: bold;
+}
+.pin__project {
+	color: var(--color-text-maxcontrast);
+}
+.entry-actions {
+	white-space: nowrap;
+}
+.entry-actions > * {
+	display: inline-flex;
 }
 .top-bar {
 	display: flex;
