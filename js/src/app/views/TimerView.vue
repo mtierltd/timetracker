@@ -3,47 +3,6 @@
 		<div class="view-page">
 			<h1 class="page-title">Timer</h1>
 
-			<div v-if="pins.length" class="pinned-row" role="list" aria-label="Pinned timers">
-				<div v-for="(pin, index) in pins"
-					:key="pin.id"
-					role="listitem"
-					class="pin"
-					:class="{ 'pin--active': isPinRunning(pin), 'pin--drop-target': dropIndex === index && dragId !== pin.id }"
-					draggable="true"
-					@dragstart="onPinDragStart($event, pin)"
-					@dragover.prevent="dropIndex = index"
-					@drop.prevent="onPinDrop(index)"
-					@dragend="dragId = null; dropIndex = null">
-					<button type="button"
-						class="pin__start"
-						:aria-pressed="isPinRunning(pin) ? 'true' : 'false'"
-						:title="pinTitle(pin)"
-						@click="onPinClick(pin)">
-						<span class="pin__color" :style="{ background: pinColor(pin) }" />
-						<span class="pin__name">{{ pin.name }}</span>
-						<span v-if="pinProject(pin)" class="pin__project">{{ pinProject(pin).name }}</span>
-					</button>
-					<NcActions :aria-label="`Actions for ${pin.name}`">
-						<NcActionButton close-after-click @click="openEditPin(pin)">
-							<template #icon><NcIconSvgWrapper :path="icons.mdiPencil" /></template>
-							Edit
-						</NcActionButton>
-						<NcActionButton :disabled="index === 0" @click="movePin(index, -1)">
-							<template #icon><NcIconSvgWrapper :path="icons.mdiChevronLeft" /></template>
-							Move left
-						</NcActionButton>
-						<NcActionButton :disabled="index === pins.length - 1" @click="movePin(index, 1)">
-							<template #icon><NcIconSvgWrapper :path="icons.mdiChevronRight" /></template>
-							Move right
-						</NcActionButton>
-						<NcActionButton close-after-click @click="unpin(pin)">
-							<template #icon><NcIconSvgWrapper :path="icons.mdiPinOff" /></template>
-							Unpin
-						</NcActionButton>
-					</NcActions>
-				</div>
-			</div>
-
 			<form class="top-bar" @submit.prevent="onSubmitWorkInput">
 				<NcTextField v-model="workInput" style="width: 320px;" label="What have you done?" placeholder="What have you done?" />
 				<NcSelect v-model="startProject"
@@ -51,7 +10,6 @@
 					label="name"
 					placeholder="Project"
 					aria-label-combobox="Project for the new timer"
-					:disabled="isRunning"
 					style="min-width: 180px;"
 					@update:model-value="startSelectionTouched = true" />
 				<NcSelect v-model="startTags"
@@ -60,10 +18,10 @@
 					multiple
 					placeholder="Tags"
 					aria-label-combobox="Tags for the new timer"
-					:disabled="isRunning"
 					style="min-width: 180px;"
 					@update:model-value="startSelectionTouched = true" />
-				<NcButton type="primary" native-type="submit">{{ isRunning ? 'Stop' : 'Start' }}</NcButton>
+				<NcButton type="primary" native-type="submit">Start</NcButton>
+				<NcButton type="button" variant="secondary" :disabled="!isRunning" @click="stopTimer(true)">Stop</NcButton>
 				<span v-if="isRunning" class="live-timer">{{ liveTimerText }}</span>
 			</form>
 
@@ -82,12 +40,87 @@
 				<NcButton @click="loadWorkIntervals">Refresh</NcButton>
 			</div>
 
-			<div v-for="(dayGroup, dayLabel) in flattenedDays" :key="dayLabel" class="day-group">
-				<h2>{{ dayLabel }}</h2>
+			<div v-if="pins.length" class="day-group pinned-group">
+				<h2>Pinned</h2>
 				<table class="entity-table">
 					<thead>
 						<tr>
+							<th class="col-actions"></th>
+							<th>Name</th>
+							<th>Project</th>
+							<th>Tags</th>
+							<th>Today</th>
 							<th></th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(pin, index) in pins"
+							:key="pin.id"
+							class="pin-row"
+							:class="{ 'row--running': isPinRunning(pin), 'row--drop-target': dropIndex === index && dragId !== pin.id }"
+							draggable="true"
+							@dragstart="onPinDragStart($event, pin)"
+							@dragover.prevent="dropIndex = index"
+							@drop.prevent="onPinDrop(index)"
+							@dragend="dragId = null; dropIndex = null">
+							<td class="entry-actions">
+								<NcButton type="tertiary"
+									:aria-label="`Start ${pin.name}`"
+									title="Start"
+									:disabled="isPinRunning(pin)"
+									@click="startPin(pin)">
+									<template #icon><NcIconSvgWrapper :path="icons.mdiPlay" /></template>
+								</NcButton>
+								<NcButton type="tertiary"
+									:aria-label="`Stop ${pin.name}`"
+									title="Stop"
+									:disabled="!isPinRunning(pin)"
+									@click="stopTimer(false)">
+									<template #icon><NcIconSvgWrapper :path="icons.mdiStop" /></template>
+								</NcButton>
+							</td>
+							<td><span class="wi-name">{{ pin.name }}</span></td>
+							<td>
+								<span v-if="pinProject(pin)" class="project-label">
+									<span class="color-dot" :style="{ background: pinProject(pin).color }" />
+									{{ pinProject(pin).name }}
+								</span>
+							</td>
+							<td>{{ pinTagNames(pin) }}</td>
+							<td class="duration">{{ formatDuration(pinTodaySeconds(pin)) }}</td>
+							<td></td>
+							<td>
+								<NcActions :aria-label="`Actions for ${pin.name}`">
+									<NcActionButton close-after-click @click="openEditPin(pin)">
+										<template #icon><NcIconSvgWrapper :path="icons.mdiPencil" /></template>
+										Edit
+									</NcActionButton>
+									<NcActionButton :disabled="index === 0" @click="movePin(index, -1)">
+										<template #icon><NcIconSvgWrapper :path="icons.mdiChevronUp" /></template>
+										Move up
+									</NcActionButton>
+									<NcActionButton :disabled="index === pins.length - 1" @click="movePin(index, 1)">
+										<template #icon><NcIconSvgWrapper :path="icons.mdiChevronDown" /></template>
+										Move down
+									</NcActionButton>
+									<NcActionButton close-after-click @click="unpin(pin)">
+										<template #icon><NcIconSvgWrapper :path="icons.mdiPinOff" /></template>
+										Unpin
+									</NcActionButton>
+								</NcActions>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div v-for="day in bundledDays" :key="day.label" class="day-group">
+				<h2>{{ day.label }}</h2>
+				<table class="entity-table">
+					<thead>
+						<tr>
+							<th class="col-actions"></th>
 							<th>Name / Details</th>
 							<th>Project</th>
 							<th>Tags</th>
@@ -97,57 +130,112 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="item in dayGroup.children" :key="item.id">
-							<td class="entry-actions">
-								<NcButton type="tertiary" aria-label="Resume" @click="resume(item)">
-									<template #icon><span class="icon-play" /></template>
-								</NcButton>
-								<NcButton type="tertiary"
-									:aria-label="isPinned(item) ? 'Already pinned' : 'Pin'"
-									:title="isPinned(item) ? 'Already pinned' : 'Pin for one-click start'"
-									:disabled="isPinned(item)"
-									@click="pinEntry(item)">
-									<template #icon><NcIconSvgWrapper :path="isPinned(item) ? icons.mdiPin : icons.mdiPinOutline" /></template>
-								</NcButton>
-							</td>
-							<td class="editable" @click="openEditNameDetails(item)">
-								<div class="wi-name">{{ item.name }}</div>
-								<div v-if="item.details" class="wi-details">{{ item.details }}</div>
-							</td>
-							<td>
-								<NcSelect :model-value="projectFor(item)"
-									:options="projects"
-									label="name"
-									placeholder="Project"
-									style="min-width: 160px;"
-									@update:model-value="(p) => updateProject(item, p)" />
-							</td>
-							<td>
-								<NcSelect :model-value="item.tags"
-									:options="tags"
-									label="name"
-									multiple
-									taggable
-									push-tags
-									placeholder="Tags"
-									style="min-width: 160px;"
-									@update:model-value="(t) => updateTags(item, t)" />
-							</td>
-							<td class="editable" @click="openEditTime(item)">{{ formatDuration(item.duration) }}</td>
-							<td>
-								<NcTextField :model-value="costDraft(item)"
-									:success="costStatus[item.id] === 'success'"
-									:error="costStatus[item.id] === 'error'"
-									style="width: 90px;"
-									@update:model-value="(v) => (costDrafts[item.id] = v)"
-									@blur="commitCost(item)" />
-							</td>
-							<td>
-								<NcButton type="tertiary" aria-label="Delete" @click="removeInterval(item)">
-									<template #icon><span class="icon-close" /></template>
-								</NcButton>
-							</td>
-						</tr>
+						<template v-for="bundle in day.bundles" :key="bundle.key">
+							<tr class="bundle-row" :class="{ 'row--running': isBundleRunning(bundle) }">
+								<td class="entry-actions">
+									<NcButton type="tertiary"
+										:aria-label="`Start ${bundle.name}`"
+										title="Start"
+										:disabled="isBundleRunning(bundle)"
+										@click="startBundle(bundle)">
+										<template #icon><NcIconSvgWrapper :path="icons.mdiPlay" /></template>
+									</NcButton>
+									<NcButton type="tertiary"
+										:aria-label="`Stop ${bundle.name}`"
+										title="Stop"
+										:disabled="!isBundleRunning(bundle)"
+										@click="stopTimer(false)">
+										<template #icon><NcIconSvgWrapper :path="icons.mdiStop" /></template>
+									</NcButton>
+									<NcButton type="tertiary"
+										:aria-label="isPinned(bundle) ? 'Already pinned' : 'Pin'"
+										:title="isPinned(bundle) ? 'Already pinned' : 'Pin'"
+										:disabled="isPinned(bundle)"
+										@click="pinEntry(bundle)">
+										<template #icon><NcIconSvgWrapper :path="isPinned(bundle) ? icons.mdiPin : icons.mdiPinOutline" /></template>
+									</NcButton>
+								</td>
+								<td v-if="bundle.blocks.length === 1" class="editable" @click="openEditNameDetails(bundle.blocks[0])">
+									<div class="wi-name">{{ bundle.name }}</div>
+									<div v-if="bundle.blocks[0].details" class="wi-details">{{ bundle.blocks[0].details }}</div>
+								</td>
+								<td v-else>
+									<button type="button"
+										class="bundle-toggle"
+										:aria-expanded="isExpanded(day, bundle) ? 'true' : 'false'"
+										@click="toggleExpanded(day, bundle)">
+										<NcIconSvgWrapper :path="isExpanded(day, bundle) ? icons.mdiChevronDown : icons.mdiChevronRight" :size="20" />
+										<span class="wi-name">{{ bundle.name }}</span>
+										<span class="wi-count">{{ bundle.blocks.length }} entries</span>
+									</button>
+								</td>
+								<td>
+									<NcSelect :model-value="projectFor(bundle)"
+										:options="projects"
+										label="name"
+										placeholder="Project"
+										style="width: 100%; min-width: 0;"
+										@update:model-value="(p) => updateBundleProject(bundle, p)" />
+								</td>
+								<td>
+									<NcSelect :model-value="bundle.tags"
+										:options="tags"
+										label="name"
+										multiple
+										taggable
+										push-tags
+										placeholder="Tags"
+										style="width: 100%; min-width: 0;"
+										@update:model-value="(t) => updateBundleTags(bundle, t)" />
+								</td>
+								<td v-if="bundle.blocks.length === 1" class="editable duration" @click="openEditTime(bundle.blocks[0])">
+									{{ formatDuration(blockSeconds(bundle.blocks[0])) }}
+								</td>
+								<td v-else class="duration">{{ formatDuration(bundleSeconds(bundle)) }}</td>
+								<td>
+									<NcTextField v-if="bundle.blocks.length === 1"
+										:model-value="costDraft(bundle.blocks[0])"
+										:success="costStatus[bundle.blocks[0].id] === 'success'"
+										:error="costStatus[bundle.blocks[0].id] === 'error'"
+										style="width: 90px;"
+										@update:model-value="(v) => (costDrafts[bundle.blocks[0].id] = v)"
+										@blur="commitCost(bundle.blocks[0])" />
+									<span v-else>{{ formatCost(bundleCost(bundle)) }}</span>
+								</td>
+								<td>
+									<NcButton type="tertiary"
+										:aria-label="bundle.blocks.length === 1 ? 'Delete' : `Delete all ${bundle.blocks.length} entries`"
+										@click="bundle.blocks.length === 1 ? removeInterval(bundle.blocks[0]) : removeBundle(day, bundle)">
+										<template #icon><span class="icon-close" /></template>
+									</NcButton>
+								</td>
+							</tr>
+							<template v-if="bundle.blocks.length > 1 && isExpanded(day, bundle)">
+								<tr v-for="block in bundle.blocks" :key="block.id" class="block-row" :class="{ 'row--running': block.running == 1 }">
+									<td></td>
+									<td class="editable" @click="openEditNameDetails(block)">
+										<div class="wi-time">{{ blockTimeRange(block) }}</div>
+										<div v-if="block.details" class="wi-details">{{ block.details }}</div>
+									</td>
+									<td></td>
+									<td></td>
+									<td class="editable duration" @click="openEditTime(block)">{{ formatDuration(blockSeconds(block)) }}</td>
+									<td>
+										<NcTextField :model-value="costDraft(block)"
+											:success="costStatus[block.id] === 'success'"
+											:error="costStatus[block.id] === 'error'"
+											style="width: 90px;"
+											@update:model-value="(v) => (costDrafts[block.id] = v)"
+											@blur="commitCost(block)" />
+									</td>
+									<td>
+										<NcButton type="tertiary" aria-label="Delete" @click="removeInterval(block)">
+											<template #icon><span class="icon-close" /></template>
+										</NcButton>
+									</td>
+								</tr>
+							</template>
+						</template>
 					</tbody>
 				</table>
 			</div>
@@ -222,7 +310,7 @@ import NcModal from '@nextcloud/vue/components/NcModal'
 import NcActions from '@nextcloud/vue/components/NcActions'
 import NcActionButton from '@nextcloud/vue/components/NcActionButton'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
-import { mdiChevronLeft, mdiChevronRight, mdiPencil, mdiPin, mdiPinOff, mdiPinOutline } from '@mdi/js'
+import { mdiChevronDown, mdiChevronRight, mdiChevronUp, mdiPencil, mdiPin, mdiPinOff, mdiPinOutline, mdiPlay, mdiStop } from '@mdi/js'
 import { showError } from '@nextcloud/dialogs'
 import { apiGet, apiPost } from '../api.js'
 import { DATE_RANGE_PRESETS, getPresetRange } from '../dateRangePresets.js'
@@ -266,7 +354,11 @@ export default {
 			pinForm: { name: '', project: null, tags: [] },
 			dragId: null,
 			dropIndex: null,
-			icons: { mdiChevronLeft, mdiChevronRight, mdiPencil, mdiPin, mdiPinOff, mdiPinOutline },
+			icons: { mdiChevronDown, mdiChevronRight, mdiChevronUp, mdiPencil, mdiPin, mdiPinOff, mdiPinOutline, mdiPlay, mdiStop },
+			// Expanded bundles, keyed by day label and bundle key
+			expanded: {},
+			// Current server time in seconds, ticking while a timer runs
+			nowSec: Math.floor(Date.now() / 1000),
 			days: {},
 			running: [],
 			projects: [],
@@ -304,6 +396,36 @@ export default {
 				result[dayLabel] = { children }
 			}
 			return result
+		},
+		/**
+		 * Days, newest first, each with its entries bundled by name, project
+		 * and tags: every Start still records its own block, but the list
+		 * shows one row per timer and day, with the blocks underneath.
+		 */
+		bundledDays() {
+			return Object.entries(this.flattenedDays).map(([label, day]) => {
+				const bundles = new Map()
+				for (const block of day.children) {
+					const key = this.timerKey(block.name, block.projectId, (block.tags || []).map((t) => t.id))
+					if (!bundles.has(key)) {
+						bundles.set(key, {
+							key,
+							name: block.name,
+							projectId: block.projectId,
+							tags: block.tags || [],
+							blocks: [],
+						})
+					}
+					bundles.get(key).blocks.push(block) // children are sorted newest first
+				}
+				return { label, latest: day.children[0]?.start || 0, bundles: [...bundles.values()] }
+			}).sort((a, b) => b.latest - a.latest)
+		},
+		// The running block, if it's in the loaded range
+		runningBlock() {
+			const running = this.running[0]
+			if (!running) return null
+			return this.recentEntries.find((e) => e.id === running.id) || null
 		},
 		// All loaded entries, newest first
 		recentEntries() {
@@ -387,25 +509,24 @@ export default {
 			const skew = (Date.now() / 1000) - serverNow
 			const start = this.running[0].start
 			const tick = () => {
-				const elapsed = Math.floor(Date.now() / 1000 - skew - start)
-				this.liveTimerText = formatDuration(elapsed)
+				this.nowSec = Math.floor(Date.now() / 1000 - skew)
+				this.liveTimerText = formatDuration(this.nowSec - start)
 			}
 			tick()
 			this.liveTimerInterval = setInterval(tick, 1000)
 		},
 		async onSubmitWorkInput() {
+			// Read the start bar first: stopping a running timer clears the description
+			const name = this.workInput.trim() || 'no description'
+			const projectId = this.startProject?.id
+			const tagIds = this.startTags.map((t) => t.id).join(',')
 			if (this.isRunning) {
 				await this.stopTimer()
-			} else {
-				const started = await this.startTimer(
-					this.workInput.trim() || 'no description',
-					this.startProject?.id,
-					this.startTags.map((t) => t.id).join(','),
-				)
-				if (started) {
-					this.startSelectionTouched = false
-					this.suggestStartSelection()
-				}
+			}
+			const started = await this.startTimer(name, projectId, tagIds)
+			if (started) {
+				this.startSelectionTouched = false
+				this.suggestStartSelection()
 			}
 		},
 		async startTimer(name, projectId, tagIds) {
@@ -422,20 +543,22 @@ export default {
 				return false
 			}
 		},
-		async stopTimer() {
+		/**
+		 * Stop the running timer. With rename, the description typed in the
+		 * start bar becomes its name (start first, describe when stopping);
+		 * otherwise the timer keeps its name and the start bar is left alone.
+		 */
+		async stopTimer(rename = false) {
+			const name = rename === true ? (this.workInput.trim() || 'no description') : 'no description'
 			try {
-				await apiPost(`/stop-timer/${encodeURIComponent(encodeURIComponent(this.workInput.trim() || 'no description'))}`)
-				this.workInput = ''
+				await apiPost(`/stop-timer/${encodeURIComponent(encodeURIComponent(name))}`)
+				if (rename === true) {
+					this.workInput = ''
+				}
 				await this.loadWorkIntervals()
 			} catch (e) {
 				showError(e.message)
 			}
-		},
-		async resume(item) {
-			if (this.isRunning) {
-				await this.stopTimer()
-			}
-			await this.startTimer(item.name, item.projectId, item.tags.map((t) => t.id).join(','))
 		},
 		openEditNameDetails(item) {
 			this.editingItem = item
@@ -536,16 +659,101 @@ export default {
 		pinProject(pin) {
 			return this.projects.find((p) => p.id === pin.projectId) || null
 		},
-		pinColor(pin) {
-			return this.pinProject(pin)?.color || 'var(--color-border-maxcontrast)'
+		pinTagNames(pin) {
+			return this.tags.filter((t) => pin.tagIds.includes(t.id)).map((t) => t.name).join(', ')
 		},
-		pinTitle(pin) {
-			const parts = [`${this.isPinRunning(pin) ? 'Stop' : 'Start'} "${pin.name}"`]
-			const project = this.pinProject(pin)
-			if (project) parts.push(`Project: ${project.name}`)
-			const tagNames = this.tags.filter((t) => pin.tagIds.includes(t.id)).map((t) => t.name)
-			if (tagNames.length) parts.push(`Tags: ${tagNames.join(', ')}`)
-			return parts.join('\n')
+		timerKey(name, projectId, tagIds) {
+			return [name, projectId ?? '', [...tagIds].sort((a, b) => a - b).join(',')].join('\u0000')
+		},
+		pinKey(pin) {
+			return this.timerKey(pin.name, pin.projectId, pin.tagIds)
+		},
+		// Booked seconds of a block, counting a running block up to now
+		blockSeconds(block) {
+			if (block.running == 1) {
+				return Math.max(0, this.nowSec - block.start)
+			}
+			return block.duration || 0
+		},
+		bundleSeconds(bundle) {
+			return bundle.blocks.reduce((sum, b) => sum + this.blockSeconds(b), 0)
+		},
+		bundleCost(bundle) {
+			return bundle.blocks.reduce((sum, b) => sum + (b.cost || 0), 0)
+		},
+		formatCost(cents) {
+			return (cents / 100).toFixed(2)
+		},
+		blockTimeRange(block) {
+			const time = (sec) => new Date(sec * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+			const end = block.running == 1 ? 'now' : time(block.start + (block.duration || 0))
+			return `${time(block.start)} – ${end}`
+		},
+		expandKey(day, bundle) {
+			return `${day.label}\u0000${bundle.key}`
+		},
+		isExpanded(day, bundle) {
+			return !!this.expanded[this.expandKey(day, bundle)]
+		},
+		toggleExpanded(day, bundle) {
+			const key = this.expandKey(day, bundle)
+			this.expanded[key] = !this.expanded[key]
+		},
+		isBundleRunning(bundle) {
+			return bundle.blocks.some((b) => b.running == 1)
+		},
+		// Today's booked seconds of a pin: all of today's blocks with its name, project and tags
+		pinTodaySeconds(pin) {
+			const today = new Date().toDateString()
+			const key = this.pinKey(pin)
+			return this.recentEntries
+				.filter((e) => new Date(e.start * 1000).toDateString() === today
+					&& this.timerKey(e.name, e.projectId, (e.tags || []).map((t) => t.id)) === key)
+				.reduce((sum, e) => sum + this.blockSeconds(e), 0)
+		},
+		async startBundle(bundle) {
+			if (this.isRunning) {
+				await this.stopTimer()
+			}
+			await this.startTimer(bundle.name, bundle.projectId, bundle.tags.map((t) => t.id).join(','))
+		},
+		async startPin(pin) {
+			if (this.isRunning) {
+				await this.stopTimer()
+			}
+			await this.startTimer(pin.name, pin.projectId, pin.tagIds.join(','))
+		},
+		async updateBundleProject(bundle, project) {
+			try {
+				for (const block of bundle.blocks) {
+					await apiPost(`/update-work-interval/${block.id}`, { projectId: project?.id ?? '' })
+				}
+			} catch (e) {
+				showError(e.message)
+			}
+			await this.loadWorkIntervals()
+		},
+		async updateBundleTags(bundle, tags) {
+			try {
+				const tagId = tags.map((t) => t.id ?? t.name).join(',')
+				for (const block of bundle.blocks) {
+					await apiPost(`/update-work-interval/${block.id}`, { tagId })
+				}
+			} catch (e) {
+				showError(e.message)
+			}
+			await Promise.all([this.loadWorkIntervals(), this.loadTags()])
+		},
+		async removeBundle(day, bundle) {
+			if (!(await this.confirm(`Delete all ${bundle.blocks.length} entries of "${bundle.name}" on ${day.label}?`))) return
+			try {
+				for (const block of bundle.blocks) {
+					await apiPost(`/delete-work-interval/${block.id}`)
+				}
+			} catch (e) {
+				showError(e.message)
+			}
+			await this.loadWorkIntervals()
 		},
 		sameIds(a, b) {
 			const x = [...a].sort((m, n) => m - n)
@@ -559,20 +767,12 @@ export default {
 				&& this.sameIds(pin.tagIds, tagIds))
 		},
 		isPinRunning(pin) {
+			const block = this.runningBlock
+			if (block) {
+				return this.timerKey(block.name, block.projectId, (block.tags || []).map((t) => t.id)) === this.pinKey(pin)
+			}
 			const running = this.running[0]
-			return !!running && running.name === pin.name
-				&& (running.projectId ?? null) === (pin.projectId ?? null)
-		},
-		async onPinClick(pin) {
-			// A pin of the running timer stops it; any other pin switches to it
-			if (this.isPinRunning(pin)) {
-				await this.stopTimer()
-				return
-			}
-			if (this.isRunning) {
-				await this.stopTimer()
-			}
-			await this.startTimer(pin.name, pin.projectId, pin.tagIds.join(','))
+			return !!running && running.name === pin.name && (running.projectId ?? null) === (pin.projectId ?? null)
 		},
 		async pinEntry(item) {
 			try {
@@ -677,52 +877,59 @@ export default {
 .view-page {
 	padding: 50px 20px 20px;
 }
-.pinned-row {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	padding-bottom: 12px;
-}
-.pin {
-	display: flex;
-	align-items: center;
-	border: 1px solid var(--color-border-dark);
-	border-radius: var(--border-radius-element, var(--border-radius-large));
-	background-color: var(--color-main-background);
-	cursor: grab;
-}
-.pin--active {
-	border-color: var(--color-primary-element);
+.row--running td {
 	background-color: var(--color-primary-element-light);
 }
-.pin--drop-target {
-	outline: 2px dashed var(--color-primary-element);
-	outline-offset: 2px;
+.row--drop-target td {
+	box-shadow: inset 0 2px 0 var(--color-primary-element);
 }
-.pin__start {
-	display: flex;
+.pin-row {
+	cursor: grab;
+}
+.col-actions {
+	width: 1%;
+}
+.project-label {
+	display: inline-flex;
 	align-items: center;
-	gap: 8px;
+	gap: 6px;
+}
+.color-dot {
+	flex-shrink: 0;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+}
+.duration {
+	font-variant-numeric: tabular-nums;
+}
+.bundle-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 	margin: 0;
-	padding: 0 4px 0 12px;
-	min-height: var(--default-clickable-area);
+	padding: 0;
+	min-height: auto;
 	border: none;
 	background: transparent;
 	color: var(--color-main-text);
 	font: inherit;
 	cursor: pointer;
 }
-.pin__color {
-	flex-shrink: 0;
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-}
-.pin__name {
-	font-weight: bold;
-}
-.pin__project {
+.wi-count {
 	color: var(--color-text-maxcontrast);
+	font-size: 0.85em;
+}
+.block-row td {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+.block-row .wi-time {
+	padding-inline-start: 26px;
+	color: var(--color-text-maxcontrast);
+}
+.block-row .wi-details {
+	padding-inline-start: 26px;
 }
 .entry-actions {
 	white-space: nowrap;
@@ -759,11 +966,22 @@ export default {
 }
 .day-group {
 	margin-bottom: 24px;
+	/* narrow screens: scroll the table, not the page */
+	overflow-x: auto;
 }
 .entity-table {
 	width: 100%;
 	border-collapse: collapse;
+	/* the same column widths in every group (Pinned and each day) */
+	table-layout: fixed;
+	min-width: 850px;
 }
+.entity-table th:nth-child(1) { width: 140px; }
+.entity-table th:nth-child(3) { width: 220px; }
+.entity-table th:nth-child(4) { width: 200px; }
+.entity-table th:nth-child(5) { width: 110px; }
+.entity-table th:nth-child(6) { width: 120px; }
+.entity-table th:nth-child(7) { width: 60px; }
 .entity-table th,
 .entity-table td {
 	padding: 8px 12px;
