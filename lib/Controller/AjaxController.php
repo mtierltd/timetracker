@@ -34,6 +34,8 @@ use OCA\TimeTracker\Db\TimelineMapper;
 use OCA\TimeTracker\Db\TimelineEntryMapper;
 use OCA\TimeTracker\Db\Timeline;
 use OCA\TimeTracker\Db\TimelineEntry;
+use OCA\TimeTracker\Db\PinnedTimer;
+use OCA\TimeTracker\Db\PinnedTimerMapper;
 
 class AjaxController extends Controller {
 	private $userId;
@@ -55,12 +57,13 @@ class AjaxController extends Controller {
 	protected $groupManager;
 	protected $mailer;
 	protected $db;
+	protected $pinnedTimerMapper;
 
 	public function __construct($AppName, IRequest $request, IUserSession $userSession, IL10N $l10n,
 							WorkIntervalMapper $workIntervalMapper, ClientMapper $clientMapper, UserToClientMapper $userToClientMapper,
 							ProjectMapper $projectMapper, UserToProjectMapper $userToProjectMapper, TagMapper $tagMapper, WorkIntervalToTagMapper $workIntervalToTagMapper, ReportItemMapper $reportItemMapper,
 							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper,
-							IGroupManager $groupManager, IMailer $mailer, IDBConnection $db, $userId){
+							IGroupManager $groupManager, IMailer $mailer, IDBConnection $db, PinnedTimerMapper $pinnedTimerMapper, $userId){
 		parent::__construct($AppName, $request);
 		$this->userId = $userId;
 		$this->userSession = $userSession;
@@ -85,6 +88,7 @@ class AjaxController extends Controller {
 		$this->groupManager = $groupManager;
 		$this->mailer = $mailer;
 		$this->db = $db;
+		$this->pinnedTimerMapper = $pinnedTimerMapper;
 	}
 
 	/**
@@ -712,6 +716,8 @@ class AjaxController extends Controller {
 
 			$this->userToProjectMapper->delete($utop);
 		}
+		// The user can no longer use this project, so their pins can't either
+		$this->pinnedTimerMapper->clearProject($id, $this->userId);
 		return $this->getProjects();
 	}
 
@@ -728,6 +734,7 @@ class AjaxController extends Controller {
 		}
 		$this->workIntervalMapper->deleteAllForProject($id);
 		$this->tagMapper->allowedTags($id,[]);
+		$this->pinnedTimerMapper->clearProject($id);
 		$this->projectMapper->delete($id);
 
 
@@ -857,6 +864,7 @@ class AjaxController extends Controller {
 		}
 		$this->tagMapper->delete($c);
 		$this->workIntervalToTagMapper->deleteAllForTag($id);
+		$this->pinnedTimerMapper->removeTag($id);
 		return $this->getTags();
 	}
 
@@ -1359,6 +1367,155 @@ class AjaxController extends Controller {
 			$ret[] = $rgoal;
 		}
 		return new JSONResponse(["Goals" => json_decode(json_encode($ret), true)]);
+	}
+
+	// --- Pinned timers ---
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function getPinnedTimers() {
+		$pins = $this->pinnedTimerMapper->findAll($this->userId);
+		return new JSONResponse(["PinnedTimers" => array_map(fn ($pin) => $pin->toApi(), $pins)]);
+	}
+
+	/**
+	 * Body: name, projectId (optional), tagIds (optional, "3,7")
+	 *
+	 * @NoAdminRequired
+	 */
+	public function addPinnedTimer() {
+		$values = $this->validatePinnedTimer(null);
+		if (isset($values['error'])) {
+			return new JSONResponse(["Error" => $values['error']]);
+		}
+		$pin = new PinnedTimer();
+		$pin->setUserUid($this->userId);
+		$pin->setName($values['name']);
+		$pin->setProjectId($values['projectId']);
+		$pin->setTagIds(implode(',', $values['tagIds']));
+		$pin->setSortOrder($this->pinnedTimerMapper->maxSortOrder($this->userId) + 1);
+		$pin->setCreatedAt(time());
+		$this->pinnedTimerMapper->insert($pin);
+		return $this->getPinnedTimers();
+	}
+
+	/**
+	 * Body: name, projectId (optional), tagIds (optional, "3,7")
+	 *
+	 * @NoAdminRequired
+	 */
+	public function editPinnedTimer($id) {
+		$pin = $this->pinnedTimerMapper->find($id);
+		if ($pin === null || $pin->userUid !== $this->userId) {
+			return new JSONResponse(["Error" => "Pinned timer not found"]);
+		}
+		$values = $this->validatePinnedTimer((int)$pin->id);
+		if (isset($values['error'])) {
+			return new JSONResponse(["Error" => $values['error']]);
+		}
+		$pin->setName($values['name']);
+		$pin->setProjectId($values['projectId']);
+		$pin->setTagIds(implode(',', $values['tagIds']));
+		$this->pinnedTimerMapper->update($pin);
+		return $this->getPinnedTimers();
+	}
+
+	/**
+	 * @NoAdminRequired
+	 */
+	public function deletePinnedTimer($id) {
+		$pin = $this->pinnedTimerMapper->find($id);
+		if ($pin === null || $pin->userUid !== $this->userId) {
+			return new JSONResponse(["Error" => "Pinned timer not found"]);
+		}
+		$this->pinnedTimerMapper->delete($pin);
+		return $this->getPinnedTimers();
+	}
+
+	/**
+	 * Body: ids, the user's pin ids in the new order ("5,2,9").
+	 * Pins missing from the list keep their relative order after the listed ones.
+	 *
+	 * @NoAdminRequired
+	 */
+	public function reorderPinnedTimers() {
+		$ids = $this->request->getParam('ids', '');
+		if (!is_array($ids)) {
+			$ids = explode(',', (string)$ids);
+		}
+		$order = [];
+		foreach ($ids as $id) {
+			if (is_numeric($id)) {
+				$order[] = (int)$id;
+			}
+		}
+		$pins = $this->pinnedTimerMapper->findAll($this->userId);
+		$position = array_flip(array_values(array_unique($order)));
+		usort($pins, function ($a, $b) use ($position) {
+			$pa = $position[$a->id] ?? PHP_INT_MAX;
+			$pb = $position[$b->id] ?? PHP_INT_MAX;
+			return $pa === $pb ? ($a->sortOrder <=> $b->sortOrder) : ($pa <=> $pb);
+		});
+		$this->db->beginTransaction();
+		try {
+			foreach ($pins as $i => $pin) {
+				if ((int)$pin->sortOrder !== $i) {
+					$pin->setSortOrder($i);
+					$this->pinnedTimerMapper->update($pin);
+				}
+			}
+			$this->db->commit();
+		} catch (\Throwable $e) {
+			$this->db->rollBack();
+			throw $e;
+		}
+		return $this->getPinnedTimers();
+	}
+
+	/**
+	 * Read and check name, projectId and tagIds from the request.
+	 *
+	 * @param int|null $ownId the pin being edited, excluded from the duplicate check
+	 * @return array{name: string, projectId: ?int, tagIds: int[]}|array{error: string}
+	 */
+	private function validatePinnedTimer(?int $ownId): array {
+		$name = trim((string)$this->request->getParam('name', ''));
+		if ($name === '') {
+			return ['error' => 'The name must not be empty'];
+		}
+		if (mb_strlen($name) > 255) {
+			return ['error' => 'Name too long'];
+		}
+
+		$projectId = null;
+		$rawProjectId = $this->request->getParam('projectId');
+		if ($rawProjectId !== null && $rawProjectId !== '') {
+			$projectId = (int)$rawProjectId;
+			$projects = $this->isThisAdminUser()
+				? $this->projectMapper->findAllAdmin(1)
+				: $this->projectMapper->findAll($this->userId, 1);
+			$allowed = array_map(fn ($p) => (int)$p->id, $projects);
+			if (!in_array($projectId, $allowed, true)) {
+				return ['error' => 'Unknown project'];
+			}
+		}
+
+		$tagIds = PinnedTimer::parseTagIds($this->request->getParam('tagIds'));
+
+		foreach ($this->pinnedTimerMapper->findAll($this->userId) as $other) {
+			if ((int)$other->id === $ownId) {
+				continue;
+			}
+			if ($other->name === $name
+				&& ($other->projectId === null ? null : (int)$other->projectId) === $projectId
+				&& $other->getTagIdList() === $tagIds) {
+				return ['error' => 'This timer is already pinned'];
+			}
+		}
+
+		return ['name' => $name, 'projectId' => $projectId, 'tagIds' => $tagIds];
 	}
 }
 

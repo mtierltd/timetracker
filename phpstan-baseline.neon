@@ -419,3 +419,18 @@ parameters:
 			message: "#^Call to method hasColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
 			count: 1
 			path: lib/Migration/Version000093Date20261024000000.php
+
+		-
+			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			count: 7
+			path: lib/Migration/Version000094Date20261024200000.php
+
+		-
+			message: "#^Call to method setPrimaryKey\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			count: 1
+			path: lib/Migration/Version000094Date20261024200000.php
+
+		-
+			message: "#^Call to method addIndex\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			count: 1
+			path: lib/Migration/Version000094Date20261024200000.php
