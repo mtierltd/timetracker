@@ -422,17 +422,17 @@ class AjaxController extends Controller {
 		$wi->setUserUid($this->userId);
 		$wi->setRunning(0);
 
-		if (isset($this->request->name)) {
-			$wi->setName(urldecode($this->request->name));
+		if ($this->request->getParam('name') !== null) {
+			$wi->setName(urldecode($this->request->getParam('name')));
 		}
-		if (isset($this->request->details)) {
-			if (strlen($this->request->details) > 1024){
+		if ($this->request->getParam('details') !== null) {
+			if (strlen($this->request->getParam('details')) > 1024){
 				return new JSONResponse(["Error" => "Details too long"]);
 			}
-			$wi->setDetails($this->request->details);
+			$wi->setDetails($this->request->getParam('details'));
 		}
-		if (isset($this->request->projectId)) {
-			$wi->setProjectId($this->request->projectId);
+		if ($this->request->getParam('projectId') !== null) {
+			$wi->setProjectId($this->request->getParam('projectId'));
 			if ($wi->projectId != null){
 				$project = $this->projectMapper->find($wi->projectId);
 				$locked = $project->locked;
@@ -459,8 +459,8 @@ class AjaxController extends Controller {
 
 			}
 		}
-		 if (isset($this->request->tagId)) {
-			$tags = \explode(",", $this->request->tagId);
+		 if ($this->request->getParam('tagId') !== null) {
+			$tags = \explode(",", $this->request->getParam('tagId'));
 			$this->workIntervalToTagMapper->deleteAllForWorkInterval($id);
 			$project = null;
 			$locked = 0;
@@ -478,17 +478,17 @@ class AjaxController extends Controller {
 
 			}
 		 }
-		 if (isset($this->request->start)) {
+		 if ($this->request->getParam('start') !== null) {
 			$tzoffset = 0;
-			if (isset($this->request->tzoffset)) {
-				$tzoffset = $this->request->tzoffset;
+			if ($this->request->getParam('tzoffset') !== null) {
+				$tzoffset = $this->request->getParam('tzoffset');
 			}
 
 			 date_default_timezone_set('UTC');
-			 $dt = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->start);
+			 $dt = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->getParam('start'));
 			 $dt->setTimeZone(new \DateTimeZone('UTC'));
 			 $wi->setStart($dt->getTimestamp()+$tzoffset*60);
-			 $de = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->end);
+			 $de = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->getParam('end'));
 			 $de->setTimeZone(new \DateTimeZone('UTC'));
 			 $wi->setDuration($de->getTimestamp() - $dt->getTimestamp());
 		 }
@@ -954,17 +954,17 @@ class AjaxController extends Controller {
 	 * @NoCSRFRequired
 	 */
 	public function postTimeline(){
-		$name = $this->request->name;
-		$from = $this->request->from;
-		$timegroup = $this->request->timegroup;
-		$to = $this->request->to;
-		if (isset($this->request->filterProjectId) && !empty($this->request->filterProjectId)){
-			$filterProjectId = explode(",",$this->request->filterProjectId);
+		$name = $this->request->getParam('name');
+		$from = $this->request->getParam('from');
+		$timegroup = $this->request->getParam('timegroup');
+		$to = $this->request->getParam('to');
+		if ($this->request->getParam('filterProjectId') !== null && !empty($this->request->getParam('filterProjectId'))){
+			$filterProjectId = explode(",",$this->request->getParam('filterProjectId'));
 		} else {
 			$filterProjectId = [];
 		}
-		if (isset($this->request->filterClientId) && !empty($this->request->filterClientId)){
-			$filterClientId = explode(",",$this->request->filterClientId);
+		if ($this->request->getParam('filterClientId') !== null && !empty($this->request->getParam('filterClientId'))){
+			$filterClientId = explode(",",$this->request->getParam('filterClientId'));
 		} else {
 			$filterClientId = [];
 		}
@@ -995,15 +995,15 @@ class AjaxController extends Controller {
 		}
 
 		$filterTagId = [];
-		$groupOn1 = $this->request->group1;
-		$groupOn2 = $this->request->group2;
+		$groupOn1 = $this->request->getParam('group1');
+		$groupOn2 = $this->request->getParam('group2');
 		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, 1000);
 
 		$timeline = new Timeline();
 		$timeline->setUserUid($this->userId);
-		$timeline->setGroup1($this->request->group1);
-		$timeline->setGroup2($this->request->group2);
-		$timeline->setTimeGroup($this->request->timegroup);
+		$timeline->setGroup1($this->request->getParam('group1'));
+		$timeline->setGroup2($this->request->getParam('group2'));
+		$timeline->setTimeGroup($this->request->getParam('timegroup'));
 		$timeline->setFilterProjects(implode(', ',$filterProjectId));
 		$timeline->setFilterClients(implode(', ',$filterClientId));
 		$timeline->setTimeInterval($this->l10n->l('date', $from) . ' - '. $this->l10n->l('date', $to));
