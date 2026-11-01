@@ -56,6 +56,12 @@ return [
        ['name' => 'ajax#add_goal', 'url' => '/ajax/add-goal', 'verb' => 'POST'],
        ['name' => 'ajax#delete_goal', 'url' => '/ajax/delete-goal/{id}', 'verb' => 'POST'],
 
+       ['name' => 'ajax#get_pinned_timers', 'url' => '/ajax/pinned-timers', 'verb' => 'GET'],
+       ['name' => 'ajax#add_pinned_timer', 'url' => '/ajax/add-pinned-timer', 'verb' => 'POST'],
+       ['name' => 'ajax#edit_pinned_timer', 'url' => '/ajax/edit-pinned-timer/{id}', 'verb' => 'POST'],
+       ['name' => 'ajax#delete_pinned_timer', 'url' => '/ajax/delete-pinned-timer/{id}', 'verb' => 'POST'],
+       ['name' => 'ajax#reorder_pinned_timers', 'url' => '/ajax/reorder-pinned-timers', 'verb' => 'POST'],
+
 
        ['name' => 'ajax#get_report', 'url' => '/ajax/report', 'verb' => 'GET'],
        ['name' => 'ajax#post_timeline', 'url' => '/ajax/timeline', 'verb' => 'POST'],
