@@ -61,6 +61,8 @@ jobs:
           MYSQL_ROOT_PASSWORD: rootpassword
           POSTGRES_USER: root
           POSTGRES_PASSWORD: rootpassword
+          # The installer connects to this database before it would create it
+          POSTGRES_DB: nextcloud
         options: ${{ matrix.database.options }}
 
     steps:
