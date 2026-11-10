@@ -1,7 +1,7 @@
 # Unit tests only, against the nextcloud/ocp stub package — no live
 # Nextcloud server or database is booted, which keeps this job fast and free
-# of external services. tests/Integration (real server + DB) is intentionally
-# not run here; see the linked GitHub issue for the multi-database follow-up.
+# of external services. tests/Integration (real server + DB) runs in
+# integration.yml.
 name: PHPUnit
 
 on:

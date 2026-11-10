@@ -22,7 +22,7 @@ class AppTest extends TestCase {
     }
 
     public function testAppInstalled(): void {
-        $appManager = $this->container->query('OCP\App\IAppManager');
+        $appManager = $this->container->get(\OCP\App\IAppManager::class);
         $this->assertTrue($appManager->isInstalled('timetracker'));
     }
 
