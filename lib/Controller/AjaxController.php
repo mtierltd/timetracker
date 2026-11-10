@@ -1250,18 +1250,30 @@ class AjaxController extends Controller {
 		return $this->getGoals();
 	}
 
-	public function getStartOfWeek($timestamp){
-		$date = new \DateTime('@'.$timestamp);
-		$weeknumber = $date->format("W");
-		$year = $date->format("Y");
-		$weekstartdt = new \DateTime();
-		$weekstartdt->setTime(0, 0, 0, 0);
-		$weekstartdt->setISODate($year, $weeknumber);
-
-		return $weekstartdt;
+	/**
+	 * The user's time zone. Goal periods use it, like the report grouping in
+	 * ReportItemMapper does.
+	 */
+	private function userTimeZone(): \DateTimeZone {
+		return \OCP\Server::get(\OCA\TimeTracker\Service\UserTimeZone::class)->get($this->userId);
 	}
+
+	/**
+	 * Monday 00:00 of the ISO week containing $timestamp, in the user's time zone.
+	 */
+	public function getStartOfWeek($timestamp){
+		$date = (new \DateTime('@'.$timestamp))->setTimezone($this->userTimeZone());
+		// "o" is the ISO year that week "W" belongs to: 30 Dec 2024 is in week 1 of 2025
+		$date->setISODate((int)$date->format('o'), (int)$date->format('W'));
+		$date->setTime(0, 0, 0, 0);
+
+		return $date;
+	}
+	/**
+	 * The 1st of the month containing $timestamp, 00:00 in the user's time zone.
+	 */
 	public function getStartOfMonth($timestamp){
-		$date = new \DateTime('@'.$timestamp);
+		$date = (new \DateTime('@'.$timestamp))->setTimezone($this->userTimeZone());
 		$date->modify('first day of this month');
 		$date->setTime(0, 0, 0, 0);
 
