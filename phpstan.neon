@@ -12,4 +12,3 @@ parameters:
     reportUnmatchedIgnoredErrors: false
     bootstrapFiles:
         - vendor/autoload.php
-        - tests/phpstan-bootstrap.php

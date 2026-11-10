@@ -376,16 +376,6 @@ parameters:
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Method OCA\\\\TimeTracker\\\\Db\\\\ProjectMapper\\:\\:delete\\(\\) should return OCP\\\\AppFramework\\\\Db\\\\Entity but empty return statement found\\.$#"
-			count: 2
-			path: lib/Db/ProjectMapper.php
-
-		-
-			message: "#^Access to an undefined property OCA\\\\TimeTracker\\\\Db\\\\TagMapper\\:\\:\\$dbengine\\.$#"
-			count: 4
-			path: lib/Db/TagMapper.php
-
-		-
 			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
 			count: 69
 			path: lib/Migration/Version000000Date20210719124731.php
