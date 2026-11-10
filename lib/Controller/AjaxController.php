@@ -728,7 +728,7 @@ class AjaxController extends Controller {
 		}
 		$this->workIntervalMapper->deleteAllForProject($id);
 		$this->tagMapper->allowedTags($id,[]);
-		$this->projectMapper->delete($id);
+		$this->projectMapper->deleteById($id);
 
 
 		return $this->getProjects();

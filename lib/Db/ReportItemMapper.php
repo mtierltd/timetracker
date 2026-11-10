@@ -2,11 +2,9 @@
 
 namespace OCA\TimeTracker\Db;
 
-use OCP\IDBConnection;
-
 use OCA\TimeTracker\Service\UserTimeZone;
-
-use OCA\TimeTracker\AppFramework\Db\CompatibleMapper;
+use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\IDBConnection;
 
 /**
  * Builds report rows from work intervals.
@@ -17,17 +15,18 @@ use OCA\TimeTracker\AppFramework\Db\CompatibleMapper;
  * time), weeks are ISO 8601 weeks ("2025-W01"), and aggregated name, project,
  * client and user columns are built the same way everywhere.
  */
-class ReportItemMapper extends CompatibleMapper {
+class ReportItemMapper {
 
     /** Aggregated name lists are shortened to this many characters, plus "..." */
     public const MAX_NAME_LIST_LENGTH = 40;
 
     private const GROUPABLE = ['name', 'project', 'client', 'userUid'];
 
+    private $db;
     private $userTimeZone;
 
     public function __construct(IDBConnection $db, UserTimeZone $userTimeZone) {
-        parent::__construct($db, 'timetracker_work_interval');
+        $this->db = $db;
         $this->userTimeZone = $userTimeZone;
     }
 
@@ -70,42 +69,42 @@ class ReportItemMapper extends CompatibleMapper {
      * The work intervals matching the filters, oldest first.
      */
     private function fetchIntervals($user, $from, $to, $filterProjectId, $filterClientId, $admin): array {
-        $filters = [];
-        $params = [];
+        $qb = $this->db->getQueryBuilder();
+        $qb->select('wi.id', 'wi.name', 'wi.details', 'wi.start', 'wi.duration', 'wi.cost', 'wi.user_uid')
+            ->selectAlias('p.name', 'project_name')
+            ->selectAlias('c.name', 'client_name')
+            ->from('timetracker_work_interval', 'wi')
+            ->leftJoin('wi', 'timetracker_project', 'p', $qb->expr()->eq('wi.project_id', 'p.id'))
+            ->leftJoin('p', 'timetracker_client', 'c', $qb->expr()->eq('p.client_id', 'c.id'))
+            ->orderBy('wi.start', 'ASC')
+            ->addOrderBy('wi.id', 'ASC');
+
         if (!empty($from)) {
-            $filters[] = '(wi.start > ?)';
-            $params[] = (int)$from;
+            $qb->andWhere($qb->expr()->gt('wi.start', $qb->createNamedParameter((int)$from, IQueryBuilder::PARAM_INT)));
         }
         if (!empty($to)) {
-            $filters[] = '(wi.start < ?)';
-            $params[] = (int)$to;
+            $qb->andWhere($qb->expr()->lt('wi.start', $qb->createNamedParameter((int)$to, IQueryBuilder::PARAM_INT)));
         }
         foreach ([[$filterProjectId, 'wi.project_id'], [$filterClientId, 'c.id']] as [$ids, $column]) {
             if (empty($ids) || !is_array($ids)) {
                 continue;
             }
-            $values = array_values(array_filter($ids, fn ($id) => $id !== null && $id !== ''));
-            $orNull = count($values) !== count($ids) ? " or $column is null" : '';
-            $in = $values ? "$column in (" . implode(',', array_fill(0, count($values), '?')) . ')' : '1 = 0';
-            $filters[] = "($in$orNull)";
-            foreach ($values as $v) {
-                $params[] = (int)$v;
+            $values = array_map('intval', array_values(array_filter($ids, fn ($id) => $id !== null && $id !== '')));
+            $conditions = [];
+            if ($values) {
+                $conditions[] = $qb->expr()->in($column, $qb->createNamedParameter($values, IQueryBuilder::PARAM_INT_ARRAY));
             }
+            if (count($values) !== count($ids)) {
+                // an empty element stands for "without project" / "without client"
+                $conditions[] = $qb->expr()->isNull($column);
+            }
+            $qb->andWhere($qb->expr()->orX(...$conditions));
         }
         if (!empty($user) && !$admin) {
-            $filters[] = '(wi.user_uid = ?)';
-            $params[] = $user;
+            $qb->andWhere($qb->expr()->eq('wi.user_uid', $qb->createNamedParameter($user)));
         }
 
-        $sql = 'SELECT wi.id, wi.name, wi.details, wi.start, wi.duration, wi.cost, wi.user_uid,'
-            . ' p.name AS project_name, c.name AS client_name'
-            . ' FROM *PREFIX*timetracker_work_interval wi'
-            . ' LEFT JOIN *PREFIX*timetracker_project p ON wi.project_id = p.id'
-            . ' LEFT JOIN *PREFIX*timetracker_client c ON p.client_id = c.id'
-            . ($filters ? ' WHERE ' . implode(' AND ', $filters) : '')
-            . ' ORDER BY wi.start ASC, wi.id ASC';
-
-        $result = $this->db->executeQuery($sql, $params);
+        $result = $qb->executeQuery();
         $rows = $result->fetchAll();
         $result->closeCursor();
         return $rows;

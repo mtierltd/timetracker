@@ -141,7 +141,7 @@ class MapperTest extends TestCase {
 		$this->assertSame([$alpha->getId(), $beta->getId()], array_values(array_intersect($this->ids($mapper->findAllAdmin()), $ours)));
 		$this->assertSame($ours, array_values(array_intersect($this->ids($mapper->findAllAdmin(1)), $ours)));
 
-		$mapper->delete($alpha->getId());
+		$mapper->deleteById($alpha->getId());
 		$this->expectException(DoesNotExistException::class);
 		$mapper->find($alpha->getId());
 	}
