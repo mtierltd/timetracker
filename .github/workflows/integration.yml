@@ -1,0 +1,109 @@
+# Integration tests (tests/Integration) inside a real Nextcloud server, on
+# every database Nextcloud supports for apps: SQLite, MySQL, MariaDB and
+# PostgreSQL, for the oldest and the newest supported Nextcloud version.
+#
+# Each job checks out nextcloud/server, puts this app into its apps/ folder,
+# installs Nextcloud on the job's database and runs the tests with the
+# server's own PHPUnit version.
+name: Integration tests
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        server: ['stable31', 'stable35']
+        database:
+          - name: SQLite
+            type: sqlite
+            image: ''
+            port: 3306
+            options: ''
+          - name: MySQL 8.4
+            type: mysql
+            image: mysql:8.4
+            port: 3306
+            options: --health-cmd="mysqladmin ping" --health-interval 5s --health-timeout 2s --health-retries 10
+          - name: MariaDB 11.4
+            type: mysql
+            image: mariadb:11.4
+            port: 3306
+            options: --health-cmd="mariadb-admin ping" --health-interval 5s --health-timeout 2s --health-retries 10
+          - name: PostgreSQL 16
+            type: pgsql
+            image: postgres:16
+            port: 5432
+            options: --health-cmd pg_isready --health-interval 5s --health-timeout 2s --health-retries 10
+
+    name: ${{ matrix.database.name }}, Nextcloud ${{ matrix.server }}
+
+    services:
+      # Not started for SQLite (empty image)
+      database:
+        image: ${{ matrix.database.image }}
+        ports:
+          - 4444:${{ matrix.database.port }}/tcp
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          POSTGRES_USER: root
+          POSTGRES_PASSWORD: rootpassword
+        options: ${{ matrix.database.options }}
+
+    steps:
+      - name: Checkout Nextcloud server
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          repository: nextcloud/server
+          ref: ${{ matrix.server }}
+          submodules: true
+          path: server
+
+      - name: Checkout app
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          path: server/apps/timetracker
+
+      - name: Set up php
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, xmlreader, xmlwriter, zip, zlib, sqlite, pdo_sqlite, mysql, pdo_mysql, pgsql, pdo_pgsql
+          coverage: none
+          ini-file: development
+          ini-values: disable_functions=""
+
+      - name: Install the server's PHPUnit
+        run: composer install --no-progress --working-dir=server/vendor-bin/phpunit
+
+      - name: Use strict GROUP BY rules (MySQL, MariaDB)
+        if: matrix.database.type == 'mysql'
+        run: echo "SET GLOBAL sql_mode=(SELECT CONCAT(@@sql_mode,',ONLY_FULL_GROUP_BY'));" | mysql -h 127.0.0.1 -P 4444 -u root -prootpassword
+
+      - name: Install Nextcloud and enable the app
+        working-directory: server
+        run: |
+          mkdir data
+          php occ maintenance:install --verbose --database=${{ matrix.database.type }} --database-name=nextcloud \
+            --database-host=127.0.0.1 --database-port=4444 --database-user=root --database-pass=rootpassword \
+            --admin-user admin --admin-pass admin
+          php occ app:enable timetracker
+
+      - name: Run integration tests
+        working-directory: server/apps/timetracker
+        run: ../../vendor-bin/phpunit/vendor/bin/phpunit -c phpunit.integration.xml
