@@ -50,3 +50,7 @@ or:
     phpunit -c phpunit.integration.xml
 
 for integration tests
+
+# Android App
+
+You can try to use the new Android app for the TimeTracker. Please provide feedback, as it is still in development: https://github.com/Martin-1997/nc-timetracker-android
