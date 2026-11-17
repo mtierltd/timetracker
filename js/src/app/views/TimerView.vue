@@ -214,15 +214,11 @@ import NcDateTimePicker from '@nextcloud/vue/components/NcDateTimePicker'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcModal from '@nextcloud/vue/components/NcModal'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
-import { mdiPin, mdiPinOutline } from '@mdi/js'
+import { mdiChevronDown, mdiChevronRight, mdiPin, mdiPinOutline } from '@mdi/js'
 import PinnedTimers from '../components/PinnedTimers.vue'
 import { showError } from '@nextcloud/dialogs'
 import { apiGet, apiPost } from '../api.js'
 import { DATE_RANGE_PRESETS, getPresetRange, startOfDay, endOfDay } from '../dateRangePresets.js'
-
-// mdiChevronDown and mdiChevronRight from Material Design Icons (@mdi/js)
-const CHEVRON_DOWN = 'M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z'
-const CHEVRON_RIGHT = 'M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z'
 
 // Folded groups are a per-browser preference, kept in localStorage as
 // "<day label>\u0000<name>" keys. Only the newest ones are kept.
@@ -276,8 +272,8 @@ export default {
 		const from = new Date(now)
 		from.setDate(from.getDate() - 30)
 		return {
-			chevronDown: CHEVRON_DOWN,
-			chevronRight: CHEVRON_RIGHT,
+			chevronDown: mdiChevronDown,
+			chevronRight: mdiChevronRight,
 			// groups are unfolded unless listed here
 			foldedKeys: readFolded(),
 			mdiPin,
