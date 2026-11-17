@@ -22,7 +22,10 @@
 			</div>
 
 			<div v-for="day in groupedDays" :key="day.label" class="day-group">
-				<h2>{{ day.label }}</h2>
+				<h2 class="day-heading">
+					<span>{{ day.label }}</span>
+					<span class="day-total" title="Total of the day">{{ formatDuration(totalOf(day.entries)) }}</span>
+				</h2>
 				<div class="table-scroll">
 				<table class="entity-table">
 					<thead>
@@ -31,6 +34,7 @@
 							<th>Name / Details</th>
 							<th>Project</th>
 							<th>Tags</th>
+							<th>Time</th>
 							<th>Duration</th>
 							<th>Cost</th>
 							<th></th>
@@ -47,6 +51,7 @@
 								<span class="group-name">{{ group.name }}</span>
 								<span class="group-count" :title="`${group.children.length} entries`">{{ group.children.length }}</span>
 							</td>
+							<td></td>
 							<td class="group-total">{{ formatDuration(totalOf(group.children)) }}</td>
 							<td colspan="2"></td>
 						</tr>
@@ -79,7 +84,8 @@
 										style="min-width: 160px;"
 										@update:model-value="(t) => updateTags(item, t)" />
 								</td>
-								<td class="editable" @click="openEditTime(item)">{{ formatDuration(elapsed(item)) }}</td>
+								<td class="editable wi-time" @click="openEditTime(item)">{{ timeRange(item) }}</td>
+							<td class="editable wi-duration" @click="openEditTime(item)">{{ formatDuration(elapsed(item)) }}</td>
 								<td>
 									<NcTextField :model-value="costDraft(item)"
 										:success="costStatus[item.id] === 'success'"
@@ -161,6 +167,11 @@ function formatDuration(seconds) {
 	const s = seconds % 60
 	return `${pad(h)}:${pad(m)}:${pad(s)}`
 }
+// HH:MM in the browser's local time
+function formatClock(ts) {
+	const d = new Date(ts * 1000)
+	return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
 function formatForApi(d) {
 	const dd = String(d.getDate()).padStart(2, '0')
 	const mm = String(d.getMonth() + 1).padStart(2, '0')
@@ -214,7 +225,8 @@ export default {
 					return { name, children }
 				})
 				groups.sort((a, b) => b.children[0].start - a.children[0].start)
-				return { label, groups }
+				const entries = groups.flatMap((g) => g.children)
+				return { label, groups, entries }
 			})
 		},
 	},
@@ -229,6 +241,10 @@ export default {
 		// Seconds of an entry; a running entry counts with its live elapsed time.
 		elapsed(item) {
 			return Number(item.running) ? Math.max(0, this.nowTs - item.start) : (item.duration || 0)
+		},
+		timeRange(item) {
+			const start = formatClock(item.start)
+			return Number(item.running) ? `${start} -` : `${start} - ${formatClock(item.start + (item.duration || 0))}`
 		},
 		totalOf(items) {
 			return items.reduce((sum, item) => sum + this.elapsed(item), 0)
@@ -458,6 +474,22 @@ export default {
 	text-align: left;
 	border-bottom: 1px solid var(--color-border);
 	vertical-align: middle;
+}
+.day-heading {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+}
+.day-total {
+	font-family: monospace;
+	font-size: 0.8em;
+	color: var(--color-text-maxcontrast);
+}
+.wi-time,
+.wi-duration,
+.group-total {
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
 }
 .table-scroll {
 	overflow-x: auto;
