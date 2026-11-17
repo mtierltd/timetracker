@@ -155,7 +155,7 @@ import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcModal from '@nextcloud/vue/components/NcModal'
 import { showError } from '@nextcloud/dialogs'
 import { apiGet, apiPost } from '../api.js'
-import { DATE_RANGE_PRESETS, getPresetRange } from '../dateRangePresets.js'
+import { DATE_RANGE_PRESETS, getPresetRange, startOfDay, endOfDay } from '../dateRangePresets.js'
 
 function pad(n) {
 	return String(n).padStart(2, '0')
@@ -268,9 +268,11 @@ export default {
 			this.loadWorkIntervals()
 		},
 		async loadWorkIntervals() {
+			// Query whole days: the picked "to" date includes the full day, so entries
+			// started after the page was opened (resume, start bar) show up too.
 			const data = await apiGet('/work-intervals', {
-				from: Math.floor(this.rangeFrom.getTime() / 1000),
-				to: Math.floor(this.rangeTo.getTime() / 1000),
+				from: Math.floor(startOfDay(this.rangeFrom).getTime() / 1000),
+				to: Math.floor(endOfDay(this.rangeTo).getTime() / 1000),
 				tzoffset: new Date().getTimezoneOffset(),
 			})
 			this.days = data.days || {}
