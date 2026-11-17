@@ -31,6 +31,13 @@ return [
        ['name' => 'ajax#update_work_interval', 'url' => '/ajax/update-work-interval/{id}', 'verb' => 'POST'],
        ['name' => 'ajax#add_work_interval', 'url' => '/ajax/add-work-interval/{name}', 'verb' => 'POST'],
        ['name' => 'ajax#delete_work_interval', 'url' => '/ajax/delete-work-interval/{id}', 'verb' => 'POST'],
+
+       ['name' => 'pinned_timer#index', 'url' => '/ajax/pinned-timers', 'verb' => 'GET'],
+       ['name' => 'pinned_timer#create', 'url' => '/ajax/add-pinned-timer', 'verb' => 'POST'],
+       ['name' => 'pinned_timer#update', 'url' => '/ajax/edit-pinned-timer/{id}', 'verb' => 'POST'],
+       ['name' => 'pinned_timer#destroy', 'url' => '/ajax/delete-pinned-timer/{id}', 'verb' => 'POST'],
+       ['name' => 'pinned_timer#reorder', 'url' => '/ajax/reorder-pinned-timers', 'verb' => 'POST'],
+       ['name' => 'pinned_timer#start', 'url' => '/ajax/start-pinned-timer/{id}', 'verb' => 'POST'],
        ['name' => 'ajax#add_cost', 'url' => '/ajax/add-cost/{id}', 'verb' => 'POST'],
 
 

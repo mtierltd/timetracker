@@ -4,6 +4,14 @@ namespace  OCA\TimeTracker\Db;
 
 use OCP\AppFramework\Db\Entity;
 
+/**
+ * @method void setName(string $name)
+ * @method void setProjectId(?int $projectId)
+ * @method void setUserUid(string $userUid)
+ * @method void setStart(int $start)
+ * @method void setDuration(?int $duration)
+ * @method void setRunning(int $running)
+ */
 class WorkInterval extends Entity {
 
     public $id;
