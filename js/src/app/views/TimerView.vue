@@ -465,7 +465,9 @@ export default {
 				await apiPost(`/update-work-interval/${this.editingTimeItem.id}`, {
 					start: formatForApi(this.timeForm.start),
 					end: formatForApi(this.timeForm.end),
-					tzoffset: new Date().getTimezoneOffset(),
+					// the offsets on these dates, not today's (#151)
+					tzoffset: this.timeForm.start.getTimezoneOffset(),
+					tzoffsetEnd: this.timeForm.end.getTimezoneOffset(),
 				})
 				this.editingTimeItem = null
 				await this.loadWorkIntervals()
@@ -478,7 +480,9 @@ export default {
 				await apiPost(`/add-work-interval/${encodeURIComponent(encodeURIComponent(this.manualForm.name))}`, {
 					start: formatForApi(this.manualForm.start),
 					end: formatForApi(this.manualForm.end),
-					tzoffset: new Date().getTimezoneOffset(),
+					// the offsets on these dates, not today's (#151)
+					tzoffset: this.manualForm.start.getTimezoneOffset(),
+					tzoffsetEnd: this.manualForm.end.getTimezoneOffset(),
 					details: this.manualForm.details,
 				})
 				this.manualEntryVisible = false

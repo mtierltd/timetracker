@@ -540,18 +540,10 @@ class AjaxController extends Controller {
 			}
 		 }
 		 if (isset($this->request->start)) {
-			$tzoffset = 0;
-			if (isset($this->request->tzoffset)) {
-				$tzoffset = $this->request->tzoffset;
-			}
-
-			 date_default_timezone_set('UTC');
-			 $dt = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->start);
-			 $dt->setTimeZone(new \DateTimeZone('UTC'));
-			 $wi->setStart($dt->getTimestamp()+$tzoffset*60);
-			 $de = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->end);
-			 $de->setTimeZone(new \DateTimeZone('UTC'));
-			 $wi->setDuration($de->getTimestamp() - $dt->getTimestamp());
+			[$start, $duration] = self::localTimesToInterval($this->request->getParam('start'), $this->request->getParam('end'),
+				$this->request->getParam('tzoffset'), $this->request->getParam('tzoffsetEnd'));
+			$wi->setStart($start);
+			$wi->setDuration($duration);
 		 }
 
 		$this->workIntervalMapper->update($wi);
@@ -589,18 +581,10 @@ class AjaxController extends Controller {
 		// linked after the entry is inserted, when it has an ID
 		$tagIds = $this->usableTagIds($this->request->getParam('tagId'), $project);
 		 if ($this->request->getParam('start') !== null) {
-			$tzoffset = 0;
-			if ($this->request->getParam('tzoffset') !== null) {
-				$tzoffset = $this->request->getParam('tzoffset');
-			}
-
-			 date_default_timezone_set('UTC');
-			 $dt = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->getParam('start'));
-			 $dt->setTimeZone(new \DateTimeZone('UTC'));
-			 $wi->setStart($dt->getTimestamp()+$tzoffset*60);
-			 $de = \DateTime::createFromFormat ( "d/m/y H:i",$this->request->getParam('end'));
-			 $de->setTimeZone(new \DateTimeZone('UTC'));
-			 $wi->setDuration($de->getTimestamp() - $dt->getTimestamp());
+			[$start, $duration] = self::localTimesToInterval($this->request->getParam('start'), $this->request->getParam('end'),
+				$this->request->getParam('tzoffset'), $this->request->getParam('tzoffsetEnd'));
+			$wi->setStart($start);
+			$wi->setDuration($duration);
 		 }
 
 		$this->workIntervalMapper->insert($wi);
@@ -1188,6 +1172,26 @@ class AjaxController extends Controller {
 		return new JSONResponse(["Timelines" => $parray, 'total' => count($parray)]);
 	}
 
+
+	/**
+	 * Start timestamp and duration from local times "d/m/y H:i".
+	 *
+	 * $tzoffset and $tzoffsetEnd are the minutes to add to local time to get
+	 * UTC (JavaScript's Date.getTimezoneOffset()) on the start and the end
+	 * date. They differ when daylight saving time applies on one date but not
+	 * on the other, so each time gets its own; $tzoffsetEnd defaults to
+	 * $tzoffset for clients that send only one offset.
+	 *
+	 * @return array{0: int, 1: int} [start, duration]
+	 */
+	public static function localTimesToInterval(string $start, string $end, $tzoffset, $tzoffsetEnd): array {
+		$tzoffset = (int)($tzoffset ?? 0);
+		$tzoffsetEnd = $tzoffsetEnd === null || $tzoffsetEnd === '' ? $tzoffset : (int)$tzoffsetEnd;
+		$utc = new \DateTimeZone('UTC');
+		$startTs = \DateTime::createFromFormat('d/m/y H:i', $start, $utc)->getTimestamp() + $tzoffset * 60;
+		$endTs = \DateTime::createFromFormat('d/m/y H:i', $end, $utc)->getTimestamp() + $tzoffsetEnd * 60;
+		return [$startTs, $endTs - $startTs];
+	}
 
 	public function secondsToTime($seconds){
 		$hours = floor($seconds / 3600);
