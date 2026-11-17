@@ -11,12 +11,12 @@ export const DATE_RANGE_PRESETS = [
 	{ key: 'lastYear', label: 'Last year' },
 ]
 
-function startOfDay(d) {
+export function startOfDay(d) {
 	const x = new Date(d)
 	x.setHours(0, 0, 0, 0)
 	return x
 }
-function endOfDay(d) {
+export function endOfDay(d) {
 	const x = new Date(d)
 	x.setHours(23, 59, 59, 999)
 	return x

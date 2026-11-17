@@ -21,8 +21,12 @@
 				<NcButton @click="loadWorkIntervals">Refresh</NcButton>
 			</div>
 
-			<div v-for="(dayGroup, dayLabel) in flattenedDays" :key="dayLabel" class="day-group">
-				<h2>{{ dayLabel }}</h2>
+			<div v-for="day in groupedDays" :key="day.label" class="day-group">
+				<h2 class="day-heading">
+					<span>{{ day.label }}</span>
+					<span class="day-total" title="Total of the day">{{ formatDuration(totalOf(day.entries)) }}</span>
+				</h2>
+				<div class="table-scroll">
 				<table class="entity-table">
 					<thead>
 						<tr>
@@ -30,58 +34,75 @@
 							<th>Name / Details</th>
 							<th>Project</th>
 							<th>Tags</th>
+							<th>Time</th>
 							<th>Duration</th>
 							<th>Cost</th>
 							<th></th>
 						</tr>
 					</thead>
-					<tbody>
-						<tr v-for="item in dayGroup.children" :key="item.id">
+					<tbody v-for="group in day.groups" :key="group.name" :class="{ 'name-group': group.children.length > 1 }">
+						<tr v-if="group.children.length > 1" class="group-row">
 							<td>
-								<NcButton type="tertiary" aria-label="Resume" @click="resume(item)">
+								<NcButton type="tertiary" aria-label="Resume" @click="resume(group.children[0])">
 									<template #icon><span class="icon-play" /></template>
 								</NcButton>
 							</td>
-							<td class="editable" @click="openEditNameDetails(item)">
-								<div class="wi-name">{{ item.name }}</div>
-								<div v-if="item.details" class="wi-details">{{ item.details }}</div>
+							<td colspan="3">
+								<span class="group-name">{{ group.name }}</span>
+								<span class="group-count" :title="`${group.children.length} entries`">{{ group.children.length }}</span>
 							</td>
-							<td>
-								<NcSelect :model-value="projectFor(item)"
-									:options="projects"
-									label="name"
-									placeholder="Project"
-									style="min-width: 160px;"
-									@update:model-value="(p) => updateProject(item, p)" />
-							</td>
-							<td>
-								<NcSelect :model-value="item.tags"
-									:options="tags"
-									label="name"
-									multiple
-									taggable
-									push-tags
-									placeholder="Tags"
-									style="min-width: 160px;"
-									@update:model-value="(t) => updateTags(item, t)" />
-							</td>
-							<td class="editable" @click="openEditTime(item)">{{ formatDuration(item.duration) }}</td>
-							<td>
-								<NcTextField :model-value="costDraft(item)"
-									:success="costStatus[item.id] === 'success'"
-									:error="costStatus[item.id] === 'error'"
-									style="width: 90px;"
-									@update:model-value="(v) => (costDrafts[item.id] = v)"
-									@blur="commitCost(item)" />
-							</td>
-							<td>
-								<NcButton type="tertiary" aria-label="Delete" @click="removeInterval(item)">
-									<template #icon><span class="icon-close" /></template>
-								</NcButton>
-							</td>
+							<td></td>
+							<td class="group-total">{{ formatDuration(totalOf(group.children)) }}</td>
+							<td colspan="2"></td>
 						</tr>
+							<tr v-for="item in group.children" :key="item.id" :class="{ 'in-group': group.children.length > 1 }">
+								<td>
+									<NcButton type="tertiary" aria-label="Resume" @click="resume(item)">
+										<template #icon><span class="icon-play" /></template>
+									</NcButton>
+								</td>
+								<td class="editable" @click="openEditNameDetails(item)">
+									<div class="wi-name">{{ item.name }}</div>
+									<div v-if="item.details" class="wi-details">{{ item.details }}</div>
+								</td>
+								<td>
+									<NcSelect :model-value="projectFor(item)"
+										:options="projects"
+										label="name"
+										placeholder="Project"
+										style="min-width: 160px;"
+										@update:model-value="(p) => updateProject(item, p)" />
+								</td>
+								<td>
+									<NcSelect :model-value="item.tags"
+										:options="tags"
+										label="name"
+										multiple
+										taggable
+										push-tags
+										placeholder="Tags"
+										style="min-width: 160px;"
+										@update:model-value="(t) => updateTags(item, t)" />
+								</td>
+								<td class="editable wi-time" @click="openEditTime(item)">{{ timeRange(item) }}</td>
+							<td class="editable wi-duration" @click="openEditTime(item)">{{ formatDuration(elapsed(item)) }}</td>
+								<td>
+									<NcTextField :model-value="costDraft(item)"
+										:success="costStatus[item.id] === 'success'"
+										:error="costStatus[item.id] === 'error'"
+										style="width: 90px;"
+										@update:model-value="(v) => (costDrafts[item.id] = v)"
+										@blur="commitCost(item)" />
+								</td>
+								<td>
+									<NcButton type="tertiary" aria-label="Delete" @click="removeInterval(item)">
+										<template #icon><span class="icon-close" /></template>
+									</NcButton>
+								</td>
+							</tr>
 					</tbody>
 				</table>
+				</div>
 			</div>
 		</div>
 
@@ -134,7 +155,7 @@ import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcModal from '@nextcloud/vue/components/NcModal'
 import { showError } from '@nextcloud/dialogs'
 import { apiGet, apiPost } from '../api.js'
-import { DATE_RANGE_PRESETS, getPresetRange } from '../dateRangePresets.js'
+import { DATE_RANGE_PRESETS, getPresetRange, startOfDay, endOfDay } from '../dateRangePresets.js'
 
 function pad(n) {
 	return String(n).padStart(2, '0')
@@ -145,6 +166,11 @@ function formatDuration(seconds) {
 	const m = Math.floor((seconds % 3600) / 60)
 	const s = seconds % 60
 	return `${pad(h)}:${pad(m)}:${pad(s)}`
+}
+// HH:MM in the browser's local time
+function formatClock(ts) {
+	const d = new Date(ts * 1000)
+	return `${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 function formatForApi(d) {
 	const dd = String(d.getDate()).padStart(2, '0')
@@ -172,6 +198,7 @@ export default {
 			rangeTo: now,
 			presets: DATE_RANGE_PRESETS,
 			liveTimerText: '00:00:00',
+			nowTs: Math.floor(Date.now() / 1000),
 			liveTimerInterval: null,
 			editingItem: null,
 			editForm: { name: '', details: '' },
@@ -190,17 +217,17 @@ export default {
 		isRunning() {
 			return this.running.length > 0
 		},
-		flattenedDays() {
-			const result = {}
-			for (const [dayLabel, nameGroups] of Object.entries(this.days)) {
-				const children = []
-				for (const group of Object.values(nameGroups)) {
-					children.push(...group.children)
-				}
-				children.sort((a, b) => b.start - a.start)
-				result[dayLabel] = { children }
-			}
-			return result
+		// The server already groups by day and name; order groups by their newest entry.
+		groupedDays() {
+			return Object.entries(this.days).map(([label, nameGroups]) => {
+				const groups = Object.entries(nameGroups).map(([name, group]) => {
+					const children = [...group.children].sort((a, b) => b.start - a.start)
+					return { name, children }
+				})
+				groups.sort((a, b) => b.children[0].start - a.children[0].start)
+				const entries = groups.flatMap((g) => g.children)
+				return { label, groups, entries }
+			})
 		},
 	},
 	async mounted() {
@@ -211,6 +238,17 @@ export default {
 	},
 	methods: {
 		formatDuration,
+		// Seconds of an entry; a running entry counts with its live elapsed time.
+		elapsed(item) {
+			return Number(item.running) ? Math.max(0, this.nowTs - item.start) : (item.duration || 0)
+		},
+		timeRange(item) {
+			const start = formatClock(item.start)
+			return Number(item.running) ? `${start} -` : `${start} - ${formatClock(item.start + (item.duration || 0))}`
+		},
+		totalOf(items) {
+			return items.reduce((sum, item) => sum + this.elapsed(item), 0)
+		},
 		projectFor(item) {
 			return this.projects.find((p) => p.id === item.projectId) || null
 		},
@@ -230,9 +268,11 @@ export default {
 			this.loadWorkIntervals()
 		},
 		async loadWorkIntervals() {
+			// Query whole days: the picked "to" date includes the full day, so entries
+			// started after the page was opened (resume, start bar) show up too.
 			const data = await apiGet('/work-intervals', {
-				from: Math.floor(this.rangeFrom.getTime() / 1000),
-				to: Math.floor(this.rangeTo.getTime() / 1000),
+				from: Math.floor(startOfDay(this.rangeFrom).getTime() / 1000),
+				to: Math.floor(endOfDay(this.rangeTo).getTime() / 1000),
 				tzoffset: new Date().getTimezoneOffset(),
 			})
 			this.days = data.days || {}
@@ -245,8 +285,8 @@ export default {
 			const skew = (Date.now() / 1000) - serverNow
 			const start = this.running[0].start
 			const tick = () => {
-				const elapsed = Math.floor(Date.now() / 1000 - skew - start)
-				this.liveTimerText = formatDuration(elapsed)
+				this.nowTs = Math.floor(Date.now() / 1000 - skew)
+				this.liveTimerText = formatDuration(this.nowTs - start)
 			}
 			tick()
 			this.liveTimerInterval = setInterval(tick, 1000)
@@ -436,6 +476,50 @@ export default {
 	text-align: left;
 	border-bottom: 1px solid var(--color-border);
 	vertical-align: middle;
+}
+.day-heading {
+	display: flex;
+	align-items: baseline;
+	gap: 12px;
+}
+.day-total {
+	font-family: monospace;
+	font-size: 0.8em;
+	color: var(--color-text-maxcontrast);
+}
+.wi-time,
+.wi-duration,
+.group-total {
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+.table-scroll {
+	overflow-x: auto;
+}
+.group-row td {
+	background-color: var(--color-background-dark);
+}
+.group-name {
+	font-weight: bold;
+}
+.group-count {
+	display: inline-block;
+	margin-left: 8px;
+	padding: 0 8px;
+	border-radius: var(--border-radius-pill, 12px);
+	background-color: var(--color-primary-element-light);
+	color: var(--color-primary-element-light-text);
+	font-size: 0.85em;
+	line-height: 1.6;
+}
+.group-total {
+	font-weight: bold;
+}
+.in-group td:first-child {
+	box-shadow: inset 3px 0 0 var(--color-primary-element-light);
+}
+.in-group td:nth-child(2) {
+	padding-left: 24px;
 }
 .editable {
 	cursor: pointer;
