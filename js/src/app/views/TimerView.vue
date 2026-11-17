@@ -19,6 +19,13 @@
 				<span>to</span>
 				<NcDateTimePicker v-model="rangeTo" type="date" :clearable="false" />
 				<NcButton @click="loadWorkIntervals">Refresh</NcButton>
+				<NcButton v-if="foldableKeys.length"
+					type="tertiary"
+					class="fold-all"
+					@click="setAllFolded(!allFolded)">
+					<template #icon><NcIconSvgWrapper :path="allFolded ? chevronRight : chevronDown" /></template>
+					{{ allFolded ? 'Unfold all' : 'Fold all' }}
+				</NcButton>
 			</div>
 
 			<div v-for="day in groupedDays" :key="day.label" class="day-group">
@@ -48,14 +55,21 @@
 								</NcButton>
 							</td>
 							<td colspan="3">
-								<span class="group-name">{{ group.name }}</span>
-								<span class="group-count" :title="`${group.children.length} entries`">{{ group.children.length }}</span>
+								<button type="button"
+									class="group-toggle"
+									:aria-expanded="isFolded(day, group) ? 'false' : 'true'"
+									:title="isFolded(day, group) ? 'Unfold' : 'Fold'"
+									@click="toggleFolded(day, group)">
+									<span class="group-chevron"><NcIconSvgWrapper :path="isFolded(day, group) ? chevronRight : chevronDown" :size="20" /></span>
+									<span class="group-name">{{ group.name }}</span>
+									<span class="group-count" :title="`${group.children.length} entries`">{{ group.children.length }}</span>
+								</button>
 							</td>
 							<td></td>
 							<td class="group-total">{{ formatDuration(totalOf(group.children)) }}</td>
 							<td colspan="2"></td>
 						</tr>
-							<tr v-for="item in group.children" :key="item.id" :class="{ 'in-group': group.children.length > 1 }">
+							<tr v-for="item in visibleChildren(day, group)" :key="item.id" :class="{ 'in-group': group.children.length > 1 }">
 								<td>
 									<NcButton type="tertiary" aria-label="Resume" @click="resume(item)">
 										<template #icon><span class="icon-play" /></template>
@@ -153,9 +167,34 @@ import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcDateTimePicker from '@nextcloud/vue/components/NcDateTimePicker'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcModal from '@nextcloud/vue/components/NcModal'
+import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
 import { showError } from '@nextcloud/dialogs'
 import { apiGet, apiPost } from '../api.js'
 import { DATE_RANGE_PRESETS, getPresetRange, startOfDay, endOfDay } from '../dateRangePresets.js'
+
+// mdiChevronDown and mdiChevronRight from Material Design Icons (@mdi/js)
+const CHEVRON_DOWN = 'M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z'
+const CHEVRON_RIGHT = 'M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z'
+
+// Folded groups are a per-browser preference, kept in localStorage as
+// "<day label>\u0000<name>" keys. Only the newest ones are kept.
+const FOLDED_STORAGE_KEY = 'timetracker.timer.foldedGroups'
+const FOLDED_MAX = 500
+function readFolded() {
+	try {
+		const value = JSON.parse(window.localStorage.getItem(FOLDED_STORAGE_KEY) || '[]')
+		return Array.isArray(value) ? value.filter((k) => typeof k === 'string') : []
+	} catch (e) {
+		return []
+	}
+}
+function writeFolded(keys) {
+	try {
+		window.localStorage.setItem(FOLDED_STORAGE_KEY, JSON.stringify(keys.slice(-FOLDED_MAX)))
+	} catch (e) {
+		// storage unavailable (private mode, quota): folding still works until reload
+	}
+}
 
 function pad(n) {
 	return String(n).padStart(2, '0')
@@ -183,12 +222,16 @@ function formatForApi(d) {
 
 export default {
 	name: 'TimerView',
-	components: { NcAppContent, NcButton, NcTextField, NcSelect, NcDateTimePicker, NcDialog, NcModal },
+	components: { NcAppContent, NcButton, NcTextField, NcSelect, NcDateTimePicker, NcDialog, NcModal, NcIconSvgWrapper },
 	data() {
 		const now = new Date()
 		const from = new Date(now)
 		from.setDate(from.getDate() - 30)
 		return {
+			chevronDown: CHEVRON_DOWN,
+			chevronRight: CHEVRON_RIGHT,
+			// groups are unfolded unless listed here
+			foldedKeys: readFolded(),
 			workInput: '',
 			days: {},
 			running: [],
@@ -214,6 +257,16 @@ export default {
 		}
 	},
 	computed: {
+		// Keys of the shown groups that can fold (more than one entry)
+		foldableKeys() {
+			return this.groupedDays.flatMap((day) => day.groups
+				.filter((g) => g.children.length > 1)
+				.map((g) => this.groupKey(day, g)))
+		},
+		allFolded() {
+			const folded = new Set(this.foldedKeys)
+			return this.foldableKeys.length > 0 && this.foldableKeys.every((k) => folded.has(k))
+		},
 		isRunning() {
 			return this.running.length > 0
 		},
@@ -238,6 +291,28 @@ export default {
 	},
 	methods: {
 		formatDuration,
+		groupKey(day, group) {
+			return `${day.label}\u0000${group.name}`
+		},
+		isFolded(day, group) {
+			return group.children.length > 1 && this.foldedKeys.includes(this.groupKey(day, group))
+		},
+		visibleChildren(day, group) {
+			return this.isFolded(day, group) ? [] : group.children
+		},
+		toggleFolded(day, group) {
+			const key = this.groupKey(day, group)
+			this.foldedKeys = this.foldedKeys.includes(key)
+				? this.foldedKeys.filter((k) => k !== key)
+				: [...this.foldedKeys, key]
+			writeFolded(this.foldedKeys)
+		},
+		setAllFolded(folded) {
+			const shown = new Set(this.foldableKeys)
+			const others = this.foldedKeys.filter((k) => !shown.has(k))
+			this.foldedKeys = folded ? [...others, ...this.foldableKeys] : others
+			writeFolded(this.foldedKeys)
+		},
 		// Seconds of an entry; a running entry counts with its live elapsed time.
 		elapsed(item) {
 			return Number(item.running) ? Math.max(0, this.nowTs - item.start) : (item.duration || 0)
@@ -498,6 +573,34 @@ export default {
 }
 .group-row td {
 	background-color: var(--color-background-dark);
+}
+.group-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin: 0;
+	padding: 2px 8px 2px 0;
+	min-height: 0;
+	border: none;
+	border-radius: var(--border-radius-element, 8px);
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+.group-toggle:hover,
+.group-toggle:focus-visible {
+	background-color: var(--color-background-hover);
+}
+/* The wrapper keeps the icon from being a direct child of the button, which
+   Nextcloud's global "button > span[class^=icon-]" rule would restyle. */
+.group-chevron {
+	display: flex;
+}
+.group-chevron :deep(.icon-vue) {
+	min-width: 20px;
+	min-height: 20px;
 }
 .group-name {
 	font-weight: bold;
