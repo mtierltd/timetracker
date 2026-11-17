@@ -10,6 +10,13 @@
 				<NcButton type="secondary" @click="openManualEntry">Manual entry</NcButton>
 			</form>
 
+			<PinnedTimers :items="pinItems"
+				@start="startPin"
+				@edit="openEditPin"
+				@remove="removePin"
+				@reorder="reorderPins"
+				@add="openAddPin" />
+
 			<div class="date-range">
 				<select class="native-select" @change="applyPreset($event.target.value); $event.target.value = ''">
 					<option value="" disabled selected>Quick range...</option>
@@ -67,7 +74,16 @@
 							</td>
 							<td></td>
 							<td class="group-total">{{ formatDuration(totalOf(group.children)) }}</td>
-							<td colspan="2"></td>
+							<td></td>
+							<td>
+								<NcButton type="tertiary"
+									:aria-label="pinFor(group.children[0]) ? 'Unpin' : 'Pin'"
+									:title="pinFor(group.children[0]) ? 'Unpin' : 'Pin'"
+									:aria-pressed="pinFor(group.children[0]) ? 'true' : 'false'"
+									@click="togglePin(group.children[0])">
+									<template #icon><NcIconSvgWrapper :path="pinFor(group.children[0]) ? mdiPin : mdiPinOutline" /></template>
+								</NcButton>
+							</td>
 						</tr>
 							<tr v-for="item in visibleChildren(day, group)" :key="item.id" :class="{ 'in-group': group.children.length > 1 }">
 								<td>
@@ -109,9 +125,18 @@
 										@blur="commitCost(item)" />
 								</td>
 								<td>
-									<NcButton type="tertiary" aria-label="Delete" @click="removeInterval(item)">
-										<template #icon><span class="icon-close" /></template>
-									</NcButton>
+									<div class="row-actions">
+										<NcButton type="tertiary"
+											:aria-label="pinFor(item) ? 'Unpin' : 'Pin'"
+											:title="pinFor(item) ? 'Unpin' : 'Pin'"
+											:aria-pressed="pinFor(item) ? 'true' : 'false'"
+											@click="togglePin(item)">
+											<template #icon><NcIconSvgWrapper :path="pinFor(item) ? mdiPin : mdiPinOutline" /></template>
+										</NcButton>
+										<NcButton type="tertiary" aria-label="Delete" @click="removeInterval(item)">
+											<template #icon><span class="icon-close" /></template>
+										</NcButton>
+									</div>
 								</td>
 							</tr>
 					</tbody>
@@ -146,6 +171,27 @@
 			</div>
 		</NcModal>
 
+		<NcModal v-if="pinForm" size="normal" @close="pinForm = null">
+			<form class="edit-form" @submit.prevent="savePin">
+				<h2>{{ pinForm.id ? 'Edit pinned timer' : 'Pin a timer' }}</h2>
+				<NcTextField v-model="pinForm.name" label="Name" required />
+				<NcSelect v-model="pinForm.project"
+					:options="projects"
+					label="name"
+					placeholder="Project"
+					input-label="Project" />
+				<NcSelect v-model="pinForm.tags"
+					:options="tags"
+					label="name"
+					multiple
+					placeholder="Tags"
+					input-label="Tags" />
+				<NcButton type="primary" native-type="submit" :disabled="!pinForm.name.trim()">
+					{{ pinForm.id ? 'Save' : 'Pin' }}
+				</NcButton>
+			</form>
+		</NcModal>
+
 		<NcModal v-if="manualEntryVisible" size="normal" @close="manualEntryVisible = false">
 			<div class="edit-form">
 				<h2>Manual entry</h2>
@@ -168,6 +214,8 @@ import NcDateTimePicker from '@nextcloud/vue/components/NcDateTimePicker'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
 import NcModal from '@nextcloud/vue/components/NcModal'
 import NcIconSvgWrapper from '@nextcloud/vue/components/NcIconSvgWrapper'
+import { mdiPin, mdiPinOutline } from '@mdi/js'
+import PinnedTimers from '../components/PinnedTimers.vue'
 import { showError } from '@nextcloud/dialogs'
 import { apiGet, apiPost } from '../api.js'
 import { DATE_RANGE_PRESETS, getPresetRange, startOfDay, endOfDay } from '../dateRangePresets.js'
@@ -222,7 +270,7 @@ function formatForApi(d) {
 
 export default {
 	name: 'TimerView',
-	components: { NcAppContent, NcButton, NcTextField, NcSelect, NcDateTimePicker, NcDialog, NcModal, NcIconSvgWrapper },
+	components: { NcAppContent, NcButton, NcTextField, NcSelect, NcDateTimePicker, NcDialog, NcModal, NcIconSvgWrapper, PinnedTimers },
 	data() {
 		const now = new Date()
 		const from = new Date(now)
@@ -232,7 +280,12 @@ export default {
 			chevronRight: CHEVRON_RIGHT,
 			// groups are unfolded unless listed here
 			foldedKeys: readFolded(),
+			mdiPin,
+			mdiPinOutline,
 			workInput: '',
+			pins: [],
+			// the pin being added or edited: { id?, name, project, tags }
+			pinForm: null,
 			days: {},
 			running: [],
 			projects: [],
@@ -269,6 +322,18 @@ export default {
 		},
 		isRunning() {
 			return this.running.length > 0
+		},
+		// Pins in their order, with whether each is running and today's time
+		// (finished entries from the server plus a running entry's live time).
+		pinItems() {
+			return this.pins.map((pin) => {
+				const running = this.running.find((r) => this.sameTimer(r, pin))
+				return {
+					pin,
+					running: !!running,
+					seconds: pin.todayDuration + (running ? Math.max(0, this.nowTs - running.start) : 0),
+				}
+			})
 		},
 		// The server already groups by day and name; order groups by their newest entry.
 		groupedDays() {
@@ -342,6 +407,96 @@ export default {
 			this.rangeTo = range.to
 			this.loadWorkIntervals()
 		},
+		async loadPins() {
+			try {
+				const data = await apiGet('/pinned-timers', { tzoffset: new Date().getTimezoneOffset() })
+				this.pins = data.PinnedTimers || []
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		// Same timer: same name and project (no project matches no project).
+		sameTimer(a, b) {
+			return a.name === b.name && (a.projectId || null) === (b.projectId || null)
+		},
+		pinFor(item) {
+			return this.pins.find((pin) => this.sameTimer(item, pin)) || null
+		},
+		async togglePin(item) {
+			const pin = this.pinFor(item)
+			try {
+				const data = pin
+					? await apiPost(`/delete-pinned-timer/${pin.id}`)
+					: await apiPost('/add-pinned-timer', {
+						name: item.name,
+						projectId: item.projectId ?? '',
+						tagIds: (item.tags || []).map((t) => t.id).join(','),
+					})
+				this.pins = data.PinnedTimers || []
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		// Starts the pin's timer (the server stops a running one), or stops it if it runs.
+		async startPin(pin) {
+			try {
+				if (this.running.some((r) => this.sameTimer(r, pin))) {
+					// keep the entry's name, whatever is typed in the start bar
+					await this.stopTimer('no description')
+					return
+				}
+				await apiPost(`/start-pinned-timer/${pin.id}`)
+				this.workInput = ''
+				await this.loadWorkIntervals()
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		openAddPin() {
+			this.pinForm = { name: this.workInput.trim(), project: null, tags: [] }
+		},
+		openEditPin(pin) {
+			this.pinForm = {
+				id: pin.id,
+				name: pin.name,
+				project: this.projects.find((p) => p.id === pin.projectId) || null,
+				tags: this.tags.filter((t) => pin.tags.some((pt) => pt.id === t.id)),
+			}
+		},
+		async savePin() {
+			const form = this.pinForm
+			const body = {
+				name: form.name.trim(),
+				projectId: form.project?.id ?? '',
+				tagIds: form.tags.map((t) => t.id).join(','),
+			}
+			try {
+				const data = await apiPost(form.id ? `/edit-pinned-timer/${form.id}` : '/add-pinned-timer', body)
+				this.pins = data.PinnedTimers || []
+				this.pinForm = null
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		async removePin(pin) {
+			try {
+				const data = await apiPost(`/delete-pinned-timer/${pin.id}`)
+				this.pins = data.PinnedTimers || []
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		async reorderPins(ids) {
+			// show the new order right away
+			this.pins = ids.map((id) => this.pins.find((p) => p.id === id))
+			try {
+				const data = await apiPost('/reorder-pinned-timers', { ids: ids.join(',') })
+				this.pins = data.PinnedTimers || []
+			} catch (e) {
+				showError(e.message)
+				await this.loadPins()
+			}
+		},
 		async loadWorkIntervals() {
 			// Query whole days: the picked "to" date includes the full day, so entries
 			// started after the page was opened (resume, start bar) show up too.
@@ -352,6 +507,7 @@ export default {
 			})
 			this.days = data.days || {}
 			this.running = data.running || []
+			this.loadPins()
 			this.setupLiveTimer(data.now)
 		},
 		setupLiveTimer(serverNow) {
@@ -385,9 +541,10 @@ export default {
 				showError(e.message)
 			}
 		},
-		async stopTimer() {
+		// The server renames the running entry to `name`, except for 'no description'.
+		async stopTimer(name = this.workInput.trim() || 'no description') {
 			try {
-				await apiPost(`/stop-timer/${encodeURIComponent(encodeURIComponent(this.workInput.trim() || 'no description'))}`)
+				await apiPost(`/stop-timer/${encodeURIComponent(encodeURIComponent(name))}`)
 				this.workInput = ''
 				await this.loadWorkIntervals()
 			} catch (e) {
@@ -617,6 +774,10 @@ export default {
 }
 .group-total {
 	font-weight: bold;
+}
+.row-actions {
+	display: flex;
+	gap: 4px;
 }
 .in-group td:first-child {
 	box-shadow: inset 3px 0 0 var(--color-primary-element-light);
