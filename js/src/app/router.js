@@ -28,8 +28,15 @@ const routes = views.map(({ path, name, component }) => ({
 	component,
 }))
 
+// The app can be opened as /apps/timetracker/ or /index.php/apps/timetracker/.
+// Use the form of the current URL as the base; otherwise the router appends the
+// whole path to the other form, which the server then can't find on reload.
+const prettyBase = generateUrl('/apps/timetracker')
+const indexBase = generateUrl('/apps/timetracker', {}, { noRewrite: true })
+const base = window.location.pathname.startsWith(indexBase) ? indexBase : prettyBase
+
 export default createRouter({
-	history: createWebHistory(generateUrl('/apps/timetracker')),
+	history: createWebHistory(base),
 	routes,
 })
 

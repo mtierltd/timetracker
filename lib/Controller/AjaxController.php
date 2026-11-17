@@ -34,6 +34,7 @@ use OCA\TimeTracker\Db\TimelineMapper;
 use OCA\TimeTracker\Db\TimelineEntryMapper;
 use OCA\TimeTracker\Db\Timeline;
 use OCA\TimeTracker\Db\TimelineEntry;
+use OCA\TimeTracker\Db\PinnedTimerMapper;
 
 class AjaxController extends Controller {
 	private $userId;
@@ -55,11 +56,12 @@ class AjaxController extends Controller {
 	protected $groupManager;
 	protected $mailer;
 	protected $db;
+	protected $pinnedTimerMapper;
 
 	public function __construct($AppName, IRequest $request, IUserSession $userSession, IL10N $l10n,
 							WorkIntervalMapper $workIntervalMapper, ClientMapper $clientMapper, UserToClientMapper $userToClientMapper,
 							ProjectMapper $projectMapper, UserToProjectMapper $userToProjectMapper, TagMapper $tagMapper, WorkIntervalToTagMapper $workIntervalToTagMapper, ReportItemMapper $reportItemMapper,
-							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper,
+							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper, PinnedTimerMapper $pinnedTimerMapper,
 							IGroupManager $groupManager, IMailer $mailer, IDBConnection $db, $userId){
 		parent::__construct($AppName, $request);
 		$this->userId = $userId;
@@ -79,6 +81,7 @@ class AjaxController extends Controller {
 
 		$this->timelineMapper = $timelineMapper;
 		$this->timelineEntryMapper = $timelineEntryMapper;
+		$this->pinnedTimerMapper = $pinnedTimerMapper;
 
 		$this->request =  $request;
 		$this->l10n = $l10n;
@@ -728,6 +731,7 @@ class AjaxController extends Controller {
 		}
 		$this->workIntervalMapper->deleteAllForProject($id);
 		$this->tagMapper->allowedTags($id,[]);
+		$this->pinnedTimerMapper->clearProject($id);
 		$this->projectMapper->deleteById($id);
 
 
@@ -857,6 +861,7 @@ class AjaxController extends Controller {
 		}
 		$this->tagMapper->delete($c);
 		$this->workIntervalToTagMapper->deleteAllForTag($id);
+		$this->pinnedTimerMapper->removeTag($id);
 		return $this->getTags();
 	}
 

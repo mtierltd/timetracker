@@ -6,6 +6,8 @@ use OCA\TimeTracker\Db\Client;
 use OCA\TimeTracker\Db\ClientMapper;
 use OCA\TimeTracker\Db\Goal;
 use OCA\TimeTracker\Db\GoalMapper;
+use OCA\TimeTracker\Db\PinnedTimer;
+use OCA\TimeTracker\Db\PinnedTimerMapper;
 use OCA\TimeTracker\Db\Project;
 use OCA\TimeTracker\Db\ProjectMapper;
 use OCA\TimeTracker\Db\Tag;
@@ -42,7 +44,7 @@ class MapperTest extends TestCase {
 	private const TABLES = [
 		'timetracker_client', 'timetracker_project', 'timetracker_user_to_client', 'timetracker_user_to_project',
 		'timetracker_tag', 'timetracker_work_interval', 'timetracker_workint_to_tag', 'timetracker_goal',
-		'timetracker_timeline', 'timetracker_timeline_entry',
+		'timetracker_timeline', 'timetracker_timeline_entry', 'timetracker_pin',
 	];
 
 	/** @var IDBConnection */
@@ -357,6 +359,62 @@ class MapperTest extends TestCase {
 	}
 
 	// --- helpers ---
+
+	// --- pinned timers ---
+
+	public function testPinnedTimers(): void {
+		$mapper = \OCP\Server::get(PinnedTimerMapper::class);
+		$alice = $this->user('alice');
+		$bob = $this->user('bob');
+		$this->assertSame(-1, $mapper->maxSortOrder($alice));
+
+		$second = $this->pin($alice, 'Coding', 7, '3,12', 1);
+		$first = $this->pin($alice, 'Coding', null, '12', 0);
+		$third = $this->pin($alice, 'Review', 7, '', 1);
+		$other = $this->pin($bob, 'Coding', 7, '12', 0);
+
+		// by sort order, then id
+		$this->assertSame([$first->getId(), $second->getId(), $third->getId()], $this->ids($mapper->findAllForUser($alice)));
+		$this->assertSame(1, $mapper->maxSortOrder($alice));
+		$this->assertSame([3, 12], $mapper->findForUser($second->getId(), $alice)->getTagIdList());
+		$this->assertNull($mapper->findForUser($other->getId(), $alice));
+
+		$this->assertSame($second->getId(), $mapper->findByNameAndProject($alice, 'Coding', 7)->getId());
+		$this->assertSame($first->getId(), $mapper->findByNameAndProject($alice, 'Coding', null)->getId());
+		$this->assertNull($mapper->findByNameAndProject($alice, 'Review', null));
+		$this->assertNull($mapper->findByNameAndProject($alice, 'Nothing', 7));
+
+		// tag 12 goes, tag 3 (and "123"-like ids) stay
+		$mapper->removeTag(12);
+		$this->assertSame([3], $mapper->findForUser($second->getId(), $alice)->getTagIdList());
+		$this->assertSame([], $mapper->findForUser($first->getId(), $alice)->getTagIdList());
+		$this->assertSame([], $mapper->findForUser($other->getId(), $bob)->getTagIdList());
+
+		// the project is cleared for everyone, the pins stay
+		$mapper->clearProject(7);
+		$this->assertNull($mapper->findForUser($second->getId(), $alice)->getProjectId());
+		$this->assertNull($mapper->findForUser($other->getId(), $bob)->getProjectId());
+		$this->assertCount(3, $mapper->findAllForUser($alice));
+	}
+
+	public function testPinnedTimerTagIdParsing(): void {
+		$this->assertSame([3, 12], PinnedTimer::parseTagIds('3,12,3,,x,-1,0'));
+		$this->assertSame([5, 6], PinnedTimer::parseTagIds([5, '6', null]));
+		$this->assertSame([], PinnedTimer::parseTagIds(null));
+	}
+
+	private function pin(string $user, string $name, ?int $projectId, string $tagIds, int $sortOrder): PinnedTimer {
+		$pin = new PinnedTimer();
+		$pin->setUserUid($user);
+		$pin->setName($name);
+		$pin->setProjectId($projectId);
+		$pin->setTagIds($tagIds);
+		$pin->setSortOrder($sortOrder);
+		$pin->setCreatedAt(time());
+		$pin = \OCP\Server::get(PinnedTimerMapper::class)->insert($pin);
+		$this->created['timetracker_pin'][] = $pin->getId();
+		return $pin;
+	}
 
 	private function user(string $name): string {
 		return $this->prefix . $name;
