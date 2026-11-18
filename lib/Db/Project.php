@@ -4,6 +4,14 @@ namespace  OCA\TimeTracker\Db;
 
 use OCP\AppFramework\Db\Entity;
 
+/**
+ * @method void setName(string $name)
+ * @method void setColor(string $color)
+ * @method void setClientId(?int $clientId)
+ * @method void setLocked(int $locked)
+ * @method void setArchived(int $archived)
+ * @method int getArchived()
+ */
 class Project extends Entity {
 
     public $id;

@@ -175,7 +175,14 @@ export default {
 				i.name, i.details, i.userUid, i.project, i.client, this.formatWhen(i),
 				((i.cost || 0) / 100).toFixed(2), formatDuration(i.totalDuration), this.ended(i),
 			])
-			return [header, ...rows].map((r) => r.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n')
+			// A leading ' keeps spreadsheet programs from running text that
+			// starts with =, +, -, @, tab or CR as a formula.
+			const cell = (v) => {
+				let text = String(v ?? '')
+				if (/^[=+\-@\t\r]/.test(text)) text = `'${text}`
+				return `"${text.replace(/"/g, '""')}"`
+			}
+			return [header, ...rows].map((r) => r.map(cell).join(',')).join('\n')
 		},
 		downloadBlob(content, filename, type) {
 			const blob = new Blob([content], { type })

@@ -4,6 +4,9 @@ namespace  OCA\TimeTracker\Db;
 
 use OCP\AppFramework\Db\Entity;
 
+/**
+ * @method void setName(string $name)
+ */
 class Client extends Entity {
 
     public $id;
