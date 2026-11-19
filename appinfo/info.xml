@@ -41,14 +41,12 @@ Questions, ideas or bugs? Have a look at the [issues on GitHub](https://github.c
     <website>https://github.com/mtierltd/timetracker</website>
     <bugs>https://github.com/mtierltd/timetracker/issues</bugs>
     <repository type="git">https://github.com/mtierltd/timetracker.git</repository>
-    <screenshot>https://abload.de/img/bildschirmfotoam2021-u7j37.png</screenshot>
-    <screenshot>https://abload.de/img/bildschirmfotoam2021-m0jq9.png</screenshot>
-    <screenshot>https://abload.de/img/bildschirmfotoam2021-6dj9p.png</screenshot>
-    <screenshot>https://abload.de/img/bildschirmfotoam2021-otj7x.png</screenshot>
-    <screenshot>https://abload.de/img/bildschirmfotoam2021-kykd8.png</screenshot>
-    <screenshot>https://abload.de/img/bildschirmfotoam2021-nbk8s.png</screenshot>
-    <screenshot>https://abload.de/img/bildschirmfotoam2021-vuk8t.png</screenshot>
-    <screenshot>https://abload.de/img/bildschirmfotoam2021-03kxw.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mtierltd/timetracker/master/img/screenshots/timer.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mtierltd/timetracker/master/img/screenshots/reports.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mtierltd/timetracker/master/img/screenshots/dashboard.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mtierltd/timetracker/master/img/screenshots/goals.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mtierltd/timetracker/master/img/screenshots/projects.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/mtierltd/timetracker/master/img/screenshots/timer-dark.png</screenshot>
     <dependencies>
         <nextcloud min-version="31" max-version="35"/>
     </dependencies>
