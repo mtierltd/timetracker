@@ -3,138 +3,32 @@
 # @author Bernhard Posselt <dev@bernhard-posselt.com>
 # @copyright Bernhard Posselt 2016
 
-# Generic Makefile for building and packaging a Nextcloud app which uses npm and
-# Composer.
+# Build, package and test the Time Tracker app.
 #
-# Dependencies:
-# * make
-# * which
-# * curl: used if phpunit and composer are not installed to fetch them from the web
-# * tar: for building the archive
-# * npm: for building and testing everything JS
+#   make                   build the frontend (js/dist)
+#   make appstore          build the App Store archive (see RELEASING.md)
+#   make test              run the unit tests
+#   make test-integration  run the integration tests (inside a Nextcloud server)
+#   make clean             remove build output
 #
-# If no composer.json is in the app root directory, the Composer step
-# will be skipped. The same goes for the package.json which can be located in
-# the app root or the js/ directory.
-#
-# The npm command by launches the npm build script:
-#
-#    npm run build
-#
-# The npm test command launches the npm test script:
-#
-#    npm run test
-#
-# The idea behind this is to be completely testing and build tool agnostic. All
-# build tools and additional package managers should be installed locally in
-# your project, since this won't pollute people's global namespace.
-#
-# The following npm scripts in your package.json install and update the bower
-# and npm dependencies and use gulp as build system (notice how everything is
-# run from the node_modules folder):
-#
-#    "scripts": {
-#        "test": "node node_modules/gulp-cli/bin/gulp.js karma",
-#        "prebuild": "npm install && node_modules/bower/bin/bower install && node_modules/bower/bin/bower update",
-#        "build": "node node_modules/gulp-cli/bin/gulp.js"
-#    },
+# Requires: make, git, tar, npm, composer, php.
 
-app_name=$(notdir $(CURDIR))
-build_tools_directory=$(CURDIR)/build/tools
-source_build_directory=$(CURDIR)/build/artifacts/source
-source_package_name=$(source_build_directory)/$(app_name)
+app_id=$(shell sed -n 's:.*<id>\(.*\)</id>.*:\1:p' appinfo/info.xml | head -n 1)
 appstore_build_directory=$(CURDIR)/build/artifacts/appstore
-appstore_package_name=$(appstore_build_directory)/$(app_name)
-npm=$(shell which npm 2> /dev/null)
-composer=$(shell which composer 2> /dev/null)
-php=$(shell which php-8.2 2> /dev/null) -dallow_url_fopen=On
+appstore_stage=$(appstore_build_directory)/$(app_id)
 
-COMPOSER_ARGS=--prefer-dist --no-dev
-
+.PHONY: all build appstore composer-dev test test-integration clean
 all: build
 
-# Fetches the PHP and JS dependencies and compiles the JS. If no composer.json
-# is present, the composer step is skipped, if no package.json or js/package.json
-# is present, the npm step is skipped
-.PHONY: build
+# Builds the frontend into js/dist
 build:
-ifneq (,$(wildcard $(CURDIR)/composer.json))
-	gmake composer
-endif
-ifneq (,$(wildcard $(CURDIR)/package.json))
-	gmake npm
-endif
-ifneq (,$(wildcard $(CURDIR)/js/package.json))
-	gmake npm
-endif
-
-# Installs and updates the composer dependencies. If composer is not installed
-# a copy is fetched from the web
-.PHONY: composer
-composer:
-ifeq (, $(composer))
-	@echo "No composer command available, downloading a copy from the web"
-	mkdir -p $(build_tools_directory)
-	curl -sS https://getcomposer.org/installer | $(php)
-	mv composer.phar $(build_tools_directory)
-	$(php) $(build_tools_directory)/composer.phar install $(COMPOSER_ARGS)
-	$(php) $(build_tools_directory)/composer.phar update $(COMPOSER_ARGS)
-else
-	composer install $(COMPOSER_ARGS)
-	composer update $(COMPOSER_ARGS)
-endif
-
-# Installs npm dependencies
-.PHONY: npm
-npm:
-ifeq (,$(wildcard $(CURDIR)/package.json))
-	cd js && $(npm) install && $(npm) run build
-else
-	npm run build
-endif
-
-# Removes the appstore build
-.PHONY: clean
-clean:
-	rm -rf ./build
-
-# Same as clean but also removes dependencies installed by composer, bower and
-# npm
-.PHONY: distclean
-distclean: clean
-	rm -rf vendor
-	rm -rf node_modules
-	rm -rf js/vendor
-	rm -rf js/node_modules
-
-# Builds the source and appstore package
-.PHONY: dist
-dist:
-	gmake source
-	gmake appstore
-
-# Builds the source package
-.PHONY: source
-source:
-	rm -rf $(source_build_directory)
-	mkdir -p $(source_build_directory)
-	gtar cvzf $(source_package_name).tar.gz ../$(app_name) \
-	--exclude-vcs \
-	--exclude="../$(app_name)/build" \
-	--exclude="../$(app_name)/js/node_modules" \
-	--exclude="../$(app_name)/node_modules" \
-	--exclude="../$(app_name)/*.log" \
-	--exclude="../$(app_name)/js/*.log" \
+	cd js && npm ci --no-audit --no-fund && npm run build
 
 # Builds the App Store archive build/artifacts/appstore/<app id>.tar.gz: the
 # files committed at HEAD plus the built frontend (js/dist), without
 # development files, in a single top folder named after the app id. Using
 # "git archive" keeps local, uncommitted files out of the release.
 # Code signing (appinfo/signature.json) happens in the release workflow.
-app_id=$(shell sed -n 's:.*<id>\(.*\)</id>.*:\1:p' appinfo/info.xml | head -n 1)
-appstore_stage=$(appstore_build_directory)/$(app_id)
-
-.PHONY: appstore
 appstore:
 	rm -rf $(appstore_build_directory)
 	mkdir -p $(appstore_stage)
@@ -149,22 +43,21 @@ appstore:
 	tar --owner=0 --group=0 --sort=name -czf $(appstore_build_directory)/$(app_id).tar.gz -C $(appstore_build_directory) $(app_id)
 	@echo "Built $(appstore_build_directory)/$(app_id).tar.gz"
 
-# Installs composer dependencies including require-dev (phpunit, phpstan,
-# nextcloud/ocp stubs). Separate from the `composer` target above, which
-# passes --no-dev for production/appstore builds.
-.PHONY: composer-dev
+# Installs the development dependencies (phpunit, phpstan, nextcloud/ocp stubs)
 composer-dev:
 	composer install --prefer-dist
 
-# Runs the unit test suite, which only needs the nextcloud/ocp stub package
-# (no live Nextcloud instance required) — this is what CI runs.
-.PHONY: test
+# Runs the unit tests; they only need the nextcloud/ocp stubs, no server
 test: composer-dev
-	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.xml
+	composer run test:unit
 
-# Runs the integration test suite. Requires this app to be checked out inside
-# a real Nextcloud server's apps/ directory with a working install — not run
-# by CI yet (see the linked GitHub issue for the multi-database CI follow-up).
-.PHONY: test-integration
-test-integration: composer-dev
-	$(CURDIR)/vendor/phpunit/phpunit/phpunit -c phpunit.integration.xml
+# Runs the integration tests. The app must be in a Nextcloud server's apps/
+# (or custom_apps/) directory, installed and enabled, with the server's own
+# PHPUnit installed (composer install --working-dir=<server>/vendor-bin/phpunit),
+# as in .github/workflows/integration.yml.
+test-integration:
+	../../vendor-bin/phpunit/vendor/bin/phpunit -c phpunit.integration.xml
+
+# Removes build output
+clean:
+	rm -rf build js/dist

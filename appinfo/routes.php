@@ -12,7 +12,6 @@
 return [
     'routes' => [
        ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
-       ['name' => 'page#do_echo', 'url' => '/echo', 'verb' => 'POST'],
        ['name' => 'clients#index', 'url' => '/clients', 'verb' => 'GET'],
        ['name' => 'projects#index', 'url' => '/projects', 'verb' => 'GET'],
        ['name' => 'dashboard#index', 'url' => '/dashboard', 'verb' => 'GET'],
@@ -26,7 +25,6 @@ return [
 
        ['name' => 'ajax#start_timer', 'url' => '/ajax/start-timer/{name}', 'verb' => 'POST'],
        ['name' => 'ajax#stop_timer', 'url' => '/ajax/stop-timer/{name}', 'verb' => 'POST'],
-       ['name' => 'ajax#index', 'url' => '/ajax/', 'verb' => 'GET'],
        ['name' => 'ajax#work_intervals', 'url' => '/ajax/work-intervals', 'verb' => 'GET'],
        ['name' => 'ajax#update_work_interval', 'url' => '/ajax/update-work-interval/{id}', 'verb' => 'POST'],
        ['name' => 'ajax#add_work_interval', 'url' => '/ajax/add-work-interval/{name}', 'verb' => 'POST'],

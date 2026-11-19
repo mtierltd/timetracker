@@ -17,7 +17,6 @@ class ClientsController extends Controller {
 		$this->userSession = $userSession;
 		$user = $this->userSession->getUser();
 
-		//var_dump($user);
 	}
 
 	/**
