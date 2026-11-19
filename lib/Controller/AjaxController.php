@@ -1350,14 +1350,16 @@ class AjaxController extends Controller {
 	 * @NoAdminRequired
 	 */
 	public function addGoal() {
-
-		$project = $this->usableProject($this->request->projectId);
+		// getParam(), not $this->request->projectId: a JSON body (as the web
+		// app sends) is only parsed by getParam(), and this method has no
+		// parameters that would make the framework call it first.
+		$project = $this->usableProject($this->request->getParam('projectId'));
 		if (!$project) {
 			return $this->notFound();
 		}
 		$projectId = $project->id;
-		$hours = $this->request->hours;
-		$interval = $this->request->interval;
+		$hours = $this->request->getParam('hours');
+		$interval = $this->request->getParam('interval');
 
 		$g = $this->goalMapper->findByUserProject($this->userId, $projectId);
 		if ($g == null){
