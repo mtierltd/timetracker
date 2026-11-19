@@ -9,7 +9,7 @@
   "build": "webpack",
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "AGPL-3.0-or-later",
   "devDependencies": {
     "@nextcloud/browserslist-config": "^3.0.1",
     "css-loader": "^5.0.1",

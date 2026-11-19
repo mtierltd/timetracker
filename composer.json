@@ -2,7 +2,7 @@
     "name": "mtierltd/timetracker",
     "description": "Time Tracker App",
     "type": "project",
-    "license": "AGPL",
+    "license": "AGPL-3.0-or-later",
     "authors": [
         {
             "name": "MTier Ltd."
