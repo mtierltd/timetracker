@@ -26,6 +26,10 @@ The make command will install or update Composer dependencies if a composer.json
 ```
 
 
+## Features and clients
+
+Which features exist in the web app, the Android app and planned clients, and how clients find out what a server supports: [FEATURES.md](FEATURES.md).
+
 ## Versioning and releases
 
 Time Tracker uses semantic versioning. How versions are numbered and how a release is built, signed and published to the App Store is described in [RELEASING.md](RELEASING.md).
