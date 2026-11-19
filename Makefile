@@ -144,7 +144,8 @@ appstore:
 	cp -r js/dist $(appstore_stage)/js/dist
 	cd $(appstore_stage) && rm -rf .github .gitignore tests build Makefile \
 		composer.json composer.lock phpunit.xml phpunit.integration.xml phpstan.neon phpstan-baseline.neon \
-		js/src js/package.json js/package-lock.json js/webpack.config.js
+		js/src js/package.json js/package-lock.json js/webpack.config.js \
+		img/screenshots
 	tar --owner=0 --group=0 --sort=name -czf $(appstore_build_directory)/$(app_id).tar.gz -C $(appstore_build_directory) $(app_id)
 	@echo "Built $(appstore_build_directory)/$(app_id).tar.gz"
 
