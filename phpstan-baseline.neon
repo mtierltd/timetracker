@@ -1,411 +1,367 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$content\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$content\.$#'
+			identifier: property.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$cost\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$cost\.$#'
+			identifier: property.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$email\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$email\.$#'
+			identifier: property.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$end\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$from\.$#'
+			identifier: property.notFound
 			count: 2
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$from\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$group1\.$#'
+			identifier: property.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$group2\.$#'
+			identifier: property.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$name\.$#'
+			identifier: property.notFound
 			count: 3
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$group1\\.$#"
-			count: 3
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$group2\\.$#"
-			count: 3
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$hours\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$q\.$#'
+			identifier: property.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$interval\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$status\.$#'
+			identifier: property.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$name\\.$#"
-			count: 4
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$projectId\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$subject\.$#'
+			identifier: property.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$q\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$timegroup\.$#'
+			identifier: property.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$status\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$subject\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$timegroup\\.$#"
-			count: 3
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$to\\.$#"
-			count: 3
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Access to an undefined property OCP\\\\IRequest\\:\\:\\$workItem\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Access to static property \\$server on an unknown class OC\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Client\\:\\:setCreatedAt\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Client\\:\\:setName\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Goal\\:\\:setCreatedAt\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Goal\\:\\:setHours\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Goal\\:\\:setInterval\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Goal\\:\\:setProjectId\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Goal\\:\\:setUserUid\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Project\\:\\:setClientId\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Project\\:\\:setColor\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Project\\:\\:setCreatedAt\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Project\\:\\:setCreatedByUserUid\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Project\\:\\:setName\\(\\)\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Tag\\:\\:setCreatedAt\\(\\)\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$to\.$#'
+			identifier: property.notFound
 			count: 2
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Tag\\:\\:setName\\(\\)\\.$#"
+			message: '#^Access to an undefined property OCP\\IRequest\:\:\$workItem\.$#'
+			identifier: property.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Client\:\:setCreatedAt\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Goal\:\:setCreatedAt\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Goal\:\:setHours\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Goal\:\:setInterval\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Goal\:\:setProjectId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Goal\:\:setUserUid\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Project\:\:setCreatedAt\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Project\:\:setCreatedByUserUid\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: lib/Controller/AjaxController.php
+
+		-
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Tag\:\:setCreatedAt\(\)\.$#'
+			identifier: method.notFound
 			count: 2
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Tag\\:\\:setUserUid\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Tag\:\:setUserUid\(\)\.$#'
+			identifier: method.notFound
 			count: 2
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setCreatedAt\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\TimelineEntry\:\:setClientName\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setFilterClients\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\TimelineEntry\:\:setCost\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setFilterProjects\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\TimelineEntry\:\:setCreatedAt\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setGroup1\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\TimelineEntry\:\:setName\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setGroup2\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\TimelineEntry\:\:setProjectName\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setStatus\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\TimelineEntry\:\:setTimeInterval\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setTimeGroup\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\TimelineEntry\:\:setTimelineId\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setTimeInterval\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\TimelineEntry\:\:setTotalDuration\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setTotalDuration\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\TimelineEntry\:\:setUserUid\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\Timeline\\:\\:setUserUid\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Timeline\:\:setCreatedAt\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setClientName\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Timeline\:\:setFilterClients\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setCost\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Timeline\:\:setFilterProjects\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setCreatedAt\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Timeline\:\:setGroup1\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setName\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Timeline\:\:setGroup2\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setProjectName\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Timeline\:\:setStatus\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setTimeInterval\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Timeline\:\:setTimeGroup\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setTimelineId\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Timeline\:\:setTimeInterval\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setTotalDuration\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Timeline\:\:setTotalDuration\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\TimelineEntry\\:\\:setUserUid\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\Timeline\:\:setUserUid\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToClient\\:\\:setAdmin\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\UserToClient\:\:setAdmin\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToClient\\:\\:setClientId\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\UserToClient\:\:setClientId\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToClient\\:\\:setCreatedAt\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\UserToClient\:\:setCreatedAt\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToClient\\:\\:setUserUid\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\UserToClient\:\:setUserUid\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToProject\\:\\:setAccess\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\UserToProject\:\:setAccess\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToProject\\:\\:setAdmin\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\UserToProject\:\:setAdmin\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToProject\\:\\:setCreatedAt\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\UserToProject\:\:setCreatedAt\(\)\.$#'
+			identifier: method.notFound
 			count: 2
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToProject\\:\\:setProjectId\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\UserToProject\:\:setProjectId\(\)\.$#'
+			identifier: method.notFound
 			count: 2
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\UserToProject\\:\\:setUserUid\\(\\)\\.$#"
+			message: '#^Call to an undefined method OCA\\TimeTracker\\Db\\UserToProject\:\:setUserUid\(\)\.$#'
+			identifier: method.notFound
 			count: 2
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setDetails\\(\\)\\.$#"
+			message: '#^Variable \$cost on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setDuration\\(\\)\\.$#"
+			message: '#^Variable \$intervals might not be defined\.$#'
+			identifier: variable.undefined
 			count: 1
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setName\\(\\)\\.$#"
+			message: '#^Variable \$repItems might not be defined\.$#'
+			identifier: variable.undefined
 			count: 2
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setProjectId\\(\\)\\.$#"
-			count: 3
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setRunning\\(\\)\\.$#"
-			count: 2
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setStart\\(\\)\\.$#"
-			count: 2
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkInterval\\:\\:setUserUid\\(\\)\\.$#"
-			count: 2
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkIntervalToTag\\:\\:setCreatedAt\\(\\)\\.$#"
-			count: 6
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkIntervalToTag\\:\\:setTagId\\(\\)\\.$#"
-			count: 6
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to an undefined method OCA\\\\TimeTracker\\\\Db\\\\WorkIntervalToTag\\:\\:setWorkIntervalId\\(\\)\\.$#"
-			count: 6
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Undefined variable\\: \\$id$#"
-			count: 5
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Variable \\$cost on left side of \\?\\? always exists and is not nullable\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Variable \\$intervals might not be defined\\.$#"
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Variable \\$repItems might not be defined\\.$#"
-			count: 2
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
 			count: 69
 			path: lib/Migration/Version000000Date20210719124731.php
 
 		-
-			message: "#^Call to method setPrimaryKey\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			message: '#^Call to method setPrimaryKey\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
 			count: 11
 			path: lib/Migration/Version000000Date20210719124731.php
 
 		-
-			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
 			count: 17
 			path: lib/Migration/Version000001Date20210719192031.php
 
 		-
-			message: "#^Call to method hasColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			message: '#^Call to method hasColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
 			count: 2
 			path: lib/Migration/Version000001Date20210719192031.php
 
 		-
-			message: "#^Call to method setPrimaryKey\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			message: '#^Call to method setPrimaryKey\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
 			count: 2
 			path: lib/Migration/Version000001Date20210719192031.php
 
 		-
-			message: "#^Call to method addColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
 			count: 1
 			path: lib/Migration/Version000093Date20261024000000.php
 
 		-
-			message: "#^Call to method hasColumn\\(\\) on an unknown class Doctrine\\\\DBAL\\\\Schema\\\\Table\\.$#"
+			message: '#^Call to method hasColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
+			identifier: class.notFound
 			count: 1
 			path: lib/Migration/Version000093Date20261024000000.php
