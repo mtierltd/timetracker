@@ -64,6 +64,8 @@ class AuthorizationTest extends TestCase {
 	private $mailer;
 	/** @var IMessage[] sent messages */
 	private $sent = [];
+	/** @var string[] temporary files with JSON request bodies */
+	private $jsonBodies = [];
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -82,6 +84,9 @@ class AuthorizationTest extends TestCase {
 	}
 
 	protected function tearDown(): void {
+		foreach ($this->jsonBodies as $file) {
+			@unlink($file);
+		}
 		if (!empty($this->created['timetracker_work_interval'])) {
 			$qb = $this->db->getQueryBuilder();
 			$qb->delete('timetracker_workint_to_tag')
@@ -259,17 +264,39 @@ class AuthorizationTest extends TestCase {
 		$this->assertNotNull(\OCP\Server::get(GoalMapper::class)->findByUserProject($this->alice, $project->getId()));
 	}
 
+	public function testAddGoalFromJsonBody(): void {
+		// the web app sends JSON; addGoal() used to read only form parameters
+		$project = $this->project('Alice JSON goal project ' . $this->alice, $this->alice);
+		$this->as($this->alice, ['projectId' => $project->getId(), 'hours' => '12', 'interval' => 'Monthly'], true)->addGoal();
+
+		$goal = \OCP\Server::get(GoalMapper::class)->findByUserProject($this->alice, $project->getId());
+		$this->assertNotNull($goal);
+		$this->assertSame([12, 'Monthly'], [(int)$goal->getHours(), $goal->getInterval()]);
+	}
+
 	// --- helpers ---
 
 	/**
 	 * The controller as $user, with these request parameters.
 	 */
-	private function as(string $user, array $params = []): AjaxController {
-		// Nextcloud's real request class: $request->name resolves like in production
+	private function as(string $user, array $params = [], bool $json = false): AjaxController {
+		// Nextcloud's real request class: $request->name resolves like in production.
+		// $json sends the parameters as a JSON body, like the web app does.
+		if ($json) {
+			$stream = tempnam(sys_get_temp_dir(), 'tt-json-');
+			file_put_contents($stream, json_encode($params));
+			$this->jsonBodies[] = $stream;
+			$vars = ['method' => 'POST', 'server' => ['CONTENT_TYPE' => 'application/json', 'REQUEST_METHOD' => 'POST']];
+		} else {
+			$stream = 'php://input';
+			$vars = ['post' => $params, 'method' => 'POST'];
+		}
 		$request = new \OC\AppFramework\Http\Request(
-			['post' => $params, 'method' => 'POST'],
+			$vars,
 			\OCP\Server::get(\OCP\IRequestId::class),
-			\OCP\Server::get(\OCP\IConfig::class)
+			\OCP\Server::get(\OCP\IConfig::class),
+			null,
+			$stream
 		);
 
 		return new AjaxController('timetracker', $request,
