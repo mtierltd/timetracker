@@ -42,7 +42,7 @@ class ReportItemMapper {
      * @param string|null $groupOn2 same as $groupOn1
      * @param bool $admin report all users' entries
      * @param int|null $start offset into the resulting rows
-     * @param int|null $limit maximum number of resulting rows (default 10000)
+     * @param int|null $limit maximum number of resulting rows: null for all, 0 for the default of 10000
      * @param \DateTimeZone|null $timeZone time zone for time groups; default: the logged-in user's
      * @return ReportItem[]
      */
@@ -61,6 +61,9 @@ class ReportItemMapper {
         }
 
         $start = empty($start) ? 0 : (int)$start;
+        if ($limit === null) {
+            return array_slice($items, $start);
+        }
         $limit = empty($limit) ? 10000 : (int)$limit;
         return array_slice($items, $start, $limit);
     }
