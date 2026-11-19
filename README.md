@@ -1,29 +1,19 @@
 # Time Tracker
-Place this app in **nextcloud/apps/**
 
-## Building the app
+Time tracking for Nextcloud: a timer, projects, clients and tags, reports, timelines and goals. Install it from the [Nextcloud App Store](https://apps.nextcloud.com/apps/timetracker) or the Apps page of your Nextcloud.
 
-The app can be built by using the provided Makefile by running:
+## Development setup
 
-    make
+Clone the repository into the `apps/` (or `custom_apps/`) directory of a Nextcloud server (see `appinfo/info.xml` for the supported versions), then build the frontend and enable the app:
 
-This requires the following things to be present:
-* make
-* which
-* tar: for building the archive
-* curl: used if phpunit and composer are not installed to fetch them from the web
-* npm: for building and testing everything JS, only required if a package.json is placed inside the **js/** folder
+    cd js && npm ci && npm run build
+    php occ app:enable timetracker
 
-The make command will install or update Composer dependencies if a composer.json is present and also **npm run build** if a package.json is present in the **js/** folder. The npm **build** script should use local paths for build systems and package managers, so people that simply want to build the app won't need to install npm libraries globally, e.g.:
+A git checkout gets no updates from the App Store (Nextcloud skips app directories that contain `.git`), so use it for development only.
 
-**package.json**:
-```json
-"scripts": {
-    "test": "node node_modules/gulp-cli/bin/gulp.js karma",
-    "prebuild": "npm install && node_modules/bower/bin/bower install && node_modules/bower/bin/bower update",
-    "build": "node node_modules/gulp-cli/bin/gulp.js"
-}
-```
+The frontend is a Vue 3 app in `js/src`, built with webpack into `js/dist`. Run `npm run build` again after changing it. The PHP code is in `lib/` and needs no build step.
+
+Requirements: PHP and Composer (for the development tools and tests), Node.js with npm (the release workflow uses Node.js 24).
 
 
 ## Versioning and releases
@@ -31,21 +21,22 @@ The make command will install or update Composer dependencies if a composer.json
 Time Tracker uses semantic versioning. How versions are numbered and how a release is built, signed and published to the App Store is described in [RELEASING.md](RELEASING.md).
 
 ## Running tests
-You can use the provided Makefile to run all tests by using:
 
-    make test
+**Unit tests** (no Nextcloud server needed, they use the `nextcloud/ocp` stubs):
 
-This will run the PHP unit and integration tests and if a package.json is present in the **js/** folder will execute **npm run test**
+    composer install
+    composer run test:unit
 
-Of course you can also install [PHPUnit](http://phpunit.de/getting-started.html) and use the configurations directly:
+**Integration tests** run against a real database, inside a Nextcloud server: the app must be installed and enabled there, and the server's PHPUnit installed (`composer install --working-dir=<server>/vendor-bin/phpunit`). Then, in the app directory:
 
-    phpunit -c phpunit.xml
+    make test-integration
 
-or:
+**Static analysis and linting:**
 
-    phpunit -c phpunit.integration.xml
+    composer run phpstan
+    composer run lint
 
-for integration tests
+CI runs all of these on every pull request: integration tests on SQLite, MySQL, MariaDB and PostgreSQL, with the oldest and newest supported Nextcloud versions (`.github/workflows/`).
 
 # Android App
 

@@ -55,11 +55,4 @@ class TimelineMapper extends QBMapper {
     /**
      * @return Timeline[]
      */
-    public function findByStatus($status): array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-            ->from($this->getTableName())
-            ->where($qb->expr()->eq('status', $qb->createNamedParameter($status)));
-        return $this->findEntities($qb);
-    }
 }

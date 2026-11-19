@@ -154,9 +154,6 @@ class AjaxController extends Controller {
 		return $this->userId !== null && $this->groupManager->isAdmin($this->userId);
 	}
 
-	public function isUserAdmin($user){
-		return $this->groupManager->isAdmin($user);
-	}
 
 	// --- Authorization helpers. Each returns the object only if the current
 	// user may use it, otherwise null; endpoints then answer 404 Not Found,
@@ -291,14 +288,6 @@ class AjaxController extends Controller {
 		return $value;
 	}
 
-	/**
-	 *
-	 * @NoAdminRequired
-	 * @NoCSRFRequired
-	 */
-	public function index() {
-
-	}
 
     /**
      * @NoAdminRequired
@@ -335,7 +324,6 @@ class AjaxController extends Controller {
 	 */
 
 	public function startTimer($name) {
-		//$this->endTimer();
 		$projectId = null;
 		$name = urldecode($name);
 		if (isset($this->request->projectId) && (!empty($this->request->projectId))){
@@ -391,7 +379,6 @@ class AjaxController extends Controller {
 
 
 
-		//echo json_encode((array)$winterval);
 		return new JSONResponse(["WorkIntervals" => $winterval, "running" => 1]);
 
 	}
@@ -536,7 +523,6 @@ class AjaxController extends Controller {
 				$newWiToTag->setWorkIntervalId($id);
 				$newWiToTag->setTagId($tag);
 				$newWiToTag->setCreatedAt(time());
-				//var_dump($newWiToTag);
 				$this->workIntervalToTagMapper->insert($newWiToTag);
 
 			}

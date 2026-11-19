@@ -34,13 +34,6 @@ class UserToClientMapper extends QBMapper {
     /**
      * @return UserToClient[]
      */
-    public function findAllForUser($uid): array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-            ->from($this->getTableName())
-            ->where($qb->expr()->eq('user_uid', $qb->createNamedParameter($uid)));
-        return $this->findEntities($qb);
-    }
 
     /**
      * The link between the user and the client, or null.

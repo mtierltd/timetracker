@@ -34,13 +34,6 @@ class UserToProjectMapper extends QBMapper {
     /**
      * @return UserToProject[]
      */
-    public function findAllForUser($uid): array {
-        $qb = $this->db->getQueryBuilder();
-        $qb->select('*')
-            ->from($this->getTableName())
-            ->where($qb->expr()->eq('user_uid', $qb->createNamedParameter($uid)));
-        return $this->findEntities($qb);
-    }
 
     /**
      * @return UserToProject[]
