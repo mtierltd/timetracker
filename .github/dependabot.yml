@@ -1,0 +1,43 @@
+# Dependency updates (security alerts are separate and always on).
+#
+# Minor and patch updates are grouped into one PR per ecosystem and week;
+# major updates come as separate PRs, since they can need code changes.
+# Dependabot PRs don't change the app version: that happens in release PRs
+# (see RELEASING.md).
+version: 2
+updates:
+  # Frontend (js/package.json)
+  - package-ecosystem: npm
+    directory: /js
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies, javascript]
+    open-pull-requests-limit: 5
+    groups:
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+
+  # Development tools only (composer.json has no runtime dependencies)
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies]
+    open-pull-requests-limit: 3
+    groups:
+      composer-minor-and-patch:
+        update-types: [minor, patch]
+
+  # GitHub Actions, pinned to commit SHAs in .github/workflows
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    labels: [dependencies]
+    open-pull-requests-limit: 3
+    groups:
+      github-actions:
+        patterns: ['*']
