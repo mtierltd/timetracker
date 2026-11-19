@@ -52,11 +52,21 @@ Clients: **Web** (this repository), **Android** ([nc-timetracker-android](https:
 
 ## Capability ids
 
-The server will publish its version and these ids as Nextcloud capabilities, under `timetracker` in `/ocs/v2.php/cloud/capabilities` (#313). Clients hide features whose id the server doesn't list.
+The server publishes its version, the API versions and these ids as Nextcloud capabilities (`lib/Capabilities.php`, #313). Clients read them after login from `/ocs/v2.php/cloud/capabilities`, and hide features whose id the server doesn't list:
+
+```json
+"timetracker": {
+  "version": "1.0.1",
+  "api": ["v1"],
+  "features": ["timer", "manual_entries", "costs", "entry_time_offsets", "projects", "locked_projects", "clients", "tags", "reports", "timelines", "timelines_admin", "goals"]
+}
+```
+
+A unit test checks that every published id is documented below, and that every available id below is published.
 
 - **What gets an id:** a feature the server's API offers. Features that only change how one client shows data (e.g. grouping in the web Timer view) get none (`–` above).
 - **Stability:** ids are never renamed. An id is only removed together with its feature, in a major release.
-- **Older servers:** servers without the capabilities block (1.0.1 and older) offer every feature marked ✅ for Web above except `entry_time_offsets`.
+- **Older servers:** servers without the `timetracker` capabilities block (1.0.1 and older) offer every feature marked ✅ for Web above except `entry_time_offsets`.
 
 | Id | Meaning | Since |
 |---|---|---|
