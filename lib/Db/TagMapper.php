@@ -101,4 +101,24 @@ class TagMapper extends QBMapper {
                 ->executeStatement();
         }
     }
+
+    /**
+     * The tags with these ids, by id; ids that don't exist are left out.
+     *
+     * @param int[] $ids
+     * @return array<int, Tag>
+     */
+    public function findByIds(array $ids): array {
+        $result = [];
+        foreach (array_chunk(array_values(array_unique(array_map('intval', $ids))), 1000) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('*')
+                ->from($this->getTableName())
+                ->where($qb->expr()->in('id', $qb->createNamedParameter($chunk, IQueryBuilder::PARAM_INT_ARRAY)));
+            foreach ($this->findEntities($qb) as $tag) {
+                $result[(int)$tag->id] = $tag;
+            }
+        }
+        return $result;
+    }
 }

@@ -103,4 +103,24 @@ class ProjectMapper extends QBMapper {
     private function withoutArchived(IQueryBuilder $qb): void {
         $qb->andWhere($qb->expr()->neq('tp.archived', $qb->createNamedParameter(1, IQueryBuilder::PARAM_INT)));
     }
+
+    /**
+     * The projects with these ids, by id; ids that don't exist are left out.
+     *
+     * @param int[] $ids
+     * @return array<int, Project>
+     */
+    public function findByIds(array $ids): array {
+        $result = [];
+        foreach (array_chunk(array_values(array_unique(array_map('intval', $ids))), 1000) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('*')
+                ->from($this->getTableName())
+                ->where($qb->expr()->in('id', $qb->createNamedParameter($chunk, IQueryBuilder::PARAM_INT_ARRAY)));
+            foreach ($this->findEntities($qb) as $project) {
+                $result[(int)$project->id] = $project;
+            }
+        }
+        return $result;
+    }
 }
