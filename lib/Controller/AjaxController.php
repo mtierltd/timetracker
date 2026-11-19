@@ -104,6 +104,18 @@ class AjaxController extends Controller {
 			$tzoffset = -($this->request->tzoffset * 60);
 		}
 		date_default_timezone_set('UTC');
+
+		// Projects and tags of all entries in a few queries, not per entry
+		$projects = $this->projectMapper->findByIds(array_filter(array_map(fn ($wi) => (int)$wi->projectId, $l)));
+		$links = $this->workIntervalToTagMapper->findAllForWorkIntervals(array_map(fn ($wi) => (int)$wi->id, $l));
+		$tagsById = $this->tagMapper->findByIds(array_map(fn ($link) => (int)$link->tagId, $links));
+		$tagsByInterval = [];
+		foreach ($links as $link) {
+			if (isset($tagsById[(int)$link->tagId])) {
+				$tagsByInterval[(int)$link->workIntervalId][] = $tagsById[(int)$link->tagId];
+			}
+		}
+
 		foreach ($l as $wi){
 			$dt = $this->l10n->l('date', $wi->start+$tzoffset, ['width' => 'medium']);
 			if (!isset($days[$dt])){
@@ -112,18 +124,9 @@ class AjaxController extends Controller {
 			if (!isset($days[$dt][$wi->name])){
 				$days[$dt][$wi->name] = ['children' => [], 'totalTime' => 0];
 			}
-			$project = null;
-			if ($wi->projectId != null){
-				$project = $this->projectMapper->find($wi->projectId);
-			}
-
-			$tags = [];
-			$wiToTags = $this->workIntervalToTagMapper->findAllForWorkInterval($wi->id);
-			foreach($wiToTags as $wiToTag){
-				$t = $this->tagMapper->find($wiToTag->tagId);
-				if ($t != null)
-					$tags[] = $t;
-			}
+			// a project that no longer exists gives empty project fields
+			$project = $wi->projectId != null ? ($projects[(int)$wi->projectId] ?? null) : null;
+			$tags = $tagsByInterval[(int)$wi->id] ?? [];
 
 			$wa = ['duration' => $wi->duration,
 					'id' => $wi->id,

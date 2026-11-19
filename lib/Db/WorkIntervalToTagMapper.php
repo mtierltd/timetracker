@@ -61,4 +61,23 @@ class WorkIntervalToTagMapper extends QBMapper {
             ->where($qb->expr()->eq('tag_id', $qb->createNamedParameter((int)$tagId, IQueryBuilder::PARAM_INT)))
             ->executeStatement();
     }
+
+    /**
+     * The tag links of these work intervals, in the order they were added.
+     *
+     * @param int[] $workIntervalIds
+     * @return WorkIntervalToTag[]
+     */
+    public function findAllForWorkIntervals(array $workIntervalIds): array {
+        $result = [];
+        foreach (array_chunk(array_values(array_unique(array_map('intval', $workIntervalIds))), 1000) as $chunk) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->select('*')
+                ->from($this->getTableName())
+                ->where($qb->expr()->in('work_interval_id', $qb->createNamedParameter($chunk, IQueryBuilder::PARAM_INT_ARRAY)))
+                ->orderBy('id', 'ASC');
+            array_push($result, ...$this->findEntities($qb));
+        }
+        return $result;
+    }
 }
