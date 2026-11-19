@@ -126,38 +126,27 @@ source:
 	--exclude="../$(app_name)/*.log" \
 	--exclude="../$(app_name)/js/*.log" \
 
-# Builds the source package for the app store, ignores php and js tests
+# Builds the App Store archive build/artifacts/appstore/<app id>.tar.gz: the
+# files committed at HEAD plus the built frontend (js/dist), without
+# development files, in a single top folder named after the app id. Using
+# "git archive" keeps local, uncommitted files out of the release.
+# Code signing (appinfo/signature.json) happens in the release workflow.
+app_id=$(shell sed -n 's:.*<id>\(.*\)</id>.*:\1:p' appinfo/info.xml | head -n 1)
+appstore_stage=$(appstore_build_directory)/$(app_id)
+
 .PHONY: appstore
 appstore:
 	rm -rf $(appstore_build_directory)
-	mkdir -p $(appstore_build_directory)
-	echo $(app_name)
-	pwd
-	gtar  \
-	--owner=0 --group=0 \
-	--exclude-vcs \
-	--exclude="$(app_name)/build" \
-	--exclude="$(app_name)/tests" \
-	--exclude="$(app_name)/Makefile" \
-	--exclude="$(app_name)/*.log" \
-	--exclude="$(app_name)/phpunit*xml" \
-	--exclude="$(app_name)/composer.*" \
-	--exclude="$(app_name)/js/node_modules" \
-	--exclude="$(app_name)/js/tests" \
-	--exclude="$(app_name)/js/test" \
-	--exclude="$(app_name)/js/*.log" \
-	--exclude="$(app_name)/js/package.json" \
-	--exclude="$(app_name)/js/bower.json" \
-	--exclude="$(app_name)/js/karma.*" \
-	--exclude="$(app_name)/js/protractor.*" \
-	--exclude="$(app_name)/package.json" \
-	--exclude="$(app_name)/bower.json" \
-	--exclude="$(app_name)/karma.*" \
-	--exclude="$(app_name)/protractor\.*" \
-	--exclude="$(app_name)/.*" \
-	--exclude="$(app_name)/.git" \
-	--exclude="$(app_name)/js/.*" \
-	 -czf $(appstore_package_name).tar.gz ../$(app_name) 
+	mkdir -p $(appstore_stage)
+	rm -rf js/dist
+	cd js && npm ci --no-audit --no-fund && npm run build
+	git archive HEAD | tar -x -C $(appstore_stage)
+	cp -r js/dist $(appstore_stage)/js/dist
+	cd $(appstore_stage) && rm -rf .github .gitignore tests build Makefile \
+		composer.json composer.lock phpunit.xml phpunit.integration.xml phpstan.neon phpstan-baseline.neon \
+		js/src js/package.json js/package-lock.json js/webpack.config.js
+	tar --owner=0 --group=0 --sort=name -czf $(appstore_build_directory)/$(app_id).tar.gz -C $(appstore_build_directory) $(app_id)
+	@echo "Built $(appstore_build_directory)/$(app_id).tar.gz"
 
 # Installs composer dependencies including require-dev (phpunit, phpstan,
 # nextcloud/ocp stubs). Separate from the `composer` target above, which

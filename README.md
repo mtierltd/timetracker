@@ -26,13 +26,9 @@ The make command will install or update Composer dependencies if a composer.json
 ```
 
 
-## Publish to App Store
+## Versioning and releases
 
-First get an account for the [App Store](http://apps.nextcloud.com/) then run:
-
-    make && make appstore
-
-The archive is located in build/artifacts/appstore and can then be uploaded to the App Store.
+Time Tracker uses semantic versioning. How versions are numbered and how a release is built, signed and published to the App Store is described in [RELEASING.md](RELEASING.md).
 
 ## Running tests
 You can use the provided Makefile to run all tests by using:
