@@ -103,9 +103,11 @@ class AjaxController extends Controller {
 		if (isset($this->request->tzoffset)) {
 			$tzoffset = -($this->request->tzoffset * 60);
 		}
-		date_default_timezone_set('UTC');
 		foreach ($l as $wi){
-			$dt = $this->l10n->l('date', $wi->start+$tzoffset, ['width' => 'medium']);
+			// The timestamp is shifted by the browser's offset and formatted in UTC.
+			// An explicit UTC date (not PHP's default time zone, which other code may
+			// have changed) keeps the label independent of the server's settings.
+			$dt = $this->l10n->l('date', new \DateTime('@' . ($wi->start + $tzoffset)), ['width' => 'medium']);
 			if (!isset($days[$dt])){
 				$days[$dt] = [];
 			}
