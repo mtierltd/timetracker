@@ -5,6 +5,16 @@ All notable changes to Time Tracker are listed here. Versions follow
 minor releases add features, major releases contain breaking changes
 (see [RELEASING.md](RELEASING.md)).
 
+## 1.0.1 – 2026-11-18
+
+### Fixed
+- Goals: adding a goal in the web app failed with "Not found" in 1.0.0. Before 1.0.0, goals added there were saved without project, hours and interval (#322).
+
+### Changed
+- App Store and Apps page: English-only, up-to-date description with links to the website and repository; `info.xml` now validates against the App Store schema (#311, #320).
+- New screenshots of the current interface (#324).
+- Releases are built, code-signed and published to the App Store by a GitHub workflow, and PRs check the version (#318). The release process is documented in `RELEASING.md` (#319).
+
 ## 1.0.0 – 2026-11-18
 
 First stable release. Changes since 0.0.94.
