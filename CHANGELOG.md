@@ -5,6 +5,19 @@ All notable changes to Time Tracker are listed here. Versions follow
 minor releases add features, major releases contain breaking changes
 (see [RELEASING.md](RELEASING.md)).
 
+## 1.0.2 – 2026-11-19
+
+### Fixed
+- Reports and timelines included at most 1,000 rows: rows were missing in the table and in downloads, totals were too low, and saved timelines were incomplete. Now all rows are included; the table shows the first 1,000 with a notice (#336, #343).
+- Timer: the list of entries loads much faster with many entries (projects and tags are loaded at once instead of per entry), and an entry whose project no longer exists no longer breaks the list (#338, #344).
+- Timer: loading the list no longer changes PHP's default time zone for the rest of the request (#339, #342).
+
+### Changed
+- The release archive is about four times smaller: production builds no longer include source maps (#331, #348).
+- The licence is declared as AGPL-3.0-or-later in `package.json` and `composer.json` (#334, #345).
+- Removed dead code, unused files and unused build dependencies; the Makefile and README describe the current development setup (#332, #335, #346, #347).
+- CI builds the frontend on every pull request (#340, #341).
+
 ## 1.0.1 – 2026-11-18
 
 ### Fixed

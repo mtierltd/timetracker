@@ -29,7 +29,7 @@ Track time from your phone with the [Time Tracker Android app](https://github.co
 
 Questions, ideas or bugs? Have a look at the [issues on GitHub](https://github.com/mtierltd/timetracker/issues), maybe your topic is already being discussed, or open a new one.
 ]]></description>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <licence>agpl</licence>
     <author mail="info@mtier.org" >MTier Ltd.</author>
     <namespace>TimeTracker</namespace>
