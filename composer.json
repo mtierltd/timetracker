@@ -10,7 +10,7 @@
     ],
     "require": {},
     "require-dev": {
-        "nextcloud/ocp": "^35.0",
+        "nextcloud/ocp": "^33.0",
         "phpunit/phpunit": "^10.5",
         "phpstan/phpstan": "^1.11"
     },
@@ -32,6 +32,9 @@
         "test:unit": "phpunit -c phpunit.xml"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "platform": {
+            "php": "8.2.0"
+        }
     }
 }
