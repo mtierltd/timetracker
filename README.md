@@ -4,10 +4,15 @@ Time tracking for Nextcloud: a timer, projects, clients and tags, reports, timel
 
 ## Development setup
 
-Clone the repository into the `apps/` (or `custom_apps/`) directory of a Nextcloud server (see `appinfo/info.xml` for the supported versions), then build the frontend and enable the app:
+Clone the repository into the `apps/` (or `custom_apps/`) directory of a Nextcloud server (see `appinfo/info.xml` for the supported versions), then build the frontend. In the app directory:
 
-    cd js && npm ci && npm run build
-    php occ app:enable timetracker
+    (cd js && npm ci && npm run build)
+
+or `make`, which does the same. Then enable the app, from the Nextcloud root directory and as the web server user (e.g. `www-data`):
+
+    sudo -u www-data php occ app:enable timetracker
+
+With Docker, run `occ` in the Nextcloud container instead, e.g. for Nextcloud AIO: `docker exec --user www-data nextcloud-aio-nextcloud php occ app:enable timetracker`.
 
 A git checkout gets no updates from the App Store (Nextcloud skips app directories that contain `.git`), so use it for development only.
 
