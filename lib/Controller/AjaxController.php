@@ -98,12 +98,6 @@ class AjaxController extends Controller {
 		$from = $this->request->from;
 		$to = $this->request->to;
 		$l = $this->workIntervalMapper->findLatestInterval($this->userId, $from, $to);
-		$days = [];
-		$tzoffset = 0;
-		if (isset($this->request->tzoffset)) {
-			$tzoffset = -($this->request->tzoffset * 60);
-		}
-		date_default_timezone_set('UTC');
 
 		// Projects and tags of all entries in a few queries, not per entry
 		$projects = $this->projectMapper->findByIds(array_filter(array_map(fn ($wi) => (int)$wi->projectId, $l)));
@@ -115,7 +109,12 @@ class AjaxController extends Controller {
 				$tagsByInterval[(int)$link->workIntervalId][] = $tagsById[(int)$link->tagId];
 			}
 		}
-
+		$days = [];
+		$tzoffset = 0;
+		if (isset($this->request->tzoffset)) {
+			$tzoffset = -($this->request->tzoffset * 60);
+		}
+		date_default_timezone_set('UTC');
 		foreach ($l as $wi){
 			$dt = $this->l10n->l('date', $wi->start+$tzoffset, ['width' => 'medium']);
 			if (!isset($days[$dt])){
