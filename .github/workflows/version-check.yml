@@ -1,0 +1,34 @@
+# The app version (appinfo/info.xml) must be MAJOR.MINOR.PATCH, match
+# js/package.json, and only go up: if a PR changes it, the new version must be
+# higher than the base branch's and than the newest v* tag. See RELEASING.md.
+name: Version check
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: version-check-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          # history and tags, for the base branch and the newest tag
+          fetch-depth: 0
+
+      - name: info.xml and package.json match
+        run: .github/scripts/check-version.sh consistent
+
+      - name: A changed version is higher than base branch and newest tag
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: .github/scripts/check-version.sh bump "origin/$BASE_REF"

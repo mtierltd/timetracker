@@ -1,0 +1,171 @@
+# Builds, code-signs and publishes a release (see RELEASING.md).
+#
+# On a published GitHub release:
+#   1. checks that the tag is "v" + the version in appinfo/info.xml
+#   2. builds the archive with "make appstore"
+#   3. code-signs it (appinfo/signature.json) with the APP_PRIVATE_KEY secret
+#      and the app's public certificate from nextcloud/app-certificate-requests
+#   4. attaches timetracker.tar.gz to the GitHub release
+#   5. uploads it to the Nextcloud App Store with the APPSTORE_TOKEN secret
+#      (not for pre-releases)
+#
+# Without APP_PRIVATE_KEY, the unsigned archive is only kept as a workflow
+# artifact, and nothing is published; without APPSTORE_TOKEN, step 5 is left
+# to be done by hand. The run summary says what's left to do.
+#
+# "Run workflow" (workflow_dispatch) is a dry run: it builds (and signs, if the
+# key is set) and keeps the archive as a workflow artifact.
+name: Build and publish release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write # attach the archive to the release
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  APP_ID: timetracker
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout app
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          path: app
+
+      - name: Check versions
+        working-directory: app
+        env:
+          EVENT: ${{ github.event_name }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          .github/scripts/check-version.sh consistent
+          if [ "$EVENT" = "release" ]; then
+            .github/scripts/check-version.sh tag "$TAG"
+          fi
+          echo "VERSION=$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' appinfo/info.xml | head -n 1)" >> "$GITHUB_ENV"
+          echo "MIN_NEXTCLOUD=$(sed -n 's:.*<nextcloud min-version="\([0-9]*\)".*:\1:p' appinfo/info.xml | head -n 1)" >> "$GITHUB_ENV"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          extensions: bz2, ctype, curl, dom, fileinfo, gd, iconv, intl, json, libxml, mbstring, openssl, pcntl, posix, session, simplexml, xmlreader, xmlwriter, zip, zlib
+          coverage: none
+
+      - name: Build archive
+        working-directory: app
+        run: make appstore
+
+      - name: Check secrets
+        id: secrets
+        env:
+          APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+          APPSTORE_TOKEN: ${{ secrets.APPSTORE_TOKEN }}
+        run: |
+          echo "sign=$([ -n "$APP_PRIVATE_KEY" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+          echo "upload=$([ -n "$APPSTORE_TOKEN" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Nextcloud server ${{ env.MIN_NEXTCLOUD }} (for occ integrity:sign-app)
+        if: steps.secrets.outputs.sign == 'true'
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          repository: nextcloud/server
+          ref: stable${{ env.MIN_NEXTCLOUD }}
+          submodules: true
+          path: server
+
+      - name: Code-sign the app
+        if: steps.secrets.outputs.sign == 'true'
+        env:
+          APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+        run: |
+          umask 077
+          key="$RUNNER_TEMP/$APP_ID.key"
+          crt="$RUNNER_TEMP/$APP_ID.crt"
+          printf '%s\n' "$APP_PRIVATE_KEY" > "$key"
+          curl -sSfL -o "$crt" "https://raw.githubusercontent.com/nextcloud/app-certificate-requests/master/$APP_ID/$APP_ID.crt"
+          artifacts="$GITHUB_WORKSPACE/app/build/artifacts/appstore"
+          php server/occ integrity:sign-app --privateKey="$key" --certificate="$crt" --path="$artifacts/$APP_ID"
+          test -f "$artifacts/$APP_ID/appinfo/signature.json"
+          tar --owner=0 --group=0 --sort=name -czf "$artifacts/$APP_ID.tar.gz" -C "$artifacts" "$APP_ID"
+          # signature of the archive, for the App Store
+          echo "ARCHIVE_SIGNATURE=$(openssl dgst -sha512 -sign "$key" "$artifacts/$APP_ID.tar.gz" | openssl base64 -A)" >> "$GITHUB_ENV"
+          rm -f "$key"
+
+      - name: Keep the archive as workflow artifact
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ env.APP_ID }}-${{ env.VERSION }}
+          path: app/build/artifacts/appstore/${{ env.APP_ID }}.tar.gz
+          if-no-files-found: error
+
+      - name: Attach the archive to the GitHub release
+        if: github.event_name == 'release' && steps.secrets.outputs.sign == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$TAG" "app/build/artifacts/appstore/$APP_ID.tar.gz" --clobber --repo "$GITHUB_REPOSITORY"
+
+      - name: Upload to the Nextcloud App Store
+        if: github.event_name == 'release' && !github.event.release.prerelease && steps.secrets.outputs.sign == 'true' && steps.secrets.outputs.upload == 'true'
+        env:
+          APPSTORE_TOKEN: ${{ secrets.APPSTORE_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$APP_ID.tar.gz"
+          jq -n --arg download "$url" --arg signature "$ARCHIVE_SIGNATURE" \
+            '{download: $download, signature: $signature, nightly: false}' > "$RUNNER_TEMP/release.json"
+          curl -sS --fail-with-body -X POST https://apps.nextcloud.com/api/v1/apps/releases \
+            -H "Authorization: Token $APPSTORE_TOKEN" -H "Content-Type: application/json" \
+            --data @"$RUNNER_TEMP/release.json"
+
+      - name: Summary
+        env:
+          EVENT: ${{ github.event_name }}
+          TAG: ${{ github.event.release.tag_name }}
+          PRERELEASE: ${{ github.event.release.prerelease }}
+          SIGNED: ${{ steps.secrets.outputs.sign }}
+          UPLOAD: ${{ steps.secrets.outputs.upload }}
+        run: |
+          {
+            echo "## $APP_ID $VERSION"
+            echo
+            if [ "$SIGNED" != "true" ]; then
+              echo "⚠️ The \`APP_PRIVATE_KEY\` secret isn't set: the archive is **unsigned** and only kept as a workflow artifact."
+              echo "Code-sign and upload it by hand, see RELEASING.md."
+            elif [ "$EVENT" != "release" ]; then
+              echo "Dry run: the signed archive is kept as a workflow artifact; nothing was published."
+            else
+              echo "✅ Signed archive attached to release $TAG."
+              if [ "$PRERELEASE" = "true" ]; then
+                echo "Pre-release: not uploaded to the App Store."
+              elif [ "$UPLOAD" = "true" ]; then
+                echo "✅ Uploaded to the Nextcloud App Store."
+              else
+                echo "⚠️ The \`APPSTORE_TOKEN\` secret isn't set. Upload by hand at https://apps.nextcloud.com/developer/apps/releases/new with:"
+                echo
+                echo "- Download: https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/$APP_ID.tar.gz"
+                echo "- Signature:"
+                echo '```'
+                echo "$ARCHIVE_SIGNATURE"
+                echo '```'
+              fi
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
