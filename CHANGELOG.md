@@ -2,7 +2,8 @@
 
 All notable changes to Time Tracker are listed here. Versions follow
 [semantic versioning](https://semver.org): patch releases fix bugs,
-minor releases add features, major releases contain breaking changes (#315).
+minor releases add features, major releases contain breaking changes
+(see [RELEASING.md](RELEASING.md)).
 
 ## 1.0.0 – 2026-11-18
 
