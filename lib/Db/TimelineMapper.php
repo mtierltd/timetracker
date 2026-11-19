@@ -51,8 +51,4 @@ class TimelineMapper extends QBMapper {
             ->setMaxResults(100);
         return $this->findEntities($qb);
     }
-
-    /**
-     * @return Timeline[]
-     */
 }

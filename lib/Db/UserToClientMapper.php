@@ -32,10 +32,6 @@ class UserToClientMapper extends QBMapper {
     }
 
     /**
-     * @return UserToClient[]
-     */
-
-    /**
      * The link between the user and the client, or null.
      *
      * @param Client $client

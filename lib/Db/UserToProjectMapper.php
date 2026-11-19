@@ -34,10 +34,6 @@ class UserToProjectMapper extends QBMapper {
     /**
      * @return UserToProject[]
      */
-
-    /**
-     * @return UserToProject[]
-     */
     public function findAllForProject($pid): array {
         $qb = $this->db->getQueryBuilder();
         $qb->select('*')
