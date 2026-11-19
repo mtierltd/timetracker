@@ -1046,7 +1046,7 @@ class AjaxController extends Controller {
 		$filterTagId = [];
 		$groupOn1 = $this->request->group1;
 		$groupOn2 = $this->request->group2;
-		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, 1000);
+		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, null);
 		return new JSONResponse(["items" => json_decode(json_encode($items), true), 'total' => count($items)]);
 	}
 
@@ -1100,7 +1100,7 @@ class AjaxController extends Controller {
 		$filterTagId = [];
 		$groupOn1 = $this->request->getParam('group1');
 		$groupOn2 = $this->request->getParam('group2');
-		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, 1000);
+		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, null);
 
 		$timeline = new Timeline();
 		$timeline->setUserUid($this->userId);

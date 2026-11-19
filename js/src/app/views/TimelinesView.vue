@@ -46,7 +46,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(item, index) in items" :key="index">
+					<tr v-for="(item, index) in visibleItems" :key="index">
 						<td>{{ index + 1 }}</td>
 						<td>{{ item.name }}</td>
 						<td>{{ item.userUid }}</td>
@@ -57,6 +57,10 @@
 					</tr>
 				</tbody>
 			</table>
+			<p v-if="items.length > visibleItems.length" class="rows-notice">
+				Showing the first {{ visibleItems.length.toLocaleString() }} of {{ items.length.toLocaleString() }} rows.
+				An exported timeline includes all rows.
+			</p>
 
 			<h2 class="history-title">Exported timelines</h2>
 			<table class="entity-table">
@@ -141,6 +145,9 @@ function formatDuration(seconds) {
 	return `${pad(h)}:${pad(m)}:${pad(s)}`
 }
 
+// Rows rendered in the table; more would make the page slow.
+const DISPLAY_LIMIT = 1000
+
 export default {
 	name: 'TimelinesView',
 	components: { NcAppContent, NcButton, NcTextField, NcSelect, NcDateTimePicker, NcDialog, NcModal },
@@ -170,6 +177,12 @@ export default {
 	},
 	async mounted() {
 		await Promise.all([this.loadProjects(), this.loadClients(), this.loadReport(), this.loadTimelines()])
+	},
+	computed: {
+		// The table shows at most DISPLAY_LIMIT rows; exported timelines include all.
+		visibleItems() {
+			return this.items.slice(0, DISPLAY_LIMIT)
+		},
 	},
 	methods: {
 		formatDuration,
@@ -258,6 +271,10 @@ export default {
 </script>
 
 <style scoped>
+.rows-notice {
+	margin-top: 8px;
+	color: var(--color-text-maxcontrast);
+}
 .view-page {
 	padding: 50px 20px 20px;
 }

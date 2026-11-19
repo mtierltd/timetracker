@@ -54,7 +54,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(item, index) in items" :key="index">
+					<tr v-for="(item, index) in visibleItems" :key="index">
 						<td>{{ index + 1 }}</td>
 						<td>{{ item.name }}</td>
 						<td>{{ item.details }}</td>
@@ -74,6 +74,10 @@
 					</tr>
 				</tfoot>
 			</table>
+			<p v-if="items.length > visibleItems.length" class="rows-notice">
+				Showing the first {{ visibleItems.length.toLocaleString() }} of {{ items.length.toLocaleString() }} rows.
+				Totals and downloads include all rows.
+			</p>
 		</div>
 	</NcAppContent>
 </template>
@@ -97,6 +101,9 @@ function formatDuration(seconds) {
 	return `${pad(h)}:${pad(m)}:${pad(s)}`
 }
 
+// Rows rendered in the table; more would make the page slow.
+const DISPLAY_LIMIT = 1000
+
 export default {
 	name: 'ReportsView',
 	components: { NcAppContent, NcButton, NcSelect, NcDateTimePicker },
@@ -119,6 +126,10 @@ export default {
 		}
 	},
 	computed: {
+		// The table shows at most DISPLAY_LIMIT rows; totals and downloads use all.
+		visibleItems() {
+			return this.items.slice(0, DISPLAY_LIMIT)
+		},
 		totalDuration() {
 			return this.items.reduce((sum, i) => sum + (i.totalDuration || 0), 0)
 		},
@@ -231,6 +242,10 @@ export default {
 	padding: 8px 12px;
 	text-align: left;
 	border-bottom: 1px solid var(--color-border);
+}
+.rows-notice {
+	margin-top: 8px;
+	color: var(--color-text-maxcontrast);
 }
 .totals-label {
 	text-align: right;
