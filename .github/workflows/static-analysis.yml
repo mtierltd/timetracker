@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ocp-version: ['dev-stable31', 'dev-stable35']
+        ocp-version: ['dev-stable33', 'dev-stable35']
 
     name: static-phpstan-analysis (${{ matrix.ocp-version }})
 
