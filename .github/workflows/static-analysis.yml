@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ocp-version: ['dev-stable31', 'dev-stable35']
+        ocp-version: ['dev-stable33', 'dev-stable35']
 
     name: static-phpstan-analysis (${{ matrix.ocp-version }})
 
@@ -46,7 +46,13 @@ jobs:
         run: composer install --prefer-dist --no-progress
 
       - name: Install OCP stubs ${{ matrix.ocp-version }}
-        run: composer require --dev --no-progress --with-all-dependencies "nextcloud/ocp:${{ matrix.ocp-version }}"
+        # composer.json pins the platform to the minimum supported PHP (8.2) so
+        # that the lock file installs there; the stubs of newer Nextcloud
+        # versions need a newer PHP, which this job runs on. phpstan itself
+        # still checks the code for PHP 8.2 (phpVersion in phpstan.neon).
+        run: |
+          composer config --unset platform.php
+          composer require --dev --no-progress --with-all-dependencies "nextcloud/ocp:${{ matrix.ocp-version }}"
 
       - name: PHPStan
         run: composer run phpstan
