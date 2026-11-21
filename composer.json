@@ -8,11 +8,10 @@
             "name": "MTier Ltd."
         }
     ],
-    "require": {},
     "require-dev": {
         "nextcloud/ocp": "^33.0",
-        "phpunit/phpunit": "^10.5",
-        "phpstan/phpstan": "^1.11"
+        "phpstan/phpstan": "^2",
+        "phpunit/phpunit": "^10.5"
     },
     "autoload": {
         "psr-4": {
