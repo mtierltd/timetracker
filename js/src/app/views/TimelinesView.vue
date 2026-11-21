@@ -132,7 +132,7 @@ import NcModal from '@nextcloud/vue/components/NcModal'
 import { showError, showSuccess } from '@nextcloud/dialogs'
 import { generateUrl } from '@nextcloud/router'
 import { apiGet, apiPost } from '../api.js'
-import { DATE_RANGE_PRESETS, getPresetRange } from '../dateRangePresets.js'
+import { DATE_RANGE_PRESETS, getPresetRange, startOfDay, endOfDay } from '../dateRangePresets.js'
 
 function pad(n) {
 	return String(n).padStart(2, '0')
@@ -204,8 +204,8 @@ export default {
 		reportParams() {
 			return {
 				name: '',
-				from: Math.floor(this.rangeFrom.getTime() / 1000),
-				to: Math.floor(this.rangeTo.getTime() / 1000),
+				from: Math.floor(startOfDay(this.rangeFrom).getTime() / 1000),
+				to: Math.floor(endOfDay(this.rangeTo).getTime() / 1000),
 				group1: this.group1,
 				group2: this.group2,
 				timegroup: this.timegroup,
