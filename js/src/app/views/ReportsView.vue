@@ -88,7 +88,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcDateTimePicker from '@nextcloud/vue/components/NcDateTimePicker'
 import { apiGet } from '../api.js'
-import { DATE_RANGE_PRESETS, getPresetRange } from '../dateRangePresets.js'
+import { DATE_RANGE_PRESETS, getPresetRange, startOfDay, endOfDay } from '../dateRangePresets.js'
 
 function pad(n) {
 	return String(n).padStart(2, '0')
@@ -165,8 +165,8 @@ export default {
 		async loadReport() {
 			const data = await apiGet('/report', {
 				name: '',
-				from: Math.floor(this.rangeFrom.getTime() / 1000),
-				to: Math.floor(this.rangeTo.getTime() / 1000),
+				from: Math.floor(startOfDay(this.rangeFrom).getTime() / 1000),
+				to: Math.floor(endOfDay(this.rangeTo).getTime() / 1000),
 				group1: this.group1,
 				group2: this.group2,
 				timegroup: this.timegroup,
