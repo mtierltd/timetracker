@@ -21,6 +21,10 @@ The frontend is a Vue 3 app in `js/src`, built with webpack into `js/dist`. Run 
 Requirements: PHP and Composer (for the development tools and tests), Node.js with npm (the release workflow uses Node.js 24).
 
 
+## Features and clients
+
+Which features exist in the web app, the Android app and planned clients, and how clients find out what a server supports: [FEATURES.md](FEATURES.md).
+
 ## Versioning and releases
 
 Time Tracker uses semantic versioning. How versions are numbered and how a release is built, signed and published to the App Store is described in [RELEASING.md](RELEASING.md).
