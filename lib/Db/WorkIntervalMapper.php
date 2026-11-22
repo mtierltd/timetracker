@@ -59,7 +59,7 @@ class WorkIntervalMapper extends QBMapper {
     public function findLatestInterval($user, $from, $to, $limit = 5000, $offset = 0): array {
         $qb = $this->newestFirst($user, $limit, $offset);
         if (!empty($from)) {
-            $qb->andWhere($qb->expr()->gt('start', $qb->createNamedParameter((int)$from, IQueryBuilder::PARAM_INT)));
+            $qb->andWhere($qb->expr()->gte('start', $qb->createNamedParameter((int)$from, IQueryBuilder::PARAM_INT)));
         }
         if (!empty($to)) {
             $qb->andWhere($qb->expr()->lt('start', $qb->createNamedParameter((int)$to, IQueryBuilder::PARAM_INT)));

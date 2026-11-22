@@ -263,15 +263,16 @@ class ReportItemMapperTest extends TestCase {
 		$this->assertSame(['On A', 'On B', 'No project'], $names([]));
 	}
 
-	public function testDateRangeExcludesItsBounds(): void {
+	public function testDateRangeIncludesFromAndExcludesTo(): void {
 		$user = $this->user('alice');
 		$at = fn (string $utc) => (new \DateTimeImmutable($utc, new \DateTimeZone('UTC')))->getTimestamp();
-		$this->entry($user, 'Before', '2026-02-01 12:00', 100);
+		$this->entry($user, 'Before', '2026-02-01 11:59', 50);
+		$this->entry($user, 'At start', '2026-02-01 12:00', 100);
 		$this->entry($user, 'Inside', '2026-02-02 12:00', 200);
 		$this->entry($user, 'At end', '2026-02-03 12:00', 300);
 
 		$items = $this->mapper->report($user, $at('2026-02-01 12:00'), $at('2026-02-03 12:00'), [], [], [], '', '', '', false, 0, 0, new \DateTimeZone('UTC'));
-		$this->assertSame(['Inside'], array_column($this->pick($items, 'name'), 0));
+		$this->assertSame(['At start', 'Inside'], array_column($this->pick($items, 'name'), 0));
 	}
 
 	public function testOffsetAndLimitApplyToTheResultingRows(): void {
