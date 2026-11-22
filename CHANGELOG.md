@@ -13,6 +13,11 @@ The last release for Nextcloud 31 and 32: the next minor release requires Nextcl
 - Dashboard, Reports and Timelines: entries of the chosen "to" date were missing, because the range ended at 00:00 of that day (#323, #352).
 - Timelines: the period was formatted in UTC, so it started a day early east of UTC and ended a day late west of it. Report and timeline rows are now grouped by the days of the browser's time zone (#323, #354).
 - Timeline CSV exports showed a timestamp instead of a date in the "Time Interval" column (#354).
+- Timer list, Reports, Dashboard and Timelines: entries starting exactly at the beginning of the range (e.g. a manual entry at 00:00) were missing (#358).
+- Goals: a goal with an interval other than weekly/monthly, or without hours, showed the figures of another goal and caused PHP warnings. Such goals are now marked as invalid, and adding a goal checks the interval and hours (#356, #357).
+
+### Security
+- Adding a project accepted a client of another user (#358).
 
 ## 1.0.2 – 2026-11-19
 
