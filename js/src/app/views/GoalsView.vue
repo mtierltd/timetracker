@@ -35,14 +35,20 @@
 			<tbody>
 				<tr v-for="(goal, index) in goals" :key="goal.id">
 					<td>{{ index + 1 }}</td>
-					<td>{{ goal.projectName }}</td>
-					<td>{{ goal.hours }}</td>
-					<td>{{ goal.interval }}</td>
-					<td>{{ new Date(goal.createdAt * 1000).toDateString() }}</td>
-					<td>{{ goal.workedHoursCurrentPeriod }}</td>
-					<td>{{ goal.debtHours }}</td>
-					<td>{{ goal.remainingHours }}</td>
-					<td>{{ goal.totalRemainingHours }}</td>
+					<td>{{ goal.projectName || '–' }}</td>
+					<!-- goals with an unknown interval or no hours, which add-goal accepted before -->
+					<td v-if="goal.invalid" colspan="7" class="invalid-goal">
+						This goal has no valid {{ missingParts(goal) }}. Please delete it and add it again.
+					</td>
+					<template v-else>
+						<td>{{ goal.hours }}</td>
+						<td>{{ goal.interval }}</td>
+						<td>{{ new Date(goal.createdAt * 1000).toDateString() }}</td>
+						<td>{{ goal.workedHoursCurrentPeriod }}</td>
+						<td>{{ goal.debtHours }}</td>
+						<td>{{ goal.remainingHours }}</td>
+						<td>{{ goal.totalRemainingHours }}</td>
+					</template>
 					<td>
 						<NcButton type="tertiary" aria-label="Delete" @click="removeGoal(goal)">
 							<template #icon><span class="icon-close" /></template>
@@ -124,8 +130,17 @@ export default {
 			this.confirmVisible = false
 			this.confirmResolver?.(value)
 		},
+		// What an invalid goal lacks, e.g. "hours and interval"
+		missingParts(goal) {
+			const parts = []
+			if (!goal.projectId) parts.push('project')
+			if (!(goal.hours >= 1)) parts.push('hours')
+			if (!['Weekly', 'Monthly'].includes(goal.interval)) parts.push('interval')
+			return parts.join(' and ').replace(/ and (?=.* and )/, ', ')
+		},
 		async removeGoal(goal) {
-			if (!(await this.confirm(`Are you sure you want to delete the goal for "${goal.projectName}"?`))) return
+			const what = goal.projectName ? `the goal for "${goal.projectName}"` : 'this goal'
+			if (!(await this.confirm(`Are you sure you want to delete ${what}?`))) return
 			try {
 				await apiPost(`/delete-goal/${goal.id}`)
 				await this.loadGoals()
@@ -138,6 +153,10 @@ export default {
 </script>
 
 <style scoped>
+.invalid-goal {
+	color: var(--color-text-maxcontrast);
+	font-style: italic;
+}
 .view-page {
 	padding: 50px 20px 20px;
 }
