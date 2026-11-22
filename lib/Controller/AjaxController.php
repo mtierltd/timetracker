@@ -40,6 +40,9 @@ use OCA\TimeTracker\Db\TimelineEntry;
 
 class AjaxController extends Controller {
 	private $userId;
+
+	/** The intervals a goal can have. */
+	private const GOAL_INTERVALS = ['Weekly', 'Monthly'];
 /** @var IUserSession */
 	protected $userSession;
 	protected $workIntervalMapper;
@@ -1354,6 +1357,13 @@ class AjaxController extends Controller {
 		$projectId = $project->id;
 		$hours = $this->request->getParam('hours');
 		$interval = $this->request->getParam('interval');
+		if (!in_array($interval, self::GOAL_INTERVALS, true)) {
+			return new JSONResponse(["Error" => "The interval must be Weekly or Monthly"]);
+		}
+		if (!is_numeric($hours) || (int)$hours < 1) {
+			return new JSONResponse(["Error" => "Hours must be a whole number of at least 1"]);
+		}
+		$hours = (int)$hours;
 
 		$g = $this->goalMapper->findByUserProject($this->userId, $projectId);
 		if ($g == null){
@@ -1479,6 +1489,26 @@ class AjaxController extends Controller {
 
 		$ret = [];
 		foreach($goals as $goal){
+			// Goals with an interval other than Weekly/Monthly or without hours (add-goal
+			// accepted any value before) can't be computed: return them marked as
+			// invalid with zero figures, instead of warnings or another goal's data.
+			if (!in_array($goal->interval, self::GOAL_INTERVALS, true) || $goal->projectId === null || (int)$goal->hours < 1) {
+				$ret[] = [
+					'id' => $goal->id,
+					'userUid' => $goal->userUid,
+					'projectId' => $goal->projectId,
+					'projectName' => $goal->projectName,
+					'hours' => $goal->hours,
+					'interval' => $goal->interval,
+					'createdAt' => $goal->createdAt,
+					'workedHoursCurrentPeriod' => 0,
+					'debtHours' => 0,
+					'remainingHours' => 0,
+					'totalRemainingHours' => 0,
+					'invalid' => true,
+				];
+				continue;
+			}
 			$rgoal = [];
 			if ($goal->interval == 'Weekly'){
 				$goalWeekStart = $this->getStartOfWeek($goal->createdAt);
@@ -1529,6 +1559,7 @@ class AjaxController extends Controller {
 				'debtHours'  => round($debtSeconds / 3600, 2),
 				'remainingHours'  => round($goal->hours - $workedSecondsCurrentPeriod / 3600, 2),
 				'totalRemainingHours'  => round(($debtSeconds + $goal->hours *3600 - $workedSecondsCurrentPeriod) / 3600, 2),
+				'invalid' => false,
 			];
 			$ret[] = $rgoal;
 		}
