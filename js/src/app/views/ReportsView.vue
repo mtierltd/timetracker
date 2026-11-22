@@ -167,6 +167,8 @@ export default {
 				name: '',
 				from: Math.floor(startOfDay(this.rangeFrom).getTime() / 1000),
 				to: Math.floor(endOfDay(this.rangeTo).getTime() / 1000),
+				// dates in the report follow the browser's time zone, like the range
+				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
 				group1: this.group1,
 				group2: this.group2,
 				timegroup: this.timegroup,

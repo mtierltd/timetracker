@@ -1036,7 +1036,7 @@ class AjaxController extends Controller {
 		$filterTagId = [];
 		$groupOn1 = $this->request->group1;
 		$groupOn2 = $this->request->group2;
-		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, null);
+		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, null, $this->requestTimeZone());
 		return new JSONResponse(["items" => json_decode(json_encode($items), true), 'total' => count($items)]);
 	}
 
@@ -1090,7 +1090,7 @@ class AjaxController extends Controller {
 		$filterTagId = [];
 		$groupOn1 = $this->request->getParam('group1');
 		$groupOn2 = $this->request->getParam('group2');
-		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, null);
+		$items = $this->reportItemMapper->report($name, $from, $to, $filterProjectId, $filterClientId, $filterTagId, $timegroup, $groupOn1, $groupOn2, $this->isThisAdminUser(), 0, null, $this->requestTimeZone());
 
 		$timeline = new Timeline();
 		$timeline->setUserUid($this->userId);
@@ -1099,7 +1099,8 @@ class AjaxController extends Controller {
 		$timeline->setTimeGroup($this->request->getParam('timegroup'));
 		$timeline->setFilterProjects(implode(', ',$filterProjectId));
 		$timeline->setFilterClients(implode(', ',$filterClientId));
-		$timeline->setTimeInterval($this->l10n->l('date', $from) . ' - '. $this->l10n->l('date', $to));
+		$timeZone = $this->requestTimeZone();
+		$timeline->setTimeInterval($this->formatDate((int)$from, $timeZone) . ' - ' . $this->formatDate((int)$to, $timeZone));
 		$totalDuration = 0;
 		foreach($items as $i){
 			$totalDuration += $i->totalDuration;
@@ -1120,7 +1121,10 @@ class AjaxController extends Controller {
 				$te->setName($i->name);
 				$te->setProjectName($i->project ? $i->project : "");
 				$te->setClientName($i->client ? $i->client : "");
-				$te->setTimeInterval($i->time);
+				// The period's label (e.g. "2026-11-17" or "2026W47") when grouped by
+				// time, otherwise the date of the earliest entry. Before, the raw
+				// start timestamp of the earliest entry was stored here.
+				$te->setTimeInterval($i->ftime !== null && $i->ftime !== '' ? (string)$i->ftime : $this->formatDate((int)$i->time, $timeZone));
 				$te->setTotalDuration($i->totalDuration);
 				$te->setCreatedAt(time());
 				$te->setCost($i->cost);
@@ -1388,6 +1392,30 @@ class AjaxController extends Controller {
 	 * The user's time zone. Goal periods use it, like the report grouping in
 	 * ReportItemMapper does.
 	 */
+	/**
+	 * The time zone for report dates and timeline periods: the browser's
+	 * (request parameter "timezone", e.g. "Europe/Berlin"), so they match the
+	 * day boundaries the browser sends; otherwise (older clients) the user's
+	 * Nextcloud setting.
+	 */
+	private function requestTimeZone(): \DateTimeZone {
+		$name = $this->request->getParam('timezone');
+		if (is_string($name) && $name !== '') {
+			try {
+				return new \DateTimeZone($name);
+			} catch (\Exception $e) {
+				// not a valid time zone name: fall back to the user's setting
+			}
+		}
+		return $this->userTimeZone();
+	}
+
+	/** A date ("November 1, 2026") in the given time zone and the user's language. */
+	private function formatDate(int $timestamp, \DateTimeZone $timeZone): string {
+		$date = (new \DateTime('@' . $timestamp))->setTimezone($timeZone);
+		return (string)$this->l10n->l('date', $date);
+	}
+
 	private function userTimeZone(): \DateTimeZone {
 		return \OCP\Server::get(\OCA\TimeTracker\Service\UserTimeZone::class)->get($this->userId);
 	}
