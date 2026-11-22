@@ -50,6 +50,7 @@ jobs:
         # that the lock file installs there; the stubs of newer Nextcloud
         # versions need a newer PHP, which this job runs on. phpstan itself
         # still checks the code for PHP 8.2 (phpVersion in phpstan.neon).
+        # Keep the unset: without it, the dev-stable35 job can't install its stubs.
         run: |
           composer config --unset platform.php
           composer require --dev --no-progress --with-all-dependencies "nextcloud/ocp:${{ matrix.ocp-version }}"

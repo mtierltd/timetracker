@@ -25,7 +25,7 @@ The app supports the Nextcloud versions that Nextcloud itself maintains ([schedu
 - When a Nextcloud version reaches its end of life, raise `<nextcloud min-version>` in the next minor release. The App Store then no longer offers new releases to that version; mention it in the release notes.
 - When a new Nextcloud version is released, test it and raise `max-version`.
 - Raise `<php min-version>` when a PHP version reaches its end of life (or when the oldest supported Nextcloud drops it).
-- Keep the CI matrices in sync: integration tests (`integration.yml`) and phpstan stubs (`static-analysis.yml`) on the oldest and newest supported Nextcloud; lint and unit tests (`lint-php.yml`, `phpunit.yml`) on all supported PHP versions; `phpVersion` in `phpstan.neon`.
+- Keep the CI matrices in sync: integration tests (`integration.yml`) and phpstan stubs (`static-analysis.yml`) on the oldest and newest supported Nextcloud; lint and unit tests (`lint-php.yml`, `phpunit.yml`) on all supported PHP versions; `phpVersion` in `phpstan.neon`. When raising the minimum PHP, also update `config.platform.php` in `composer.json`, then run `composer update --lock`. The phpstan job removes that pin before installing newer stubs (see the comment in `static-analysis.yml`), so keep that step.
 
 ## Where the version lives
 
