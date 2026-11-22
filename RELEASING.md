@@ -18,6 +18,15 @@ Time Tracker uses [semantic versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 - Pre-release suffixes (`1.1.0-beta.1`) aren't used.
 - The supported Nextcloud versions are a separate setting (`<nextcloud min-version max-version>` in `appinfo/info.xml`) and don't affect the app version.
 
+### Supported Nextcloud and PHP versions
+
+The app supports the Nextcloud versions that Nextcloud itself maintains ([schedule](https://github.com/nextcloud/server/wiki/Maintenance-and-Release-Schedule)), and the PHP versions those support that are still maintained by PHP.
+
+- When a Nextcloud version reaches its end of life, raise `<nextcloud min-version>` in the next minor release. The App Store then no longer offers new releases to that version; mention it in the release notes.
+- When a new Nextcloud version is released, test it and raise `max-version`.
+- Raise `<php min-version>` when a PHP version reaches its end of life (or when the oldest supported Nextcloud drops it).
+- Keep the CI matrices in sync: integration tests (`integration.yml`) and phpstan stubs (`static-analysis.yml`) on the oldest and newest supported Nextcloud; lint and unit tests (`lint-php.yml`, `phpunit.yml`) on all supported PHP versions; `phpVersion` in `phpstan.neon`. When raising the minimum PHP, also update `config.platform.php` in `composer.json`, then run `composer update --lock`. The phpstan job removes that pin before installing newer stubs (see the comment in `static-analysis.yml`), so keep that step.
+
 ## Where the version lives
 
 - **`appinfo/info.xml` (`<version>`) is the single source of truth.**

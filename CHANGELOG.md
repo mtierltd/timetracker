@@ -5,6 +5,11 @@ All notable changes to Time Tracker are listed here. Versions follow
 minor releases add features, major releases contain breaking changes
 (see [RELEASING.md](RELEASING.md)).
 
+## Unreleased
+
+### Changed
+- Requires Nextcloud 33 to 35 and PHP 8.2 or newer (#329). Nextcloud 31 and 32 are no longer maintained by Nextcloud; instances on those versions stay on 1.0.3.
+
 ## 1.0.3 – 2026-11-22
 
 The last release for Nextcloud 31 and 32: the next minor release requires Nextcloud 33 (#329).
