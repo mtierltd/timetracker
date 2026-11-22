@@ -313,18 +313,6 @@ parameters:
 			path: lib/Controller/AjaxController.php
 
 		-
-			message: '#^Variable \$intervals might not be defined\.$#'
-			identifier: variable.undefined
-			count: 1
-			path: lib/Controller/AjaxController.php
-
-		-
-			message: '#^Variable \$repItems might not be defined\.$#'
-			identifier: variable.undefined
-			count: 2
-			path: lib/Controller/AjaxController.php
-
-		-
 			message: '#^Call to method addColumn\(\) on an unknown class Doctrine\\DBAL\\Schema\\Table\.$#'
 			identifier: class.notFound
 			count: 69
