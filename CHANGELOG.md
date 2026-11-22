@@ -5,6 +5,15 @@ All notable changes to Time Tracker are listed here. Versions follow
 minor releases add features, major releases contain breaking changes
 (see [RELEASING.md](RELEASING.md)).
 
+## 1.0.3 – 2026-11-22
+
+The last release for Nextcloud 31 and 32: the next minor release requires Nextcloud 33 (#329).
+
+### Fixed
+- Dashboard, Reports and Timelines: entries of the chosen "to" date were missing, because the range ended at 00:00 of that day (#323, #352).
+- Timelines: the period was formatted in UTC, so it started a day early east of UTC and ended a day late west of it. Report and timeline rows are now grouped by the days of the browser's time zone (#323, #354).
+- Timeline CSV exports showed a timestamp instead of a date in the "Time Interval" column (#354).
+
 ## 1.0.2 – 2026-11-19
 
 ### Fixed
