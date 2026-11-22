@@ -83,7 +83,7 @@ class ReportItemMapper {
             ->addOrderBy('wi.id', 'ASC');
 
         if (!empty($from)) {
-            $qb->andWhere($qb->expr()->gt('wi.start', $qb->createNamedParameter((int)$from, IQueryBuilder::PARAM_INT)));
+            $qb->andWhere($qb->expr()->gte('wi.start', $qb->createNamedParameter((int)$from, IQueryBuilder::PARAM_INT)));
         }
         if (!empty($to)) {
             $qb->andWhere($qb->expr()->lt('wi.start', $qb->createNamedParameter((int)$to, IQueryBuilder::PARAM_INT)));

@@ -680,7 +680,14 @@ class AjaxController extends Controller {
 	public function addProject($name) {
 		$clientId = null;
 		if (isset($this->request->clientId)) {
-			$clientId = $this->request->clientId;
+			$requested = $this->request->clientId;
+			if ($requested !== '' && $requested !== null && (int)$requested > 0) {
+				// like edit-project: only clients the user may use
+				if ($this->accessibleClient($requested) === null) {
+					return $this->notFound();
+				}
+				$clientId = (int)$requested;
+			}
 		}
 		$color = '#ffffff';
 		if (isset($this->request->color) && !empty($this->request->color)) {
@@ -1389,10 +1396,6 @@ class AjaxController extends Controller {
 	}
 
 	/**
-	 * The user's time zone. Goal periods use it, like the report grouping in
-	 * ReportItemMapper does.
-	 */
-	/**
 	 * The time zone for report dates and timeline periods: the browser's
 	 * (request parameter "timezone", e.g. "Europe/Berlin"), so they match the
 	 * day boundaries the browser sends; otherwise (older clients) the user's
@@ -1416,6 +1419,10 @@ class AjaxController extends Controller {
 		return (string)$this->l10n->l('date', $date);
 	}
 
+	/**
+	 * The user's time zone. Goal periods use it, like the report grouping in
+	 * ReportItemMapper does.
+	 */
 	private function userTimeZone(): \DateTimeZone {
 		return \OCP\Server::get(\OCA\TimeTracker\Service\UserTimeZone::class)->get($this->userId);
 	}

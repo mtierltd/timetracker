@@ -240,7 +240,8 @@ class MapperTest extends TestCase {
 
 		// newest first, bounds excluded, limit and offset
 		$this->assertSame([$running->getId(), $other->getId(), $new->getId(), $old->getId()], $this->ids($mapper->findLatestInterval($alice, null, null)));
-		$this->assertSame([$other->getId(), $new->getId()], $this->ids($mapper->findLatestInterval($alice, 1000, 4000)));
+		// from is included, to is not
+		$this->assertSame([$other->getId(), $new->getId(), $old->getId()], $this->ids($mapper->findLatestInterval($alice, 1000, 4000)));
 		$this->assertSame([$other->getId()], $this->ids($mapper->findLatestInterval($alice, null, null, 1, 1)));
 
 		$running->setRunning(0);
