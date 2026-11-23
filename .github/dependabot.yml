@@ -26,6 +26,12 @@ updates:
       day: monday
     labels: [dependencies]
     open-pull-requests-limit: 3
+    ignore:
+      # The stubs stay on the oldest supported Nextcloud on purpose (the
+      # phpstan CI job also checks the newest). Raise the major version
+      # together with <nextcloud min-version> (see RELEASING.md).
+      - dependency-name: nextcloud/ocp
+        update-types: [version-update:semver-major]
     groups:
       composer-minor-and-patch:
         update-types: [minor, patch]
