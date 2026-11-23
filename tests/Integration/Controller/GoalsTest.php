@@ -52,11 +52,12 @@ class GoalsTest extends TestCase {
 
 	public function testIncompleteGoalsAreMarkedInvalid(): void {
 		$project = $this->project('Goals project ' . $this->user);
-		// 2 hours worked this week on the project
+		// 2 hours worked this week on the project. The entry starts a minute
+		// ago, so that it's in the current week even just after it began.
 		$wi = new WorkInterval();
 		$wi->setUserUid($this->user);
 		$wi->setName('Work');
-		$wi->setStart(time() - 3 * 3600);
+		$wi->setStart(time() - 60);
 		$wi->setDuration(7200);
 		$wi->setRunning(0);
 		$wi->setProjectId($project->getId());
