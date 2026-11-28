@@ -12,3 +12,9 @@ parameters:
     reportUnmatchedIgnoredErrors: false
     bootstrapFiles:
         - vendor/autoload.php
+    ignoreErrors:
+        # The OCP stubs don't include Doctrine, whose Table class migrations use
+        -
+            identifier: class.notFound
+            message: '#unknown class Doctrine\\DBAL\\Schema\\Table#'
+            path: lib/Migration/*

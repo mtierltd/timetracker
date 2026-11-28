@@ -41,7 +41,11 @@
 						This goal has no valid {{ missingParts(goal) }}. Please delete it and add it again.
 					</td>
 					<template v-else>
-						<td>{{ goal.hours }}</td>
+						<td>
+							{{ goal.currentPeriodSkipped ? 0 : goal.hours }}
+							<div v-if="goal.currentPeriodSkipped" class="skip-note">Skipped this {{ periodWord(goal) }}</div>
+							<div v-else-if="goal.skippedPeriods.length" class="skip-note">{{ skippedText(goal) }}</div>
+						</td>
 						<td>{{ goal.interval }}</td>
 						<td>{{ new Date(goal.createdAt * 1000).toDateString() }}</td>
 						<td>{{ goal.workedHoursCurrentPeriod }}</td>
@@ -49,7 +53,13 @@
 						<td>{{ goal.remainingHours }}</td>
 						<td>{{ goal.totalRemainingHours }}</td>
 					</template>
-					<td>
+					<td class="goal-actions">
+						<template v-if="!goal.invalid">
+							<NcButton type="secondary" @click="toggleCurrentSkip(goal)">
+								{{ goal.currentPeriodSkipped ? 'Undo skip' : `Skip this ${periodWord(goal)}` }}
+							</NcButton>
+							<NcButton type="tertiary" @click="openSkipDialog(goal)">Skip…</NcButton>
+						</template>
 						<NcButton type="tertiary" aria-label="Delete" @click="removeGoal(goal)">
 							<template #icon><span class="icon-close" /></template>
 						</NcButton>
@@ -58,6 +68,29 @@
 			</tbody>
 		</table>
 		</div>
+
+		<NcDialog v-if="skipGoal"
+			:name="`Skip ${skipGoal.projectName || 'goal'}`"
+			@closing="skipGoal = null">
+			<p class="dialog-text">
+				In a skipped {{ periodWord(skipGoal) }} the goal's target is 0, e.g. during vacation.
+				Time you work in it still counts.
+			</p>
+			<form class="skip-form" @submit.prevent="skipDate(skipGoal, skipDateValue)">
+				<label>
+					A day in the {{ periodWord(skipGoal) }}
+					<input v-model="skipDateValue" type="date" required>
+				</label>
+				<NcButton type="primary" native-type="submit">Skip</NcButton>
+			</form>
+			<h3 v-if="skipGoal.skippedPeriods.length">Skipped</h3>
+			<ul class="skipped-list">
+				<li v-for="period in skipGoal.skippedPeriods" :key="period">
+					{{ formatPeriod(skipGoal, period) }}
+					<NcButton type="tertiary" @click="unskip(skipGoal, period)">Undo</NcButton>
+				</li>
+			</ul>
+		</NcDialog>
 
 		<NcDialog v-if="confirmVisible"
 			name="Confirmation required"
@@ -91,6 +124,8 @@ export default {
 			confirmVisible: false,
 			confirmMessage: '',
 			confirmResolver: null,
+			skipGoal: null,
+			skipDateValue: '',
 		}
 	},
 	async mounted() {
@@ -118,6 +153,48 @@ export default {
 			} catch (e) {
 				showError(e.message)
 			}
+		},
+		periodWord(goal) {
+			return goal.interval === 'Monthly' ? 'month' : 'week'
+		},
+		skippedText(goal) {
+			const n = goal.skippedPeriods.length
+			return `${n} ${this.periodWord(goal)}${n === 1 ? '' : 's'} skipped`
+		},
+		// "2026-11-23" (a week's Monday) → "Week of Nov 23, 2026"; "2026-12" → "December 2026"
+		formatPeriod(goal, period) {
+			const [y, m, d] = period.split('-').map(Number)
+			const date = new Date(Date.UTC(y, m - 1, d || 1))
+			if (goal.interval === 'Monthly') {
+				return date.toLocaleDateString(undefined, { timeZone: 'UTC', month: 'long', year: 'numeric' })
+			}
+			return 'Week of ' + date.toLocaleDateString(undefined, { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })
+		},
+		openSkipDialog(goal) {
+			this.skipGoal = goal
+			this.skipDateValue = ''
+		},
+		async sendSkip(goal, body) {
+			try {
+				const data = await apiPost(`/skip-goal/${goal.id}`, body)
+				this.goals = data.Goals || []
+				if (this.skipGoal) {
+					this.skipGoal = this.goals.find((g) => g.id === goal.id) || null
+				}
+			} catch (e) {
+				showError(e.message)
+			}
+		},
+		async toggleCurrentSkip(goal) {
+			await this.sendSkip(goal, { skip: !goal.currentPeriodSkipped })
+		},
+		async skipDate(goal, date) {
+			await this.sendSkip(goal, { date, skip: true })
+			this.skipDateValue = ''
+		},
+		async unskip(goal, period) {
+			// the period key is the week's Monday or the month; any day in it works
+			await this.sendSkip(goal, { date: period.length === 7 ? `${period}-01` : period, skip: false })
 		},
 		confirm(message) {
 			this.confirmMessage = message
@@ -153,6 +230,35 @@ export default {
 </script>
 
 <style scoped>
+.skip-note {
+	font-size: 0.9em;
+	color: var(--color-text-maxcontrast);
+}
+.goal-actions {
+	white-space: nowrap;
+}
+.goal-actions > * {
+	display: inline-flex;
+	margin-right: 4px;
+}
+.dialog-text {
+	margin-bottom: 12px;
+}
+.skip-form {
+	display: flex;
+	align-items: flex-end;
+	gap: 8px;
+	margin-bottom: 12px;
+}
+.skip-form label {
+	display: flex;
+	flex-direction: column;
+}
+.skipped-list li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
 .invalid-goal {
 	color: var(--color-text-maxcontrast);
 	font-style: italic;

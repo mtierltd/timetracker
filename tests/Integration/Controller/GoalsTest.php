@@ -4,6 +4,7 @@ namespace OCA\TimeTracker\Tests\Integration\Controller;
 
 use OCA\TimeTracker\Db\Goal;
 use OCA\TimeTracker\Db\GoalMapper;
+use OCA\TimeTracker\Db\GoalSkipMapper;
 use OCA\TimeTracker\Db\Project;
 use OCA\TimeTracker\Db\ProjectMapper;
 use OCA\TimeTracker\Db\UserToProject;
@@ -29,6 +30,8 @@ class GoalsTest extends TestCase {
 	private $user;
 	/** @var int[] */
 	private $projectIds = [];
+	/** @var int[] */
+	private $goalIds = [];
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -37,6 +40,12 @@ class GoalsTest extends TestCase {
 
 	protected function tearDown(): void {
 		$db = \OCP\Server::get(IDBConnection::class);
+		if ($this->goalIds) {
+			$qb = $db->getQueryBuilder();
+			$qb->delete('timetracker_goal_skip')
+				->where($qb->expr()->in('goal_id', $qb->createNamedParameter($this->goalIds, IQueryBuilder::PARAM_INT_ARRAY)))
+				->executeStatement();
+		}
 		foreach (['timetracker_goal', 'timetracker_work_interval', 'timetracker_user_to_project'] as $table) {
 			$qb = $db->getQueryBuilder();
 			$qb->delete($table)->where($qb->expr()->eq('user_uid', $qb->createNamedParameter($this->user)))->executeStatement();
@@ -101,6 +110,44 @@ class GoalsTest extends TestCase {
 		$this->assertSame([12, 'Monthly', false], [$goals[0]['hours'], $goals[0]['interval'], $goals[0]['invalid']]);
 	}
 
+	/**
+	 * A skipped week has no target: it adds no debt, and time worked in it
+	 * still counts (#379).
+	 */
+	public function testSkippedWeeks(): void {
+		$project = $this->project('Goals project ' . $this->user);
+		// created 3 weeks ago: 3 past weeks with 10 h each and nothing worked
+		$id = $this->goal($project->getId(), 10, 'Weekly', time() - 21 * 86400);
+		$goal = fn () => array_column($this->ajaxController($this->user)->getGoals()->getData()['Goals'], null, 'id')[$id];
+		$this->assertEquals(30, $goal()['debtHours']);
+
+		$skip = fn (array $params) => $this->ajaxController($this->user, $params)->skipGoal($id)->getData();
+		$twoWeeksAgo = date('Y-m-d', time() - 14 * 86400);
+		$skip(['date' => $twoWeeksAgo]);
+		$skip(['date' => $twoWeeksAgo]); // twice is the same as once
+		$this->assertEquals(20, $goal()['debtHours']);
+		$this->assertCount(1, $goal()['skippedPeriods']);
+
+		// the current week: no target, no remaining hours
+		$skip([]);
+		$this->assertTrue($goal()['currentPeriodSkipped']);
+		$this->assertEquals(0, $goal()['remainingHours']);
+		$this->assertEquals(20, $goal()['totalRemainingHours']);
+
+		$skip(['skip' => 'false']);
+		$this->assertFalse($goal()['currentPeriodSkipped']);
+		$this->assertEquals(10, $goal()['remainingHours']);
+
+		// before the goal existed, invalid dates, and other users' goals
+		$this->assertArrayHasKey('Error', $skip(['date' => date('Y-m-d', time() - 60 * 86400)]));
+		$this->assertArrayHasKey('Error', $skip(['date' => '2026-02-30']));
+		$this->assertSame(404, $this->ajaxController('someone-else')->skipGoal($id)->getStatus());
+
+		// deleting the goal deletes its skipped weeks
+		$this->ajaxController($this->user)->deleteGoal($id);
+		$this->assertSame([], \OCP\Server::get(GoalSkipMapper::class)->findPeriodsForGoals([$id]));
+	}
+
 	private function project(string $name): Project {
 		$p = new Project();
 		$p->setName($name);
@@ -126,6 +173,8 @@ class GoalsTest extends TestCase {
 		$g->setHours($hours);
 		$g->setInterval($interval);
 		$g->setCreatedAt($createdAt);
-		return \OCP\Server::get(GoalMapper::class)->insert($g)->getId();
+		$id = \OCP\Server::get(GoalMapper::class)->insert($g)->getId();
+		$this->goalIds[] = $id;
+		return $id;
 	}
 }
