@@ -17,6 +17,7 @@
 			<NcButton type="primary" native-type="submit">Add goal</NcButton>
 		</form>
 
+		<div class="table-wrapper">
 		<table class="entity-table">
 			<thead>
 				<tr>
@@ -45,6 +46,12 @@
 							{{ goal.currentPeriodSkipped ? 0 : goal.hours }}
 							<div v-if="goal.currentPeriodSkipped" class="skip-note">Skipped this {{ periodWord(goal) }}</div>
 							<div v-else-if="goal.skippedPeriods.length" class="skip-note">{{ skippedText(goal) }}</div>
+							<div class="goal-actions">
+								<NcButton type="tertiary" size="small" @click="toggleCurrentSkip(goal)">
+									{{ goal.currentPeriodSkipped ? 'Undo skip' : `Skip this ${periodWord(goal)}` }}
+								</NcButton>
+								<NcButton type="tertiary" size="small" @click="openSkipDialog(goal)">Skip…</NcButton>
+							</div>
 						</td>
 						<td>{{ goal.interval }}</td>
 						<td>{{ new Date(goal.createdAt * 1000).toDateString() }}</td>
@@ -53,13 +60,7 @@
 						<td>{{ goal.remainingHours }}</td>
 						<td>{{ goal.totalRemainingHours }}</td>
 					</template>
-					<td class="goal-actions">
-						<template v-if="!goal.invalid">
-							<NcButton type="secondary" @click="toggleCurrentSkip(goal)">
-								{{ goal.currentPeriodSkipped ? 'Undo skip' : `Skip this ${periodWord(goal)}` }}
-							</NcButton>
-							<NcButton type="tertiary" @click="openSkipDialog(goal)">Skip…</NcButton>
-						</template>
+					<td>
 						<NcButton type="tertiary" aria-label="Delete" @click="removeGoal(goal)">
 							<template #icon><span class="icon-close" /></template>
 						</NcButton>
@@ -67,6 +68,7 @@
 				</tr>
 			</tbody>
 		</table>
+		</div>
 		</div>
 
 		<NcDialog v-if="skipGoal"
@@ -234,12 +236,15 @@ export default {
 	font-size: 0.9em;
 	color: var(--color-text-maxcontrast);
 }
-.goal-actions {
-	white-space: nowrap;
+.table-wrapper {
+	overflow-x: auto;
 }
-.goal-actions > * {
-	display: inline-flex;
-	margin-right: 4px;
+.goal-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-top: 4px;
+	margin-left: -8px;
 }
 .dialog-text {
 	margin-bottom: 12px;
@@ -282,7 +287,7 @@ export default {
 }
 .entity-table th,
 .entity-table td {
-	padding: 8px 16px;
+	padding: 8px 12px;
 	text-align: left;
 	border-bottom: 1px solid var(--color-border);
 }
