@@ -8,9 +8,13 @@ use OCA\TimeTracker\Db\Absence;
 use OCA\TimeTracker\Db\AbsenceMapper;
 use OCA\TimeTracker\Db\AbsenceType;
 use OCA\TimeTracker\Db\AbsenceTypeMapper;
+use OCA\TimeTracker\Db\VacationEntitlement;
+use OCA\TimeTracker\Db\VacationEntitlementMapper;
+use OCA\TimeTracker\Notification\AbsenceNotifications;
 
 /**
- * Creating, listing and cancelling absences (#374).
+ * Creating, listing, cancelling and approving absences (#374), and the
+ * vacation balance (#375).
  */
 class AbsenceService {
 
@@ -18,6 +22,8 @@ class AbsenceService {
 		private AbsenceMapper $absenceMapper,
 		private AbsenceTypeMapper $typeMapper,
 		private AbsenceSettings $settings,
+		private VacationEntitlementMapper $entitlementMapper,
+		private AbsenceNotifications $notifications,
 	) {
 	}
 
@@ -100,8 +106,14 @@ class AbsenceService {
 			// a single half day: one flag is enough
 			$halfDayEnd = false;
 		}
-		if ($this->absenceMapper->findOverlapping($userId, $startDate, $endDate, [Absence::STATUS_REQUESTED, Absence::STATUS_APPROVED]) !== []) {
-			throw new AbsenceException('This period overlaps another absence');
+		$types = $this->typeMapper->findAllById();
+		foreach ($this->absenceMapper->findOverlapping($userId, $startDate, $endDate, [Absence::STATUS_REQUESTED, Absence::STATUS_APPROVED]) as $other) {
+			// Only an absence that doesn't deduct vacation (e.g. illness) may
+			// overlap vacation: the vacation days it covers are given back.
+			$otherType = $types[(int)$other->typeId] ?? null;
+			if ($type->deductsVacation || $otherType === null || !$otherType->deductsVacation) {
+				throw new AbsenceException('This period overlaps another absence');
+			}
 		}
 		$note = $note === null ? null : mb_substr(trim($note), 0, 255);
 
@@ -118,7 +130,11 @@ class AbsenceService {
 		if ($this->workingDays($absence) === []) {
 			throw new AbsenceException('This period contains no working days');
 		}
-		return $this->absenceMapper->insert($absence);
+		$absence = $this->absenceMapper->insert($absence);
+		if ($absence->status === Absence::STATUS_REQUESTED) {
+			$this->notifications->requested($absence);
+		}
+		return $absence;
 	}
 
 	/**
@@ -134,7 +150,124 @@ class AbsenceService {
 		if (!$absence->isActive()) {
 			throw new AbsenceException('Only requested or approved absences can be cancelled');
 		}
+		$wasRequested = $absence->status === Absence::STATUS_REQUESTED;
 		$absence->setStatus(Absence::STATUS_CANCELLED);
-		return $this->absenceMapper->update($absence);
+		$absence = $this->absenceMapper->update($absence);
+		if ($wasRequested) {
+			$this->notifications->removeRequest($absence);
+		}
+		return $absence;
+	}
+
+	/**
+	 * An approver approves or rejects a requested absence.
+	 *
+	 * @throws AbsenceException
+	 */
+	public function decide(string $approverId, int $id, bool $approve, ?string $comment): Absence {
+		$absence = $this->absenceMapper->findOrNull($id);
+		if ($absence === null) {
+			throw new AbsenceException('Not found', 404);
+		}
+		if ($absence->status !== Absence::STATUS_REQUESTED) {
+			throw new AbsenceException('Only requested absences can be approved or rejected');
+		}
+		$comment = $comment === null ? '' : mb_substr(trim($comment), 0, 255);
+		$absence->setStatus($approve ? Absence::STATUS_APPROVED : Absence::STATUS_REJECTED);
+		$absence->setDecidedBy($approverId);
+		$absence->setDecidedAt(time());
+		$absence->setDecisionComment($comment === '' ? null : $comment);
+		$absence = $this->absenceMapper->update($absence);
+		$this->notifications->decided($absence);
+		return $absence;
+	}
+
+	/**
+	 * All requested absences, for approvers.
+	 *
+	 * @return list<array<string, mixed>>
+	 */
+	public function listRequested(): array {
+		$types = $this->typeMapper->findAllById();
+		return array_map(fn (Absence $a) => $this->toArray($a, $types[(int)$a->typeId] ?? null),
+			$this->absenceMapper->findByStatus(Absence::STATUS_REQUESTED));
+	}
+
+	/**
+	 * A user's vacation days in a year: entitlement, taken, requested, left.
+	 *
+	 * @return array<string, mixed>
+	 */
+	public function vacationBalance(string $userId, int $year): array {
+		$first = sprintf('%04d-01-01', $year);
+		$last = sprintf('%04d-12-31', $year);
+		$types = $this->typeMapper->findAllById();
+		$approved = [];
+		$requested = [];
+		$other = [];
+		foreach ($this->absenceMapper->findOverlapping($userId, $first, $last, [Absence::STATUS_REQUESTED, Absence::STATUS_APPROVED]) as $absence) {
+			$type = $types[(int)$absence->typeId] ?? null;
+			if ($type === null) {
+				continue;
+			}
+			$days = array_filter($this->workingDays($absence), fn ($date) => $date >= $first && $date <= $last, ARRAY_FILTER_USE_KEY);
+			if ($type->deductsVacation) {
+				if ($absence->status === Absence::STATUS_APPROVED) {
+					$approved += $days;
+				} else {
+					$requested += $days;
+				}
+			} elseif ($absence->status === Absence::STATUS_APPROVED) {
+				foreach ($days as $date => $share) {
+					$other[$date] = min(1.0, ($other[$date] ?? 0.0) + $share);
+				}
+			}
+		}
+		$entitlement = $this->entitlementMapper->findForUserYear($userId, $year);
+		return VacationBalance::calculate(
+			$entitlement === null ? 0.0 : $entitlement->halfDays / 2,
+			$entitlement === null ? 0.0 : $entitlement->carriedOverHalfDays / 2,
+			$entitlement?->carryOverExpiry,
+			VacationBalance::withoutOtherAbsences($approved, $other),
+			VacationBalance::withoutOtherAbsences($requested, $other),
+			date('Y-m-d'),
+		) + ['hasEntitlement' => $entitlement !== null];
+	}
+
+	/**
+	 * Sets a user's vacation entitlement for a year.
+	 *
+	 * @throws AbsenceException
+	 */
+	public function saveEntitlement(string $userId, int $year, mixed $days, mixed $carriedOver, mixed $carryOverExpiry): VacationEntitlement {
+		$halfDays = self::toHalfDays($days);
+		$carriedHalfDays = self::toHalfDays($carriedOver ?? 0);
+		if ($halfDays === null || $carriedHalfDays === null) {
+			throw new AbsenceException('Days must be a number of whole or half days from 0 to 366');
+		}
+		if ($carryOverExpiry === '' || $carryOverExpiry === null) {
+			$carryOverExpiry = null;
+		} elseif (!AbsenceDays::isDate($carryOverExpiry)) {
+			throw new AbsenceException('Please enter a valid expiry date');
+		}
+		$entitlement = $this->entitlementMapper->findForUserYear($userId, $year) ?? new VacationEntitlement();
+		$entitlement->setUserUid($userId);
+		$entitlement->setYear($year);
+		$entitlement->setHalfDays($halfDays);
+		$entitlement->setCarriedOverHalfDays($carriedHalfDays);
+		$entitlement->setCarryOverExpiry($carryOverExpiry);
+		return $entitlement->id ? $this->entitlementMapper->update($entitlement) : $this->entitlementMapper->insert($entitlement);
+	}
+
+	/** "12.5" => 25; null if not a multiple of 0.5 from 0 to 366. */
+	public static function toHalfDays(mixed $days): ?int {
+		if (!is_numeric($days)) {
+			return null;
+		}
+		$half = (float)$days * 2;
+		if ($half < 0 || $half > 732 || abs($half - round($half)) > 1e-9) {
+			return null;
+		}
+		return (int)round($half);
 	}
 }

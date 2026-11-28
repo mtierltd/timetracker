@@ -6,6 +6,7 @@ namespace OCA\TimeTracker\Controller;
 
 use OCA\TimeTracker\Db\AbsenceType;
 use OCA\TimeTracker\Db\AbsenceTypeMapper;
+use OCA\TimeTracker\Db\VacationEntitlementMapper;
 use OCA\TimeTracker\Service\AbsenceDays;
 use OCA\TimeTracker\Service\AbsenceException;
 use OCA\TimeTracker\Service\AbsenceService;
@@ -19,9 +20,13 @@ use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IGroupManager;
 use OCP\IRequest;
+use OCP\IUserManager;
 
 /**
- * Absences, absence types and public holidays (#374).
+ * Absences, absence types and public holidays (#374), vacation
+ * entitlements and approvals (#375).
+ *
+ * Methods without #[NoAdminRequired] are for admins only.
  *
  * Request bodies are JSON (as the web app sends), so parameters are read
  * with getParam().
@@ -35,6 +40,8 @@ class AbsencesController extends Controller {
 		private AbsenceTypeMapper $typeMapper,
 		private AbsenceSettings $settings,
 		private IGroupManager $groupManager,
+		private IUserManager $userManager,
+		private VacationEntitlementMapper $entitlementMapper,
 		private ?string $userId,
 	) {
 		parent::__construct($appName, $request);
@@ -44,6 +51,11 @@ class AbsencesController extends Controller {
 	#[NoCSRFRequired]
 	public function index(): TemplateResponse {
 		return new TemplateResponse('timetracker', 'spa', ['script' => 'dist/app']);
+	}
+
+	#[NoCSRFRequired]
+	public function adminIndex(): TemplateResponse {
+		return $this->index();
 	}
 
 	#[NoAdminRequired]
@@ -69,6 +81,55 @@ class AbsencesController extends Controller {
 	#[NoAdminRequired]
 	public function cancelAbsence(int $id): JSONResponse {
 		return $this->run(fn () => $this->absenceService->present($this->absenceService->cancel($this->userId, $id)));
+	}
+
+	#[NoAdminRequired]
+	public function getVacationBalance(): JSONResponse {
+		return new JSONResponse($this->absenceService->vacationBalance($this->userId, $this->year()));
+	}
+
+	public function getRequestedAbsences(): JSONResponse {
+		return new JSONResponse(['Absences' => $this->withDisplayNames($this->absenceService->listRequested())]);
+	}
+
+	public function decideAbsence(int $id): JSONResponse {
+		return $this->run(fn () => $this->absenceService->present($this->absenceService->decide(
+			$this->userId, $id, (bool)$this->request->getParam('approve'), $this->stringParam('comment'))));
+	}
+
+	/** All users with their entitlement and balance of a year. */
+	public function getEntitlements(): JSONResponse {
+		$year = $this->year();
+		$users = [];
+		foreach ($this->userManager->search('', 1000) as $user) {
+			$users[] = [
+				'userUid' => $user->getUID(),
+				'displayName' => $user->getDisplayName(),
+				'balance' => $this->absenceService->vacationBalance($user->getUID(), $year),
+			];
+		}
+		usort($users, fn ($a, $b) => strcasecmp($a['displayName'], $b['displayName']));
+		return new JSONResponse(['year' => $year, 'Users' => $users]);
+	}
+
+	public function saveEntitlement(): JSONResponse {
+		return $this->run(function () {
+			$userId = (string)$this->request->getParam('userUid', '');
+			if (!$this->userManager->userExists($userId)) {
+				throw new AbsenceException('Unknown user');
+			}
+			$this->absenceService->saveEntitlement($userId, $this->year(),
+				$this->request->getParam('days'), $this->request->getParam('carriedOver'), $this->request->getParam('carryOverExpiry'));
+			return $this->absenceService->vacationBalance($userId, $this->year());
+		});
+	}
+
+	/**
+	 * @param list<array<string, mixed>> $absences
+	 * @return list<array<string, mixed>>
+	 */
+	private function withDisplayNames(array $absences): array {
+		return array_map(fn ($a) => $a + ['displayName' => $this->userManager->getDisplayName($a['userUid']) ?? $a['userUid']], $absences);
 	}
 
 	#[NoAdminRequired]

@@ -3,6 +3,17 @@
 		<div class="view-page">
 			<h1 class="page-title">Absences</h1>
 
+			<div v-if="balance" class="balance">
+				<template v-if="balance.hasEntitlement">
+					<strong>{{ formatDays(balance.remaining) }}</strong> of {{ formatDays(balance.entitlement + balance.carriedOver) }} vacation days left in {{ year }}
+					<span v-if="balance.carriedOver > 0" class="hint">
+						(incl. {{ formatDays(balance.carriedOver) }} carried over<template v-if="balance.carryOverExpiry">, valid until {{ formatDate(balance.carryOverExpiry) }}</template><template v-if="balance.carriedOverExpired > 0">, {{ formatDays(balance.carriedOverExpired) }} expired</template>)
+					</span>
+					<span class="hint">· {{ formatDays(balance.approved) }} approved · {{ formatDays(balance.requested) }} requested</span>
+				</template>
+				<span v-else class="hint">No vacation entitlement set for {{ year }}. Please ask an admin.</span>
+			</div>
+
 			<form class="new-item-form" @submit.prevent="addAbsence">
 				<NcSelect v-model="form.type"
 					:options="activeTypes"
@@ -127,6 +138,7 @@ export default {
 			types: [],
 			absences: [],
 			holidays: [],
+			balance: null,
 			settings: { states: {}, defaultState: '', userState: '', isAdmin: false },
 			form: { type: null, startDate: today(), endDate: today(), halfDayStart: false, halfDayEnd: false, note: '' },
 			confirmVisible: false,
@@ -173,12 +185,14 @@ export default {
 			this.settings = await apiGet('/absence-settings')
 		},
 		async reload() {
-			const [absences, holidays] = await Promise.all([
+			const [absences, holidays, balance] = await Promise.all([
 				apiGet('/absences', { year: this.year }),
 				apiGet('/holidays', { year: this.year }),
+				apiGet('/vacation-balance', { year: this.year }),
 			])
 			this.absences = absences.Absences || []
 			this.holidays = holidays.Holidays || []
+			this.balance = balance
 		},
 		async changeYear(delta) {
 			this.year += delta
@@ -245,6 +259,15 @@ export default {
 <style scoped>
 .view-page {
 	padding: 50px 20px 20px;
+}
+.balance {
+	padding: 12px 16px;
+	margin-bottom: 16px;
+	border-radius: var(--border-radius-large, 10px);
+	background: var(--color-background-hover);
+}
+.hint {
+	color: var(--color-text-maxcontrast);
 }
 .new-item-form,
 .toolbar {
