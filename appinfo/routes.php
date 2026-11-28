@@ -55,6 +55,16 @@ return [
        ['name' => 'ajax#delete_goal', 'url' => '/ajax/delete-goal/{id}', 'verb' => 'POST'],
 
 
+       ['name' => 'absences#index', 'url' => '/absences', 'verb' => 'GET'],
+       ['name' => 'absences#get_absences', 'url' => '/ajax/absences', 'verb' => 'GET'],
+       ['name' => 'absences#add_absence', 'url' => '/ajax/absences', 'verb' => 'POST'],
+       ['name' => 'absences#cancel_absence', 'url' => '/ajax/absences/{id}/cancel', 'verb' => 'POST'],
+       ['name' => 'absences#get_absence_types', 'url' => '/ajax/absence-types', 'verb' => 'GET'],
+       ['name' => 'absences#save_absence_type', 'url' => '/ajax/absence-types', 'verb' => 'POST'],
+       ['name' => 'absences#get_holidays', 'url' => '/ajax/holidays', 'verb' => 'GET'],
+       ['name' => 'absences#get_absence_settings', 'url' => '/ajax/absence-settings', 'verb' => 'GET'],
+       ['name' => 'absences#save_absence_settings', 'url' => '/ajax/absence-settings', 'verb' => 'POST'],
+
        ['name' => 'ajax#get_report', 'url' => '/ajax/report', 'verb' => 'GET'],
        ['name' => 'ajax#post_timeline', 'url' => '/ajax/timeline', 'verb' => 'POST'],
        ['name' => 'ajax#get_timelines', 'url' => '/ajax/timelines', 'verb' => 'GET'],

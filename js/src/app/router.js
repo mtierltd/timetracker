@@ -3,6 +3,7 @@ import { generateUrl } from '@nextcloud/router'
 import TagsView from './views/TagsView.vue'
 import ClientsView from './views/ClientsView.vue'
 import GoalsView from './views/GoalsView.vue'
+import AbsencesView from './views/AbsencesView.vue'
 import ProjectsView from './views/ProjectsView.vue'
 import TimerView from './views/TimerView.vue'
 import DashboardView from './views/DashboardView.vue'
@@ -14,6 +15,7 @@ const views = [
 	{ path: '', name: 'timer', title: 'Timer', component: TimerView },
 	{ path: 'dashboard', name: 'dashboard', title: 'Dashboard', component: DashboardView },
 	{ path: 'goals', name: 'goals', title: 'Goals', component: GoalsView },
+	{ path: 'absences', name: 'absences', title: 'Absences', component: AbsencesView },
 	{ path: 'reports', name: 'reports', title: 'Reports', component: ReportsView },
 	{ path: 'timelines', name: 'timelines', title: 'Timelines', component: TimelinesView },
 	{ path: 'timelines-admin', name: 'timelines-admin', title: 'Timelines Admin', component: TimelinesAdminView },
