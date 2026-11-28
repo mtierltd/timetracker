@@ -64,6 +64,7 @@
 				</label>
 			</div>
 
+			<div class="table-wrapper">
 			<table class="entity-table">
 				<thead>
 					<tr>
@@ -87,8 +88,10 @@
 						<td>{{ period(absence) }}</td>
 						<td>
 							{{ formatDays(absence.days) }}
-							<div v-if="absence.conflictDays && absence.conflictDays.length" class="conflict">
-								⚠ Working time recorded on {{ absence.conflictDays.map(formatDate).join(', ') }}
+							<div v-if="absence.conflictDays && absence.conflictDays.length"
+								class="conflict"
+								:title="absence.conflictDays.map(formatDate).join('\n')">
+								⚠ Working time recorded on {{ absence.conflictDays.length }} {{ absence.conflictDays.length === 1 ? 'day' : 'days' }}
 							</div>
 						</td>
 						<td>
@@ -102,6 +105,7 @@
 					</tr>
 				</tbody>
 			</table>
+			</div>
 
 			<details class="holidays">
 				<summary>Public holidays {{ year }} ({{ stateName(effectiveState) }})</summary>
@@ -309,6 +313,9 @@ export default {
 	display: flex;
 	flex-direction: column;
 }
+.table-wrapper {
+	overflow-x: auto;
+}
 .entity-table {
 	width: 100%;
 	border-collapse: collapse;
@@ -338,21 +345,22 @@ export default {
 	margin-right: 6px;
 }
 .status {
-	padding: 2px 8px;
+	padding: 1px 8px;
+	border: 1px solid currentColor;
 	border-radius: var(--border-radius-pill, 12px);
-	background: var(--color-background-dark);
+	white-space: nowrap;
 }
 .status-approved {
-	background: var(--color-success);
-	color: var(--color-primary-element-text, #fff);
+	color: var(--color-success-text, var(--color-success));
 }
 .status-requested {
-	background: var(--color-warning);
-	color: var(--color-main-text);
+	color: var(--color-warning-text, var(--color-warning));
 }
 .status-rejected {
-	background: var(--color-error);
-	color: var(--color-primary-element-text, #fff);
+	color: var(--color-error-text, var(--color-error));
+}
+.status-cancelled {
+	color: var(--color-text-maxcontrast);
 }
 .conflict {
 	font-size: 0.9em;

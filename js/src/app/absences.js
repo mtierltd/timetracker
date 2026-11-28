@@ -21,12 +21,18 @@ export function formatDays(days) {
 	return Number(days).toLocaleString(undefined, { maximumFractionDigits: 1 })
 }
 
+// "2026-12-24" → short localized date without the weekday, e.g. "Dec 24, 2026"
+export function formatShortDate(date) {
+	const [y, m, d] = date.split('-').map(Number)
+	return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(undefined, { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 export function period(absence) {
-	const start = formatDate(absence.startDate) + (absence.halfDayStart ? ' (½)' : '')
+	const start = formatShortDate(absence.startDate) + (absence.halfDayStart ? ' (½)' : '')
 	if (absence.startDate === absence.endDate) {
 		return start
 	}
-	return `${start} – ${formatDate(absence.endDate)}${absence.halfDayEnd ? ' (½)' : ''}`
+	return `${start} – ${formatShortDate(absence.endDate)}${absence.halfDayEnd ? ' (½)' : ''}`
 }
 
 // 450 → "7:30 h"

@@ -4,6 +4,7 @@
 			<h1 class="page-title">Absences Admin</h1>
 
 			<h2>Requests</h2>
+			<div class="table-wrapper">
 			<table class="entity-table">
 				<thead>
 					<tr>
@@ -30,18 +31,21 @@
 						<td>
 							{{ formatDays(absence.days) }}
 							<div v-if="absence.conflictDays && absence.conflictDays.length" class="conflict">
-								⚠ Working time recorded on {{ absence.conflictDays.length }} of these days
+								⚠ Time recorded on {{ absence.conflictDays.length }} {{ absence.conflictDays.length === 1 ? 'day' : 'days' }}
 							</div>
 						</td>
 						<td>{{ absence.note }}</td>
-						<td><input v-model="comments[absence.id]" type="text" placeholder="Optional"></td>
-						<td class="actions">
-							<NcButton type="primary" @click="decide(absence, true)">Approve</NcButton>
-							<NcButton type="error" @click="decide(absence, false)">Reject</NcButton>
+						<td><input v-model="comments[absence.id]" type="text" class="comment-input" style="width: 140px; min-width: 0;" placeholder="Optional"></td>
+						<td>
+							<div class="actions">
+								<NcButton type="primary" @click="decide(absence, true)">Approve</NcButton>
+								<NcButton variant="error" @click="decide(absence, false)">Reject</NcButton>
+							</div>
 						</td>
 					</tr>
 				</tbody>
 			</table>
+			</div>
 
 			<h2>
 				Vacation entitlements
@@ -49,6 +53,7 @@
 				{{ year }}
 				<NcButton type="tertiary" aria-label="Next year" @click="changeYear(1)">›</NcButton>
 			</h2>
+			<div class="table-wrapper">
 			<table class="entity-table">
 				<thead>
 					<tr>
@@ -77,9 +82,11 @@
 					</tr>
 				</tbody>
 			</table>
+			</div>
 
 			<h2>Work models</h2>
 			<p class="hint">Hours per weekday, the base of the target hours. Users without a model work 8 hours Monday to Friday.</p>
+			<div class="table-wrapper">
 			<table class="entity-table">
 				<thead>
 					<tr>
@@ -105,8 +112,10 @@
 					</tr>
 				</tbody>
 			</table>
+			</div>
 
 			<h2>Absence types</h2>
+			<div class="table-wrapper">
 			<table class="entity-table">
 				<thead>
 					<tr>
@@ -145,6 +154,7 @@
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</div>
 	</NcAppContent>
 </template>
@@ -271,6 +281,9 @@ h2 {
 	gap: 4px;
 	margin-top: 32px;
 }
+.table-wrapper {
+	overflow-x: auto;
+}
 .entity-table {
 	width: 100%;
 	border-collapse: collapse;
@@ -280,6 +293,9 @@ h2 {
 	padding: 8px 12px;
 	text-align: left;
 	border-bottom: 1px solid var(--color-border);
+}
+.entity-table input.comment-input {
+	width: 140px;
 }
 .entity-table input[type="number"] {
 	width: 80px;
@@ -297,7 +313,8 @@ h2 {
 }
 .actions {
 	display: flex;
-	gap: 8px;
+	flex-direction: column;
+	gap: 4px;
 }
 .empty {
 	color: var(--color-text-maxcontrast);
