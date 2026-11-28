@@ -4,6 +4,9 @@ namespace  OCA\TimeTracker\Db;
 
 use OCP\AppFramework\Db\Entity;
 
+/**
+ * @method void setDays(?string $days)
+ */
 class Goal extends Entity {
 
     public $id;
@@ -13,6 +16,8 @@ class Goal extends Entity {
     public $hours;
     public $interval;
     public $createdAt;
+    /** weekdays the goal counts on: 7 characters 0/1, Monday first; null: Monday to Friday */
+    public $days;
 
 
     public function __construct() {
@@ -25,5 +30,6 @@ class Goal extends Entity {
         $this->addType('hours', 'integer');
         $this->addType('interval', 'string');
         $this->addType('createdAt', 'integer');
+        $this->addType('days', 'string');
     }
 }

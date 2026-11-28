@@ -14,6 +14,10 @@
 				<option value="Weekly">Weekly</option>
 				<option value="Monthly">Monthly</option>
 			</select>
+			<select v-model="newGoalDays" class="interval-select" aria-label="Counts on">
+				<option value="1111100">Monday to Friday</option>
+				<option value="1111111">Every day</option>
+			</select>
 			<NcButton type="primary" native-type="submit">Add goal</NcButton>
 		</form>
 
@@ -43,14 +47,16 @@
 					</td>
 					<template v-else>
 						<td>
-							{{ goal.currentPeriodSkipped ? 0 : goal.hours }}
-							<div v-if="goal.currentPeriodSkipped" class="skip-note">Skipped this {{ periodWord(goal) }}</div>
-							<div v-else-if="goal.skippedPeriods.length" class="skip-note">{{ skippedText(goal) }}</div>
+							{{ goal.currentTarget }}<span v-if="goal.skippedDaysCurrentPeriod" class="skip-note"> of {{ goal.hours }}</span>
+							<div v-if="goal.skippedDaysCurrentPeriod" class="skip-note">
+								{{ goal.skippedDaysCurrentPeriod }} of {{ goal.countedDaysCurrentPeriod }} days skipped this {{ periodWord(goal) }}
+							</div>
+							<div class="skip-note">Counts {{ daysText(goal.days) }}</div>
 							<div class="goal-actions">
-								<NcButton type="tertiary" size="small" @click="toggleCurrentSkip(goal)">
-									{{ goal.currentPeriodSkipped ? 'Undo skip' : `Skip this ${periodWord(goal)}` }}
+								<NcButton type="tertiary" size="small" @click="skipToday(goal)">Skip today</NcButton>
+								<NcButton type="tertiary" size="small" @click="openSkipDialog(goal)">
+									Skip days…<template v-if="goal.skips.length"> ({{ goal.skips.length }})</template>
 								</NcButton>
-								<NcButton type="tertiary" size="small" @click="openSkipDialog(goal)">Skip…</NcButton>
 							</div>
 						</td>
 						<td>{{ goal.interval }}</td>
@@ -72,24 +78,42 @@
 		</div>
 
 		<NcDialog v-if="skipGoal"
-			:name="`Skip ${skipGoal.projectName || 'goal'}`"
+			:name="'Skip days'"
 			@closing="skipGoal = null">
 			<p class="dialog-text">
-				In a skipped {{ periodWord(skipGoal) }} the goal's target is 0, e.g. during vacation.
-				Time you work in it still counts.
+				<strong>{{ skipGoal.projectName || 'This goal' }}</strong>:
+				skipped days only apply to this goal. They reduce its target by their share of the
+				{{ periodWord(skipGoal) }}: with {{ skipGoal.hours }} h a {{ periodWord(skipGoal) }} on
+				{{ exampleDays(skipGoal) }} days, skipping 2 days leaves {{ exampleTarget(skipGoal) }} h.
+				Time you work on skipped days still counts.
 			</p>
-			<form class="skip-form" @submit.prevent="skipDate(skipGoal, skipDateValue)">
+			<form class="skip-form" @submit.prevent="skipRange(skipGoal)">
 				<label>
-					A day in the {{ periodWord(skipGoal) }}
-					<input v-model="skipDateValue" type="date" required>
+					From
+					<input v-model="skipFrom" type="date" required>
+				</label>
+				<label>
+					To
+					<input v-model="skipTo" type="date" :min="skipFrom" required>
 				</label>
 				<NcButton type="primary" native-type="submit">Skip</NcButton>
 			</form>
-			<h3 v-if="skipGoal.skippedPeriods.length">Skipped</h3>
+
+			<h3>Counts on</h3>
+			<div class="weekdays">
+				<label v-for="(day, i) in weekdays" :key="day">
+					<input type="checkbox"
+						:checked="skipGoal.days[i] === '1'"
+						@change="toggleDay(skipGoal, i, $event.target.checked)">
+					{{ day }}
+				</label>
+			</div>
+
+			<h3 v-if="skipGoal.skips.length">Skipped</h3>
 			<ul class="skipped-list">
-				<li v-for="period in skipGoal.skippedPeriods" :key="period">
-					{{ formatPeriod(skipGoal, period) }}
-					<NcButton type="tertiary" @click="unskip(skipGoal, period)">Undo</NcButton>
+				<li v-for="skip in skipGoal.skips" :key="skip.id">
+					{{ formatRange(skip) }}
+					<NcButton type="tertiary" @click="removeSkip(skipGoal, skip)">Remove</NcButton>
 				</li>
 			</ul>
 		</NcDialog>
@@ -110,7 +134,7 @@ import NcButton from '@nextcloud/vue/components/NcButton'
 import NcTextField from '@nextcloud/vue/components/NcTextField'
 import NcSelect from '@nextcloud/vue/components/NcSelect'
 import NcDialog from '@nextcloud/vue/components/NcDialog'
-import { showError } from '@nextcloud/dialogs'
+import { showError, showSuccess } from '@nextcloud/dialogs'
 import { apiGet, apiPost } from '../api.js'
 
 export default {
@@ -126,8 +150,11 @@ export default {
 			confirmVisible: false,
 			confirmMessage: '',
 			confirmResolver: null,
+			newGoalDays: '1111100',
 			skipGoal: null,
-			skipDateValue: '',
+			skipFrom: '',
+			skipTo: '',
+			weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
 		}
 	},
 	async mounted() {
@@ -149,6 +176,7 @@ export default {
 					projectId: this.newGoalProject?.id ?? '',
 					hours: this.newGoalHours,
 					interval: this.newGoalInterval,
+					days: this.newGoalDays,
 				})
 				this.newGoalHours = ''
 				await this.loadGoals()
@@ -159,44 +187,71 @@ export default {
 		periodWord(goal) {
 			return goal.interval === 'Monthly' ? 'month' : 'week'
 		},
-		skippedText(goal) {
-			const n = goal.skippedPeriods.length
-			return `${n} ${this.periodWord(goal)}${n === 1 ? '' : 's'} skipped`
+		daysText(days) {
+			if (days === '1111111') return 'every day'
+			if (days === '1111100') return 'Monday to Friday'
+			return this.weekdays.filter((day, i) => days[i] === '1').join(', ')
 		},
-		// "2026-11-23" (a week's Monday) → "Week of Nov 23, 2026"; "2026-12" → "December 2026"
-		formatPeriod(goal, period) {
-			const [y, m, d] = period.split('-').map(Number)
-			const date = new Date(Date.UTC(y, m - 1, d || 1))
-			if (goal.interval === 'Monthly') {
-				return date.toLocaleDateString(undefined, { timeZone: 'UTC', month: 'long', year: 'numeric' })
+		// counted days of a typical week or month, for the example in the dialog
+		exampleDays(goal) {
+			const perWeek = goal.days.split('').filter((d) => d === '1').length
+			return goal.interval === 'Monthly' ? Math.round(perWeek * 52 / 12) : perWeek
+		},
+		exampleTarget(goal) {
+			const days = this.exampleDays(goal)
+			return days <= 2 ? 0 : Math.round(goal.hours * (days - 2) / days * 10) / 10
+		},
+		// "2026-12-21" – "2026-12-24" → "Dec 21 – Dec 24, 2026"
+		formatRange(skip) {
+			const format = (date, options) => {
+				const [y, m, d] = date.split('-').map(Number)
+				return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString(undefined, { timeZone: 'UTC', ...options })
 			}
-			return 'Week of ' + date.toLocaleDateString(undefined, { timeZone: 'UTC', day: 'numeric', month: 'short', year: 'numeric' })
+			const full = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }
+			if (skip.startDate === skip.endDate) {
+				return format(skip.startDate, full)
+			}
+			return `${format(skip.startDate, { weekday: 'short', day: 'numeric', month: 'short' })} – ${format(skip.endDate, full)}`
 		},
 		openSkipDialog(goal) {
 			this.skipGoal = goal
-			this.skipDateValue = ''
+			this.skipFrom = ''
+			this.skipTo = ''
 		},
-		async sendSkip(goal, body) {
+		async send(path, body, goalId) {
 			try {
-				const data = await apiPost(`/skip-goal/${goal.id}`, body)
+				const data = await apiPost(path, body)
 				this.goals = data.Goals || []
 				if (this.skipGoal) {
-					this.skipGoal = this.goals.find((g) => g.id === goal.id) || null
+					this.skipGoal = this.goals.find((g) => g.id === goalId) || null
 				}
+				return true
 			} catch (e) {
 				showError(e.message)
+				return false
 			}
 		},
-		async toggleCurrentSkip(goal) {
-			await this.sendSkip(goal, { skip: !goal.currentPeriodSkipped })
+		async skipToday(goal) {
+			if (await this.send(`/skip-goal/${goal.id}`, {}, goal.id)) {
+				showSuccess(`Today is skipped for ${goal.projectName || 'this goal'}`)
+			}
 		},
-		async skipDate(goal, date) {
-			await this.sendSkip(goal, { date, skip: true })
-			this.skipDateValue = ''
+		async skipRange(goal) {
+			if (await this.send(`/skip-goal/${goal.id}`, { startDate: this.skipFrom, endDate: this.skipTo || this.skipFrom }, goal.id)) {
+				this.skipFrom = ''
+				this.skipTo = ''
+			}
 		},
-		async unskip(goal, period) {
-			// the period key is the week's Monday or the month; any day in it works
-			await this.sendSkip(goal, { date: period.length === 7 ? `${period}-01` : period, skip: false })
+		async removeSkip(goal, skip) {
+			await this.send(`/delete-goal-skip/${goal.id}/${skip.id}`, {}, goal.id)
+		},
+		async toggleDay(goal, index, checked) {
+			const days = goal.days.split('')
+			days[index] = checked ? '1' : '0'
+			if (!(await this.send(`/goal-days/${goal.id}`, { days: days.join('') }, goal.id))) {
+				// refused (e.g. no day left): show the saved days again
+				this.skipGoal = { ...goal }
+			}
 		},
 		confirm(message) {
 			this.confirmMessage = message
@@ -258,6 +313,21 @@ export default {
 .skip-form label {
 	display: flex;
 	flex-direction: column;
+}
+.weekdays {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 12px;
+	margin-bottom: 12px;
+}
+.weekdays label {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+.weekdays input[type="checkbox"] {
+	margin: 0;
+	min-height: 0;
 }
 .skipped-list li {
 	display: flex;

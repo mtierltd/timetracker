@@ -53,6 +53,8 @@ return [
        ['name' => 'ajax#get_goals', 'url' => '/ajax/goals', 'verb' => 'GET'],
        ['name' => 'ajax#add_goal', 'url' => '/ajax/add-goal', 'verb' => 'POST'],
        ['name' => 'ajax#skip_goal', 'url' => '/ajax/skip-goal/{id}', 'verb' => 'POST'],
+       ['name' => 'ajax#delete_goal_skip', 'url' => '/ajax/delete-goal-skip/{id}/{skipId}', 'verb' => 'POST'],
+       ['name' => 'ajax#set_goal_days', 'url' => '/ajax/goal-days/{id}', 'verb' => 'POST'],
        ['name' => 'ajax#delete_goal', 'url' => '/ajax/delete-goal/{id}', 'verb' => 'POST'],
 
 

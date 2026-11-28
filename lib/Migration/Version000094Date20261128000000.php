@@ -28,24 +28,36 @@ use OCP\Migration\IOutput;
 use OCP\Migration\SimpleMigrationStep;
 
 /**
- * Weeks or months a goal is skipped in, e.g. during vacation (#379).
- * The period is the week's Monday (Y-m-d) or the month (Y-m), like the
- * periods getGoals() calculates.
+ * Skipped days per goal, e.g. vacation, and the weekdays a goal counts on
+ * (#379). The goal's target in a week or month is reduced by the share of
+ * its counted days that are skipped.
  */
 class Version000094Date20261128000000 extends SimpleMigrationStep {
 
 	public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
 		/** @var ISchemaWrapper $schema */
 		$schema = $schemaClosure();
-		if ($schema->hasTable('timetracker_goal_skip')) {
-			return null;
+		$changed = false;
+
+		$goals = $schema->getTable('timetracker_goal');
+		if (!$goals->hasColumn('days')) {
+			// 7 characters 0/1, Monday first; null: Monday to Friday
+			$goals->addColumn('days', Types::STRING, ['notnull' => false, 'length' => 7]);
+			$changed = true;
 		}
-		$table = $schema->createTable('timetracker_goal_skip');
-		$table->addColumn('id', Types::INTEGER, ['autoincrement' => true, 'notnull' => true, 'length' => 4]);
-		$table->addColumn('goal_id', Types::INTEGER, ['notnull' => true, 'length' => 4]);
-		$table->addColumn('period', Types::STRING, ['notnull' => true, 'length' => 10]);
-		$table->setPrimaryKey(['id']);
-		$table->addUniqueIndex(['goal_id', 'period'], 'tt_goal_skip_period');
-		return $schema;
+
+		if (!$schema->hasTable('timetracker_goal_skip')) {
+			$table = $schema->createTable('timetracker_goal_skip');
+			$table->addColumn('id', Types::INTEGER, ['autoincrement' => true, 'notnull' => true, 'length' => 4]);
+			$table->addColumn('goal_id', Types::INTEGER, ['notnull' => true, 'length' => 4]);
+			// Y-m-d, both included
+			$table->addColumn('start_date', Types::STRING, ['notnull' => true, 'length' => 10]);
+			$table->addColumn('end_date', Types::STRING, ['notnull' => true, 'length' => 10]);
+			$table->setPrimaryKey(['id']);
+			$table->addIndex(['goal_id'], 'tt_goal_skip_goal');
+			$changed = true;
+		}
+
+		return $changed ? $schema : null;
 	}
 }

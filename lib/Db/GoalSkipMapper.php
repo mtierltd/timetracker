@@ -16,12 +16,12 @@ class GoalSkipMapper extends QBMapper {
 	}
 
 	/**
-	 * The skipped periods of several goals.
+	 * The skipped days of several goals.
 	 *
 	 * @param int[] $goalIds
-	 * @return array<int, string[]> goal id => periods, sorted
+	 * @return array<int, GoalSkip[]> goal id => skips, by start date
 	 */
-	public function findPeriodsForGoals(array $goalIds): array {
+	public function findForGoals(array $goalIds): array {
 		if ($goalIds === []) {
 			return [];
 		}
@@ -29,30 +29,30 @@ class GoalSkipMapper extends QBMapper {
 		$qb->select('*')
 			->from($this->getTableName())
 			->where($qb->expr()->in('goal_id', $qb->createNamedParameter($goalIds, IQueryBuilder::PARAM_INT_ARRAY)))
-			->orderBy('period');
-		$periods = [];
+			->orderBy('start_date')
+			->addOrderBy('id');
+		$skips = [];
 		foreach ($this->findEntities($qb) as $skip) {
-			$periods[(int)$skip->goalId][] = $skip->period;
+			$skips[(int)$skip->goalId][] = $skip;
 		}
-		return $periods;
+		return $skips;
 	}
 
-	public function skip(int $goalId, string $period): void {
-		if (in_array($period, $this->findPeriodsForGoals([$goalId])[$goalId] ?? [], true)) {
-			return;
-		}
+	public function add(int $goalId, string $startDate, string $endDate): GoalSkip {
 		$skip = new GoalSkip();
 		$skip->setGoalId($goalId);
-		$skip->setPeriod($period);
-		$this->insert($skip);
+		$skip->setStartDate($startDate);
+		$skip->setEndDate($endDate);
+		return $this->insert($skip);
 	}
 
-	public function unskip(int $goalId, string $period): void {
+	/** Removes one skip of a goal; false if the goal has no such skip. */
+	public function remove(int $goalId, int $skipId): bool {
 		$qb = $this->db->getQueryBuilder();
-		$qb->delete($this->getTableName())
-			->where($qb->expr()->eq('goal_id', $qb->createNamedParameter($goalId, IQueryBuilder::PARAM_INT)))
-			->andWhere($qb->expr()->eq('period', $qb->createNamedParameter($period)))
-			->executeStatement();
+		return $qb->delete($this->getTableName())
+			->where($qb->expr()->eq('id', $qb->createNamedParameter($skipId, IQueryBuilder::PARAM_INT)))
+			->andWhere($qb->expr()->eq('goal_id', $qb->createNamedParameter($goalId, IQueryBuilder::PARAM_INT)))
+			->executeStatement() > 0;
 	}
 
 	public function deleteForGoal(int $goalId): void {

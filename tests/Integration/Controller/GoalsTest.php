@@ -111,41 +111,53 @@ class GoalsTest extends TestCase {
 	}
 
 	/**
-	 * A skipped week has no target: it adds no debt, and time worked in it
-	 * still counts (#379).
+	 * Skipped days reduce the target by the share of counted days; time
+	 * worked on them still counts (#379).
 	 */
-	public function testSkippedWeeks(): void {
+	public function testSkippedDays(): void {
 		$project = $this->project('Goals project ' . $this->user);
-		// created 3 weeks ago: 3 past weeks with 10 h each and nothing worked
-		$id = $this->goal($project->getId(), 10, 'Weekly', time() - 21 * 86400);
+		// 40 h a week, created 3 weeks ago: 3 past weeks with nothing worked
+		$id = $this->goal($project->getId(), 40, 'Weekly', time() - 21 * 86400);
 		$goal = fn () => array_column($this->ajaxController($this->user)->getGoals()->getData()['Goals'], null, 'id')[$id];
-		$this->assertEquals(30, $goal()['debtHours']);
+		$this->assertEquals(120, $goal()['debtHours']);
+		$this->assertSame('1111100', $goal()['days']);
 
+		$monday = new \DateTimeImmutable('monday this week', \OCP\Server::get(\OCA\TimeTracker\Service\UserTimeZone::class)->get($this->user));
 		$skip = fn (array $params) => $this->ajaxController($this->user, $params)->skipGoal($id)->getData();
-		$twoWeeksAgo = date('Y-m-d', time() - 14 * 86400);
-		$skip(['date' => $twoWeeksAgo]);
-		$skip(['date' => $twoWeeksAgo]); // twice is the same as once
-		$this->assertEquals(20, $goal()['debtHours']);
-		$this->assertCount(1, $goal()['skippedPeriods']);
+		// two working days in the week before last: 24 h instead of 40
+		$skip(['startDate' => $monday->modify('-14 days')->format('Y-m-d'), 'endDate' => $monday->modify('-13 days')->format('Y-m-d')]);
+		$this->assertEquals(104, $goal()['debtHours']);
+		// a weekend doesn't reduce a Monday-to-Friday goal
+		$skip(['startDate' => $monday->modify('-2 days')->format('Y-m-d'), 'endDate' => $monday->modify('-1 day')->format('Y-m-d')]);
+		$this->assertEquals(104, $goal()['debtHours']);
 
-		// the current week: no target, no remaining hours
-		$skip([]);
-		$this->assertTrue($goal()['currentPeriodSkipped']);
+		// the whole current week
+		$skip(['startDate' => $monday->format('Y-m-d'), 'endDate' => $monday->modify('+6 days')->format('Y-m-d')]);
+		$this->assertEquals(0, $goal()['currentTarget']);
+		$this->assertEquals(5, $goal()['skippedDaysCurrentPeriod']);
 		$this->assertEquals(0, $goal()['remainingHours']);
-		$this->assertEquals(20, $goal()['totalRemainingHours']);
 
-		$skip(['skip' => 'false']);
-		$this->assertFalse($goal()['currentPeriodSkipped']);
-		$this->assertEquals(10, $goal()['remainingHours']);
+		// undo the current week
+		$skips = $goal()['skips'];
+		$this->assertCount(3, $skips);
+		$this->ajaxController($this->user)->deleteGoalSkip($id, $skips[2]['id']);
+		$this->assertEquals(40, $goal()['currentTarget']);
 
-		// before the goal existed, invalid dates, and other users' goals
-		$this->assertArrayHasKey('Error', $skip(['date' => date('Y-m-d', time() - 60 * 86400)]));
-		$this->assertArrayHasKey('Error', $skip(['date' => '2026-02-30']));
+		// counted every day, the weekend skip now reduces the week before (40 × 5/7)
+		$this->ajaxController($this->user, ['days' => '1111111'])->setGoalDays($id);
+		$debt = $goal()['debtHours'];
+		$this->assertEqualsWithDelta(40 + 40 * 5 / 7 + 40 * 5 / 7, $debt, 0.01);
+
+		// invalid input and other users' goals
+		$this->assertArrayHasKey('Error', $skip(['startDate' => '2026-02-30']));
+		$this->assertArrayHasKey('Error', $skip(['startDate' => '2026-03-02', 'endDate' => '2026-03-01']));
+		$this->assertArrayHasKey('Error', $this->ajaxController($this->user, ['days' => '0000000'])->setGoalDays($id)->getData());
 		$this->assertSame(404, $this->ajaxController('someone-else')->skipGoal($id)->getStatus());
+		$this->assertSame(404, $this->ajaxController('someone-else')->deleteGoalSkip($id, $skips[0]['id'])->getStatus());
 
-		// deleting the goal deletes its skipped weeks
+		// deleting the goal deletes its skipped days
 		$this->ajaxController($this->user)->deleteGoal($id);
-		$this->assertSame([], \OCP\Server::get(GoalSkipMapper::class)->findPeriodsForGoals([$id]));
+		$this->assertSame([], \OCP\Server::get(GoalSkipMapper::class)->findForGoals([$id]));
 	}
 
 	private function project(string $name): Project {
