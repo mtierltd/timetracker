@@ -16,7 +16,8 @@ use OCA\TimeTracker\Notification\AbsenceNotifications;
 
 /**
  * Creating, listing, cancelling and approving absences (#374), and the
- * vacation balance (#375), work models and the time account (#376).
+ * vacation balance (#375), work models and the time account (#376), the
+ * team calendar and the out-of-office sync (#377).
  */
 class AbsenceService {
 
@@ -29,6 +30,7 @@ class AbsenceService {
 		private WorkModelMapper $workModelMapper,
 		private WorkedTime $workedTime,
 		private UserTimeZone $userTimeZone,
+		private OutOfOfficeSync $outOfOffice,
 	) {
 	}
 
@@ -199,7 +201,22 @@ class AbsenceService {
 			'decisionComment' => $absence->decisionComment,
 			'createdAt' => (int)$absence->createdAt,
 			'days' => array_sum($this->workingDays($absence)),
+			'conflictDays' => $this->conflictDays($absence, $type),
 		];
+	}
+
+	/**
+	 * Days of an active absence that reduces the target on which the user
+	 * also recorded working time (#377).
+	 *
+	 * @return list<string> Y-m-d
+	 */
+	public function conflictDays(Absence $absence, ?AbsenceType $type): array {
+		if (!$absence->isActive() || $type === null || $type->countsAs !== 'target_reduction') {
+			return [];
+		}
+		$worked = $this->workedTime->minutesPerDay($absence->userUid, $absence->startDate, $absence->endDate);
+		return array_values(array_filter(array_keys($this->workingDays($absence)), fn ($date) => ($worked[$date] ?? 0) > 0));
 	}
 
 	/**
@@ -250,6 +267,8 @@ class AbsenceService {
 		$absence = $this->absenceMapper->insert($absence);
 		if ($absence->status === Absence::STATUS_REQUESTED) {
 			$this->notifications->requested($absence);
+		} else {
+			$this->outOfOffice->sync($userId);
 		}
 		return $absence;
 	}
@@ -272,6 +291,8 @@ class AbsenceService {
 		$absence = $this->absenceMapper->update($absence);
 		if ($wasRequested) {
 			$this->notifications->removeRequest($absence);
+		} else {
+			$this->outOfOffice->sync($userId);
 		}
 		return $absence;
 	}
@@ -296,7 +317,45 @@ class AbsenceService {
 		$absence->setDecisionComment($comment === '' ? null : $comment);
 		$absence = $this->absenceMapper->update($absence);
 		$this->notifications->decided($absence);
+		if ($approve) {
+			$this->outOfOffice->sync($absence->userUid);
+		}
 		return $absence;
+	}
+
+	/**
+	 * Requested and approved absences of several users in a period, for the
+	 * team calendar. Others only see the type if its visibility allows it,
+	 * and never the note; $fullDetails (approvers) see everything.
+	 *
+	 * @param string[] $userIds
+	 * @return list<array<string, mixed>>
+	 */
+	public function teamAbsences(array $userIds, string $from, string $to, string $viewerId, bool $fullDetails): array {
+		$types = $this->typeMapper->findAllById();
+		$wanted = array_flip($userIds);
+		$result = [];
+		foreach ($this->absenceMapper->findOverlapping(null, $from, $to, [Absence::STATUS_REQUESTED, Absence::STATUS_APPROVED]) as $absence) {
+			if (!isset($wanted[$absence->userUid])) {
+				continue;
+			}
+			$type = $types[(int)$absence->typeId] ?? null;
+			$visible = $fullDetails || $absence->userUid === $viewerId || ($type !== null && $type->visibility === 'reason');
+			$result[] = [
+				'id' => (int)$absence->id,
+				'userUid' => $absence->userUid,
+				'typeName' => $visible ? $type?->name : 'Absent',
+				'typeColor' => $visible ? $type?->color : '#9e9e9e',
+				'startDate' => $absence->startDate,
+				'endDate' => $absence->endDate,
+				'halfDayStart' => (bool)$absence->halfDayStart,
+				'halfDayEnd' => (bool)$absence->halfDayEnd,
+				'status' => $absence->status,
+				'note' => $fullDetails || $absence->userUid === $viewerId ? $absence->note : null,
+				'workingDays' => $this->workingDays($absence),
+			];
+		}
+		return $result;
 	}
 
 	/**

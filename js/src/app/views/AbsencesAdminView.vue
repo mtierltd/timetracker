@@ -27,7 +27,12 @@
 							{{ absence.typeName }}
 						</td>
 						<td>{{ period(absence) }}</td>
-						<td>{{ formatDays(absence.days) }}</td>
+						<td>
+							{{ formatDays(absence.days) }}
+							<div v-if="absence.conflictDays && absence.conflictDays.length" class="conflict">
+								⚠ Working time recorded on {{ absence.conflictDays.length }} of these days
+							</div>
+						</td>
 						<td>{{ absence.note }}</td>
 						<td><input v-model="comments[absence.id]" type="text" placeholder="Optional"></td>
 						<td class="actions">
@@ -285,6 +290,10 @@ h2 {
 }
 .entity-table input.hours-input {
 	width: 64px;
+}
+.conflict {
+	font-size: 0.9em;
+	color: var(--color-warning-text, var(--color-warning));
 }
 .actions {
 	display: flex;

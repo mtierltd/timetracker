@@ -11,6 +11,7 @@ use OCA\TimeTracker\Service\AbsenceDays;
 use OCA\TimeTracker\Service\AbsenceException;
 use OCA\TimeTracker\Service\AbsenceService;
 use OCA\TimeTracker\Service\AbsenceSettings;
+use OCA\TimeTracker\Service\OutOfOfficeSync;
 use OCA\TimeTracker\Service\PublicHolidays;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -24,7 +25,8 @@ use OCP\IUserManager;
 
 /**
  * Absences, absence types and public holidays (#374), vacation
- * entitlements and approvals (#375), work models and the time account (#376).
+ * entitlements and approvals (#375), work models and the time account (#376),
+ * the team calendar and out-of-office settings (#377).
  *
  * Methods without #[NoAdminRequired] are for admins only.
  *
@@ -42,6 +44,7 @@ class AbsencesController extends Controller {
 		private IGroupManager $groupManager,
 		private IUserManager $userManager,
 		private VacationEntitlementMapper $entitlementMapper,
+		private OutOfOfficeSync $outOfOffice,
 		private ?string $userId,
 	) {
 		parent::__construct($appName, $request);
@@ -56,6 +59,12 @@ class AbsencesController extends Controller {
 	#[NoAdminRequired]
 	#[NoCSRFRequired]
 	public function workingTimeIndex(): TemplateResponse {
+		return $this->index();
+	}
+
+	#[NoAdminRequired]
+	#[NoCSRFRequired]
+	public function teamIndex(): TemplateResponse {
 		return $this->index();
 	}
 
@@ -102,6 +111,47 @@ class AbsencesController extends Controller {
 			$month = date('Y-m');
 		}
 		return new JSONResponse($this->absenceService->timeAccount($this->userId, $month));
+	}
+
+	/**
+	 * Absences of a month (?month=Y-m) of the users who share a group with
+	 * the viewer; admins see everyone, with all details.
+	 */
+	#[NoAdminRequired]
+	public function getTeamAbsences(): JSONResponse {
+		$month = (string)$this->request->getParam('month', '');
+		if (!preg_match('/^(\d{4})-(0[1-9]|1[0-2])$/', $month)) {
+			$month = date('Y-m');
+		}
+		$from = $month . '-01';
+		$to = (new \DateTimeImmutable($from))->format('Y-m-t');
+		$isAdmin = $this->isAdmin();
+		$users = [];
+		if ($isAdmin) {
+			foreach ($this->userManager->search('', 1000) as $user) {
+				$users[$user->getUID()] = $user->getDisplayName();
+			}
+		} else {
+			$viewer = $this->userManager->get($this->userId);
+			if ($viewer === null) {
+				return new JSONResponse(['Error' => 'Not found'], Http::STATUS_NOT_FOUND);
+			}
+			$users[$this->userId] = $viewer->getDisplayName();
+			foreach ($this->groupManager->getUserGroupIds($viewer) as $groupId) {
+				foreach ($this->groupManager->get($groupId)?->getUsers() ?? [] as $user) {
+					$users[$user->getUID()] = $user->getDisplayName();
+				}
+			}
+		}
+		asort($users, SORT_NATURAL | SORT_FLAG_CASE);
+		$holidays = array_filter(PublicHolidays::forYear((int)substr($month, 0, 4), $this->settings->stateFor($this->userId)),
+			fn ($date) => $date >= $from && $date <= $to, ARRAY_FILTER_USE_KEY);
+		return new JSONResponse([
+			'month' => $month,
+			'Users' => array_map(fn ($uid, $name) => ['userUid' => (string)$uid, 'displayName' => $name], array_keys($users), $users),
+			'Absences' => $this->absenceService->teamAbsences(array_map('strval', array_keys($users)), $from, $to, $this->userId, $isAdmin),
+			'Holidays' => $holidays,
+		]);
 	}
 
 	public function saveWorkModel(): JSONResponse {
@@ -218,11 +268,13 @@ class AbsencesController extends Controller {
 			'defaultState' => $this->settings->defaultState(),
 			'userState' => $this->settings->userState($this->userId),
 			'isAdmin' => $this->isAdmin(),
+			'syncOutOfOffice' => $this->outOfOffice->isEnabled(),
 		]);
 	}
 
 	/**
-	 * Users set their own state; admins also the default state.
+	 * Users set their own state; admins also the default state and whether
+	 * absences set the out-of-office period.
 	 */
 	#[NoAdminRequired]
 	public function saveAbsenceSettings(): JSONResponse {
@@ -238,7 +290,18 @@ class AbsencesController extends Controller {
 				}
 				$this->settings->setDefaultState($this->validState($defaultState));
 			}
-			return ['defaultState' => $this->settings->defaultState(), 'userState' => $this->settings->userState($this->userId)];
+			$sync = $this->request->getParam('syncOutOfOffice');
+			if ($sync !== null) {
+				if (!$this->isAdmin()) {
+					throw new AbsenceException('Only admins can change this setting', Http::STATUS_FORBIDDEN);
+				}
+				$this->outOfOffice->setEnabled((bool)$sync);
+			}
+			return [
+				'defaultState' => $this->settings->defaultState(),
+				'userState' => $this->settings->userState($this->userId),
+				'syncOutOfOffice' => $this->outOfOffice->isEnabled(),
+			];
 		});
 	}
 

@@ -50,6 +50,11 @@
 						<option v-for="(name, code) in settings.states" :key="code" :value="code">{{ name }}</option>
 					</select>
 				</label>
+				<NcCheckboxRadioSwitch v-if="settings.isAdmin"
+					:model-value="settings.syncOutOfOffice"
+					@update:model-value="saveSettings({ syncOutOfOffice: $event })">
+					Approved absences set the out-of-office status (admin)
+				</NcCheckboxRadioSwitch>
 				<label v-if="settings.isAdmin" class="field state-field">
 					<span>Default for everyone (admin)</span>
 					<select :value="settings.defaultState" @change="saveDefaultState($event.target.value)">
@@ -80,7 +85,12 @@
 							{{ absence.typeName || '–' }}
 						</td>
 						<td>{{ period(absence) }}</td>
-						<td>{{ formatDays(absence.days) }}</td>
+						<td>
+							{{ formatDays(absence.days) }}
+							<div v-if="absence.conflictDays && absence.conflictDays.length" class="conflict">
+								⚠ Working time recorded on {{ absence.conflictDays.map(formatDate).join(', ') }}
+							</div>
+						</td>
 						<td>
 							<span class="status" :class="'status-' + absence.status">{{ statusLabel(absence.status) }}</span>
 							<div v-if="absence.decisionComment" class="decision-comment">{{ absence.decisionComment }}</div>
@@ -139,7 +149,7 @@ export default {
 			absences: [],
 			holidays: [],
 			balance: null,
-			settings: { states: {}, defaultState: '', userState: '', isAdmin: false },
+			settings: { states: {}, defaultState: '', userState: '', isAdmin: false, syncOutOfOffice: true },
 			form: { type: null, startDate: today(), endDate: today(), halfDayStart: false, halfDayEnd: false, note: '' },
 			confirmVisible: false,
 			confirmMessage: '',
@@ -343,6 +353,11 @@ export default {
 .status-rejected {
 	background: var(--color-error);
 	color: var(--color-primary-element-text, #fff);
+}
+.conflict {
+	font-size: 0.9em;
+	color: var(--color-warning-text, var(--color-warning));
+	margin-top: 4px;
 }
 .decision-comment {
 	font-size: 0.9em;
