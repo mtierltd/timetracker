@@ -28,6 +28,8 @@ use OCA\TimeTracker\Db\Tag;
 use OCA\TimeTracker\Db\TagMapper;
 use OCA\TimeTracker\Db\Goal;
 use OCA\TimeTracker\Db\GoalMapper;
+use OCA\TimeTracker\Db\GoalSkipMapper;
+use OCA\TimeTracker\Service\GoalTargets;
 use OCA\TimeTracker\Db\UserToTagMapper;
 use OCA\TimeTracker\Db\UserToTag;
 use OCA\TimeTracker\Db\WorkIntervalToTag;
@@ -52,6 +54,7 @@ class AjaxController extends Controller {
 	protected $userToProjectMapper;
 	protected $tagMapper;
 	protected $goalMapper;
+	protected $goalSkipMapper;
 	protected $request;
 	protected $workIntervalToTagMapper;
 	protected $reportItemMapper;
@@ -65,7 +68,7 @@ class AjaxController extends Controller {
 	public function __construct($AppName, IRequest $request, IUserSession $userSession, IL10N $l10n,
 							WorkIntervalMapper $workIntervalMapper, ClientMapper $clientMapper, UserToClientMapper $userToClientMapper,
 							ProjectMapper $projectMapper, UserToProjectMapper $userToProjectMapper, TagMapper $tagMapper, WorkIntervalToTagMapper $workIntervalToTagMapper, ReportItemMapper $reportItemMapper,
-							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper,
+							TimelineMapper $timelineMapper, TimelineEntryMapper $timelineEntryMapper, GoalMapper $goalMapper, GoalSkipMapper $goalSkipMapper,
 							IGroupManager $groupManager, IMailer $mailer, IDBConnection $db, $userId){
 		parent::__construct($AppName, $request);
 		$this->userId = $userId;
@@ -79,6 +82,7 @@ class AjaxController extends Controller {
 
 		$this->tagMapper = $tagMapper;
 		$this->goalMapper = $goalMapper;
+		$this->goalSkipMapper = $goalSkipMapper;
 
 		$this->workIntervalToTagMapper = $workIntervalToTagMapper;
 		$this->reportItemMapper = $reportItemMapper;
@@ -1371,6 +1375,10 @@ class AjaxController extends Controller {
 			return new JSONResponse(["Error" => "Hours must be a whole number of at least 1"]);
 		}
 		$hours = (int)$hours;
+		$days = $this->request->getParam('days') ?: GoalTargets::DEFAULT_DAYS;
+		if (!GoalTargets::isValidDays($days)) {
+			return new JSONResponse(["Error" => "Please choose at least one weekday"]);
+		}
 
 		$g = $this->goalMapper->findByUserProject($this->userId, $projectId);
 		if ($g == null){
@@ -1380,6 +1388,7 @@ class AjaxController extends Controller {
 			$g->setCreatedAt(time());
 			$g->setHours($hours);
 			$g->setInterval($interval);
+			$g->setDays($days);
 			$this->goalMapper->insert($g);
 		} else 	if ($g != null){
 			return new JSONResponse(["Error" => "There can be only one goal per project"]);
@@ -1401,8 +1410,79 @@ class AjaxController extends Controller {
 		if ($c->userUid != $this->userId){
 			return;
 		}
+		$this->goalSkipMapper->deleteForGoal((int)$c->id);
 		$this->goalMapper->delete($c);
 		return $this->getGoals();
+	}
+
+	/**
+	 * Skips days of a goal, e.g. vacation (#379): "startDate" and "endDate"
+	 * (Y-m-d, both included; default: today). The goal's target in a week
+	 * or month is reduced by the share of its counted days that are skipped.
+	 *
+	 * @NoAdminRequired
+	 */
+	public function skipGoal($id) {
+		$goal = $this->ownGoal($id);
+		if ($goal === null) {
+			return $this->notFound();
+		}
+		$today = (new \DateTimeImmutable('now', $this->userTimeZone()))->format('Y-m-d');
+		$start = $this->request->getParam('startDate') ?: $today;
+		$end = $this->request->getParam('endDate') ?: $start;
+		foreach ([$start, $end] as $date) {
+			$parsed = is_string($date) ? \DateTimeImmutable::createFromFormat('!Y-m-d', $date) : false;
+			if ($parsed === false || $parsed->format('Y-m-d') !== $date) {
+				return new JSONResponse(["Error" => "Please choose valid dates"]);
+			}
+		}
+		if ($end < $start) {
+			return new JSONResponse(["Error" => "The last day must not be before the first day"]);
+		}
+		$this->goalSkipMapper->add((int)$goal->id, $start, $end);
+		return $this->getGoals();
+	}
+
+	/**
+	 * Removes skipped days of a goal.
+	 *
+	 * @NoAdminRequired
+	 */
+	public function deleteGoalSkip($id, $skipId) {
+		$goal = $this->ownGoal($id);
+		if ($goal === null || !$this->goalSkipMapper->remove((int)$goal->id, (int)$skipId)) {
+			return $this->notFound();
+		}
+		return $this->getGoals();
+	}
+
+	/**
+	 * Sets the weekdays a goal counts on: "days", 7 characters 0/1, Monday
+	 * first, e.g. 1111100 for Monday to Friday.
+	 *
+	 * @NoAdminRequired
+	 */
+	public function setGoalDays($id) {
+		$goal = $this->ownGoal($id);
+		if ($goal === null) {
+			return $this->notFound();
+		}
+		$days = $this->request->getParam('days');
+		if (!GoalTargets::isValidDays($days)) {
+			return new JSONResponse(["Error" => "Please choose at least one weekday"]);
+		}
+		$goal->setDays($days);
+		$this->goalMapper->update($goal);
+		return $this->getGoals();
+	}
+
+	/** One of the user's goals with a valid interval, or null. */
+	private function ownGoal($id): ?Goal {
+		$goal = $this->findOrNull(fn () => $this->goalMapper->find((int)$id));
+		if ($goal === null || $goal->userUid !== $this->userId || !in_array($goal->interval, self::GOAL_INTERVALS, true)) {
+			return null;
+		}
+		return $goal;
 	}
 
 	/**
@@ -1491,6 +1571,7 @@ class AjaxController extends Controller {
 
 	public function getGoals(){
 		$goals = $this->goalMapper->findAll($this->userId);
+		$skipsByGoal = $this->goalSkipMapper->findForGoals(array_map(fn ($g) => (int)$g->id, $goals));
 		$weekStart = $this->getStartOfWeek(time())->format('Y-m-d');
 		$monthStart = $this->getStartOfMonth(time())->format('Y-m');
 
@@ -1529,6 +1610,17 @@ class AjaxController extends Controller {
 			}
 			$workedSecondsCurrentPeriod = 0;
 			$debtSeconds = 0;
+			$skips = $skipsByGoal[(int)$goal->id] ?? [];
+			$skipRanges = array_map(fn ($skip) => [$skip->startDate, $skip->endDate], $skips);
+			$days = GoalTargets::isValidDays($goal->days) ? $goal->days : GoalTargets::DEFAULT_DAYS;
+			// the target of a period, reduced by skipped days
+			$periodTarget = function (string $period) use ($goal, $days, $skipRanges) {
+				[$first, $last] = GoalTargets::periodRange($period);
+				return GoalTargets::forPeriod((float)$goal->hours, $days, $first, $last, $skipRanges);
+			};
+			$currentPeriod = $goal->interval == 'Weekly' ? $weekStart : $monthStart;
+			$current = $periodTarget($currentPeriod);
+			$currentTarget = $current['target'];
 			foreach($intervals as $interval){
 				$workedInInterval = 0;
 				foreach($repItems as $repItem) {
@@ -1543,7 +1635,8 @@ class AjaxController extends Controller {
 						}
 					}
 				}
-				$debtSeconds += ($goal->hours*3600 - $workedInInterval);
+				// skipped days reduce the target; time worked on them still counts
+				$debtSeconds += ($periodTarget($interval)['target'] * 3600 - $workedInInterval);
 			}
 
 			foreach($repItems as $period){
@@ -1564,9 +1657,15 @@ class AjaxController extends Controller {
 				'createdAt'  => $goal->createdAt,
 				'workedHoursCurrentPeriod'  => round($workedSecondsCurrentPeriod / 3600, 2),
 				'debtHours'  => round($debtSeconds / 3600, 2),
-				'remainingHours'  => round($goal->hours - $workedSecondsCurrentPeriod / 3600, 2),
-				'totalRemainingHours'  => round(($debtSeconds + $goal->hours *3600 - $workedSecondsCurrentPeriod) / 3600, 2),
+				'remainingHours'  => round($currentTarget - $workedSecondsCurrentPeriod / 3600, 2),
+				'totalRemainingHours'  => round(($debtSeconds + $currentTarget * 3600 - $workedSecondsCurrentPeriod) / 3600, 2),
 				'invalid' => false,
+				'days' => $days,
+				'currentPeriod' => $currentPeriod,
+				'currentTarget' => round($currentTarget, 2),
+				'countedDaysCurrentPeriod' => $current['countedDays'],
+				'skippedDaysCurrentPeriod' => $current['skippedDays'],
+				'skips' => $skips,
 			];
 			$ret[] = $rgoal;
 		}

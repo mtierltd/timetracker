@@ -6,6 +6,7 @@ use OCA\TimeTracker\Controller\AjaxController;
 use OCA\TimeTracker\Db\Client;
 use OCA\TimeTracker\Db\ClientMapper;
 use OCA\TimeTracker\Db\GoalMapper;
+use OCA\TimeTracker\Db\GoalSkipMapper;
 use OCA\TimeTracker\Db\Project;
 use OCA\TimeTracker\Db\ProjectMapper;
 use OCA\TimeTracker\Db\ReportItemMapper;
@@ -305,7 +306,7 @@ class AuthorizationTest extends TestCase {
 			\OCP\Server::get(WorkIntervalMapper::class), \OCP\Server::get(ClientMapper::class), \OCP\Server::get(UserToClientMapper::class),
 			\OCP\Server::get(ProjectMapper::class), \OCP\Server::get(UserToProjectMapper::class), \OCP\Server::get(TagMapper::class),
 			\OCP\Server::get(WorkIntervalToTagMapper::class), \OCP\Server::get(ReportItemMapper::class),
-			\OCP\Server::get(TimelineMapper::class), \OCP\Server::get(TimelineEntryMapper::class), \OCP\Server::get(GoalMapper::class),
+			\OCP\Server::get(TimelineMapper::class), \OCP\Server::get(TimelineEntryMapper::class), \OCP\Server::get(GoalMapper::class), \OCP\Server::get(GoalSkipMapper::class),
 			\OCP\Server::get(IGroupManager::class), $this->mailer, $this->db, $user);
 	}
 
