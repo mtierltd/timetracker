@@ -7,6 +7,12 @@ minor releases add features, major releases contain breaking changes
 
 ## Unreleased
 
+### Added
+- Absences: vacation, illness and other absence types defined by admins, with half days and public holidays per German federal state (#374).
+- Vacation entitlement per year with carried-over days, an approval workflow for requests and notifications. Illness during vacation gives the vacation days back (#375).
+- Work model per user (hours per weekday) and a "Working time" view with target, actual and balance (#376).
+- Team calendar; approved absences set the Nextcloud out-of-office status; absences on days with recorded working time are flagged (#377).
+
 ### Changed
 - Requires Nextcloud 33 to 35 and PHP 8.2 or newer (#329). Nextcloud 31 and 32 are no longer maintained by Nextcloud; instances on those versions stay on 1.0.3.
 

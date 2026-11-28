@@ -51,8 +51,8 @@ final class VacationBalance {
 			}
 			$carriedOverExpired = max(0.0, $carriedOver - $takenByExpiry);
 		}
-		$approvedDays = array_sum($approved);
-		$requestedDays = array_sum($requested);
+		$approvedDays = (float)array_sum($approved);
+		$requestedDays = (float)array_sum($requested);
 		return [
 			'entitlement' => $entitlement,
 			'carriedOver' => $carriedOver,
