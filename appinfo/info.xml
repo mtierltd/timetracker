@@ -3,7 +3,7 @@
       xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>timetracker</id>
     <name>Time Tracker</name>
-    <summary>Track your working time with a timer, organise it by project, client and tag, and turn it into reports</summary>
+    <summary>Track your working time with a timer, organise it by project, client and tag, turn it into reports, and manage absences</summary>
     <description><![CDATA[
 Time Tracker records how much time you spend on your work, right in your Nextcloud.
 
@@ -23,6 +23,13 @@ Time Tracker records how much time you spend on your work, right in your Nextclo
 - **Reports:** group by project, client, user or entry, per day, week, month or year; filter by project and client; download as CSV or JSON.
 - **Timelines:** save a report as a timeline, download it as CSV or email it. Admins review timelines and mark them as approved or rejected.
 - **Goals:** set weekly or monthly hours for a project and see how much is done.
+
+## Absences and working time
+- **Absences:** request vacation or report illness, with half days. Weekends and the public holidays of your federal state don't count.
+- **Approvals:** admins approve or reject requests and set each user's vacation days; everyone is notified.
+- **Working time:** see your target hours, the time you recorded and your balance, based on your hours per weekday.
+- **Team calendar:** see who is absent. Illness only shows as "absent" to colleagues.
+- **Out of office:** approved absences set your Nextcloud out-of-office status.
 
 ## On the go
 Track time from your phone with the [Time Tracker Android app](https://github.com/Martin-1997/nc-timetracker-android).
@@ -51,6 +58,9 @@ Questions, ideas or bugs? Have a look at the [issues on GitHub](https://github.c
         <php min-version="8.2"/>
         <nextcloud min-version="33" max-version="35"/>
     </dependencies>
+    <background-jobs>
+        <job>OCA\TimeTracker\BackgroundJob\OutOfOfficeJob</job>
+    </background-jobs>
     <navigations>
         <navigation>
             <name>Time Tracker</name>

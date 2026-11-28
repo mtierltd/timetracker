@@ -33,7 +33,7 @@ export default {
 	},
 	computed: {
 		navItems() {
-			return views.filter((item) => item.name !== 'timelines-admin' || this.isAdmin)
+			return views.filter((item) => !item.adminOnly || this.isAdmin)
 		},
 	},
 }
