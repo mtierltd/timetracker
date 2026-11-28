@@ -28,3 +28,14 @@ export function period(absence) {
 	}
 	return `${start} – ${formatDate(absence.endDate)}${absence.halfDayEnd ? ' (½)' : ''}`
 }
+
+// 450 → "7:30 h"
+export function hours(minutes) {
+	const abs = Math.abs(minutes)
+	return `${minutes < 0 ? '−' : ''}${Math.floor(abs / 60)}:${String(abs % 60).padStart(2, '0')} h`
+}
+
+// 90 → "+1:30 h", -90 → "−1:30 h"
+export function signedHours(minutes) {
+	return (minutes > 0 ? '+' : '') + hours(minutes)
+}

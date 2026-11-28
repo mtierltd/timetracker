@@ -73,6 +73,34 @@
 				</tbody>
 			</table>
 
+			<h2>Work models</h2>
+			<p class="hint">Hours per weekday, the base of the target hours. Users without a model work 8 hours Monday to Friday.</p>
+			<table class="entity-table">
+				<thead>
+					<tr>
+						<th>User</th>
+						<th v-for="day in weekdays" :key="day">{{ day }}</th>
+						<th>Count from</th>
+						<th />
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="user in users" :key="user.userUid">
+						<td>
+							{{ user.displayName }}
+							<span v-if="user.workModel.isDefault" class="hint">(default)</span>
+						</td>
+						<td v-for="(day, i) in weekdays" :key="day">
+							<input v-model="user.model.hours[i + 1]" type="number" min="0" max="24" step="0.25" class="hours-input">
+						</td>
+						<td><input v-model="user.model.accountStart" type="date"></td>
+						<td>
+							<NcButton type="secondary" @click="saveWorkModel(user)">Save</NcButton>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
 			<h2>Absence types</h2>
 			<table class="entity-table">
 				<thead>
@@ -137,6 +165,7 @@ export default {
 			comments: {},
 			users: [],
 			typeRows: [],
+			weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
 		}
 	},
 	async mounted() {
@@ -150,7 +179,7 @@ export default {
 		},
 		async loadUsers() {
 			const data = await apiGet('/vacation-entitlements', { year: this.year })
-			this.users = (data.Users || []).map((user) => ({ ...user, edit: this.editValues(user.balance) }))
+			this.users = (data.Users || []).map((user) => ({ ...user, edit: this.editValues(user.balance), model: this.modelValues(user.workModel) }))
 		},
 		async loadTypes() {
 			const types = (await apiGet('/absence-types')).AbsenceTypes || []
@@ -161,6 +190,26 @@ export default {
 				days: balance.hasEntitlement ? balance.entitlement : '',
 				carriedOver: balance.hasEntitlement ? balance.carriedOver : '',
 				carryOverExpiry: balance.carryOverExpiry || (balance.hasEntitlement ? '' : `${this.year}-03-31`),
+			}
+		},
+		modelValues(workModel) {
+			const hours = {}
+			for (let day = 1; day <= 7; day++) {
+				hours[day] = workModel.minutes[day] / 60
+			}
+			return { hours, accountStart: workModel.accountStart || '' }
+		},
+		async saveWorkModel(user) {
+			const minutes = {}
+			for (let day = 1; day <= 7; day++) {
+				minutes[day] = Math.round(Number(user.model.hours[day] || 0) * 60)
+			}
+			try {
+				user.workModel = await apiPost('/work-models', { userUid: user.userUid, minutes, accountStart: user.model.accountStart })
+				user.model = this.modelValues(user.workModel)
+				showSuccess('Saved')
+			} catch (e) {
+				showError(e.message)
 			}
 		},
 		isChanged(user) {
@@ -229,6 +278,13 @@ h2 {
 }
 .entity-table input[type="number"] {
 	width: 80px;
+}
+.hint {
+	color: var(--color-text-maxcontrast);
+	font-weight: normal;
+}
+.entity-table input.hours-input {
+	width: 64px;
 }
 .actions {
 	display: flex;

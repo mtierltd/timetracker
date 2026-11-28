@@ -24,7 +24,7 @@ use OCP\IUserManager;
 
 /**
  * Absences, absence types and public holidays (#374), vacation
- * entitlements and approvals (#375).
+ * entitlements and approvals (#375), work models and the time account (#376).
  *
  * Methods without #[NoAdminRequired] are for admins only.
  *
@@ -51,6 +51,12 @@ class AbsencesController extends Controller {
 	#[NoCSRFRequired]
 	public function index(): TemplateResponse {
 		return new TemplateResponse('timetracker', 'spa', ['script' => 'dist/app']);
+	}
+
+	#[NoAdminRequired]
+	#[NoCSRFRequired]
+	public function workingTimeIndex(): TemplateResponse {
+		return $this->index();
 	}
 
 	#[NoCSRFRequired]
@@ -88,6 +94,27 @@ class AbsencesController extends Controller {
 		return new JSONResponse($this->absenceService->vacationBalance($this->userId, $this->year()));
 	}
 
+	/** Target, actual and balance of a month (?month=Y-m, default: this month). */
+	#[NoAdminRequired]
+	public function getTimeAccount(): JSONResponse {
+		$month = (string)$this->request->getParam('month', '');
+		if (!preg_match('/^(\d{4})-(0[1-9]|1[0-2])$/', $month)) {
+			$month = date('Y-m');
+		}
+		return new JSONResponse($this->absenceService->timeAccount($this->userId, $month));
+	}
+
+	public function saveWorkModel(): JSONResponse {
+		return $this->run(function () {
+			$userId = (string)$this->request->getParam('userUid', '');
+			if (!$this->userManager->userExists($userId)) {
+				throw new AbsenceException('Unknown user');
+			}
+			$this->absenceService->saveWorkModel($userId, $this->request->getParam('minutes'), $this->request->getParam('accountStart'));
+			return $this->absenceService->workModelInfo($userId);
+		});
+	}
+
 	public function getRequestedAbsences(): JSONResponse {
 		return new JSONResponse(['Absences' => $this->withDisplayNames($this->absenceService->listRequested())]);
 	}
@@ -97,7 +124,7 @@ class AbsencesController extends Controller {
 			$this->userId, $id, (bool)$this->request->getParam('approve'), $this->stringParam('comment'))));
 	}
 
-	/** All users with their entitlement and balance of a year. */
+	/** All users with their entitlement and balance of a year, and their work model. */
 	public function getEntitlements(): JSONResponse {
 		$year = $this->year();
 		$users = [];
@@ -106,6 +133,7 @@ class AbsencesController extends Controller {
 				'userUid' => $user->getUID(),
 				'displayName' => $user->getDisplayName(),
 				'balance' => $this->absenceService->vacationBalance($user->getUID(), $year),
+				'workModel' => $this->absenceService->workModelInfo($user->getUID()),
 			];
 		}
 		usort($users, fn ($a, $b) => strcasecmp($a['displayName'], $b['displayName']));

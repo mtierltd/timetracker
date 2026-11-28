@@ -5,6 +5,7 @@ import ClientsView from './views/ClientsView.vue'
 import GoalsView from './views/GoalsView.vue'
 import AbsencesView from './views/AbsencesView.vue'
 import AbsencesAdminView from './views/AbsencesAdminView.vue'
+import WorkingTimeView from './views/WorkingTimeView.vue'
 import ProjectsView from './views/ProjectsView.vue'
 import TimerView from './views/TimerView.vue'
 import DashboardView from './views/DashboardView.vue'
@@ -17,6 +18,7 @@ const views = [
 	{ path: 'dashboard', name: 'dashboard', title: 'Dashboard', component: DashboardView },
 	{ path: 'goals', name: 'goals', title: 'Goals', component: GoalsView },
 	{ path: 'absences', name: 'absences', title: 'Absences', component: AbsencesView },
+	{ path: 'working-time', name: 'working-time', title: 'Working time', component: WorkingTimeView },
 	{ path: 'absences-admin', name: 'absences-admin', title: 'Absences Admin', component: AbsencesAdminView, adminOnly: true },
 	{ path: 'reports', name: 'reports', title: 'Reports', component: ReportsView },
 	{ path: 'timelines', name: 'timelines', title: 'Timelines', component: TimelinesView },

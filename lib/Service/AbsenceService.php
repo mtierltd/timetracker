@@ -10,11 +10,13 @@ use OCA\TimeTracker\Db\AbsenceType;
 use OCA\TimeTracker\Db\AbsenceTypeMapper;
 use OCA\TimeTracker\Db\VacationEntitlement;
 use OCA\TimeTracker\Db\VacationEntitlementMapper;
+use OCA\TimeTracker\Db\WorkModelEntity;
+use OCA\TimeTracker\Db\WorkModelMapper;
 use OCA\TimeTracker\Notification\AbsenceNotifications;
 
 /**
  * Creating, listing, cancelling and approving absences (#374), and the
- * vacation balance (#375).
+ * vacation balance (#375), work models and the time account (#376).
  */
 class AbsenceService {
 
@@ -24,12 +26,127 @@ class AbsenceService {
 		private AbsenceSettings $settings,
 		private VacationEntitlementMapper $entitlementMapper,
 		private AbsenceNotifications $notifications,
+		private WorkModelMapper $workModelMapper,
+		private WorkedTime $workedTime,
+		private UserTimeZone $userTimeZone,
 	) {
 	}
 
-	/** The work model of a user. */
+	/** @var array<string, WorkModel> */
+	private array $workModels = [];
+
+	/** The work model of a user: stored by an admin, or 8 h Monday to Friday. */
 	public function workModel(string $userId): WorkModel {
-		return new WorkModel();
+		if (!isset($this->workModels[$userId])) {
+			$this->workModels[$userId] = $this->workModelMapper->findForUser($userId)?->toModel() ?? new WorkModel();
+		}
+		return $this->workModels[$userId];
+	}
+
+	/**
+	 * @return array{minutes: array<int, int>, accountStart: ?string, isDefault: bool}
+	 */
+	public function workModelInfo(string $userId): array {
+		$stored = $this->workModelMapper->findForUser($userId);
+		return [
+			'minutes' => $this->workModel($userId)->minutesPerWeekday(),
+			'accountStart' => $stored?->accountStart,
+			'isDefault' => $stored === null,
+		];
+	}
+
+	/**
+	 * Admins set a user's minutes per weekday and the start of their account.
+	 *
+	 * @param mixed $minutes ISO weekday => minutes
+	 * @throws AbsenceException
+	 */
+	public function saveWorkModel(string $userId, mixed $minutes, mixed $accountStart): void {
+		if (!is_array($minutes)) {
+			throw new AbsenceException('Please enter the hours per weekday');
+		}
+		$clean = [];
+		for ($day = 1; $day <= 7; $day++) {
+			$value = $minutes[$day] ?? $minutes[(string)$day] ?? 0;
+			if (!is_numeric($value) || (int)$value < 0 || (int)$value > 24 * 60) {
+				throw new AbsenceException('Hours per day must be between 0 and 24');
+			}
+			$clean[$day] = (int)$value;
+		}
+		if ($accountStart === '' || $accountStart === null) {
+			$accountStart = null;
+		} elseif (!AbsenceDays::isDate($accountStart)) {
+			throw new AbsenceException('Please enter a valid start date');
+		}
+		$entity = $this->workModelMapper->findForUser($userId) ?? new WorkModelEntity();
+		$entity->setUserUid($userId);
+		$entity->setFromModel(new WorkModel($clean));
+		$entity->setAccountStart($accountStart);
+		$entity->id ? $this->workModelMapper->update($entity) : $this->workModelMapper->insert($entity);
+		unset($this->workModels[$userId]);
+	}
+
+	/**
+	 * Target, actual and balance per day of a month, and the balance of the
+	 * year up to today. Days before the account start and after today don't
+	 * count towards the balances.
+	 *
+	 * @param string $month Y-m
+	 * @return array<string, mixed>
+	 */
+	public function timeAccount(string $userId, string $month, ?string $today = null): array {
+		$today ??= (new \DateTimeImmutable('now', $this->userTimeZone->get($userId)))->format('Y-m-d');
+		$first = $month . '-01';
+		$last = (new \DateTimeImmutable($first))->format('Y-m-t');
+		$yearStart = substr($month, 0, 4) . '-01-01';
+		$accountStart = $this->workModelMapper->findForUser($userId)?->accountStart;
+		$countFrom = max($yearStart, $accountStart ?? $yearStart);
+
+		$monthAccount = $this->account($userId, $first, $last);
+		$counted = array_values(array_filter($monthAccount['days'], fn ($d) => $d['date'] >= $countFrom && $d['date'] <= $today));
+		$monthTarget = array_sum(array_column($counted, 'target'));
+		$monthActual = array_sum(array_column($counted, 'actual'));
+
+		$yearBalance = null;
+		$yearEnd = min($today, substr($month, 0, 4) . '-12-31');
+		if ($countFrom <= $yearEnd) {
+			$yearBalance = $this->account($userId, $countFrom, $yearEnd)['balance'];
+		}
+		return [
+			'month' => $month,
+			'today' => $today,
+			'countFrom' => $countFrom,
+			'workModel' => $this->workModelInfo($userId),
+			'days' => $monthAccount['days'],
+			'target' => $monthTarget,
+			'actual' => $monthActual,
+			'balance' => $monthActual - $monthTarget,
+			'yearBalance' => $yearBalance,
+		];
+	}
+
+	/**
+	 * @return array{days: list<array<string, mixed>>, target: int, actual: int, balance: int}
+	 */
+	private function account(string $userId, string $from, string $to): array {
+		$types = $this->typeMapper->findAllById();
+		$reducing = [];
+		$workTime = [];
+		foreach ($this->absenceMapper->findOverlapping($userId, $from, $to, [Absence::STATUS_APPROVED]) as $absence) {
+			$type = $types[(int)$absence->typeId] ?? null;
+			if ($type === null) {
+				continue;
+			}
+			foreach ($this->workingDays($absence) as $date => $share) {
+				if ($type->countsAs === 'work_time') {
+					$workTime[$date] = min(1.0, ($workTime[$date] ?? 0.0) + $share);
+				} else {
+					$reducing[$date] = min(1.0, ($reducing[$date] ?? 0.0) + $share);
+				}
+			}
+		}
+		return TimeAccount::calculate($from, $to, $this->workModel($userId), $this->settings->stateFor($userId),
+			$reducing, $workTime, $this->workedTime->minutesPerDay($userId, $from, $to));
 	}
 
 	/**
@@ -230,7 +347,7 @@ class AbsenceService {
 			$entitlement?->carryOverExpiry,
 			VacationBalance::withoutOtherAbsences($approved, $other),
 			VacationBalance::withoutOtherAbsences($requested, $other),
-			date('Y-m-d'),
+			(new \DateTimeImmutable('now', $this->userTimeZone->get($userId)))->format('Y-m-d'),
 		) + ['hasEntitlement' => $entitlement !== null];
 	}
 
